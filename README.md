@@ -14,6 +14,8 @@ You will be automatically matched and a chat will be initiated for you.
 
 >We are still in the process of defining the meaning of match. Currently, our plan is to categorise the various emoji, where emoji of the same category will be highly similar. Each emoji will have several categories and emoji that share a higher number of similar categories will have a higher level of similarity.
 
+>The use of generated aliases such as "Flying Pig" ensures that two people sharing the same set of emoji can be differentiated.
+
 Notifications will prompt you whenever a match happens or when new messages arrive.
 <br clear="all">
 
@@ -40,6 +42,8 @@ Chats that are inactive for 3 weeks will be archived and they can be accessed fr
 # Milestones
 Our goal is to complete an Android application and perhaps an iOS application if time permits.
 
+We've come up with some user stories sorted by level of priority: [User Stories]
+
 # References
 * [Proto] - Prototyping web application for making the prototypes above
 * [LICEcap] - For recording gifs
@@ -57,6 +61,8 @@ An Orbital 2015 project.
 [ignition-slide]: images/ignition/155.png "Threemoji"
 [ignition-presentation]: https://youtu.be/osQjStOAci0?t=1h59m10s
 [main-screen]: images/prototype/main-screen.gif 
+
+[User Stories]: User-Stories.md
 
 [Proto]: http://proto.io
 [LICEcap]: http://www.cockos.com/licecap/

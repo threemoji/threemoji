@@ -1,5 +1,5 @@
 # Threemoji
-For people who want to meet new people nearby, Threemoji is a social app that matches individuals with like-minded peers; unlike Tinder, Threemoji matches people based on the three emojis they choose to describe themselves with.
+For people who want to meet new people nearby, Threemoji is a social app that matches individuals with like-minded peers. Unlike Tinder, Threemoji matches people based on the 3 emojis they choose to describe themselves with and chats are all anonymous.
 
 We are aiming for Apollo 11. [Ignition presentation][ignition-presentation]
 
@@ -24,18 +24,28 @@ Threemoji allows you to see people nearby who were not automatically matched wit
 These people are sorted by the extent of match with you.
 
 You can then start a chat with any of them.
+>Chats will be encrypted so even the administrators will not be able to read messages.
+
 <br clear="all">
 
 <img src="images/prototype/side-menu.gif" width="50%" align="left">
 <br>
 You can change your emoji anytime to match with different people.
 
-If you want to match with people further away, you can change your radius of match.
+If you want to match with people farther away, you can change your radius of match.
 
 Chats that are inactive for 3 weeks will be archived and they can be accessed from this side menu.
 <br clear="all">
+
+# Milestones
+Our goal is to complete an Android application and perhaps an iOS application if time permits.
+
 # References
->To be filled in.
+* [Proto] - Prototyping web application for making the prototypes above
+* [LICEcap] - For recording gifs
+* [Emoji One] - Open source emoji
+* [Material Design] - Design guidelines for Android applications
+
 
 ---
 An Orbital 2015 project.
@@ -43,3 +53,8 @@ An Orbital 2015 project.
 [ignition-slide]: images/ignition/155.png "Threemoji"
 [ignition-presentation]: https://youtu.be/osQjStOAci0?t=1h59m10s
 [main-screen]: images/prototype/main-screen.gif 
+
+[Proto]: http://proto.io
+[LICEcap]: http://www.cockos.com/licecap/
+[Emoji One]: http://emojione.com/
+[Material Design]: http://www.google.com/design/spec/material-design/introduction.html

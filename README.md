@@ -6,8 +6,8 @@ We are aiming for Apollo 11. [Ignition presentation][ignition-presentation]
 ![Threemoji][ignition-slide]
 
 # Planned Features
-<img src="images/prototype/main-screen.gif" width="50%" align="left">
 <br>
+<img src="images/prototype/main-screen.gif" width="50%" align="left">
 Threemoji displays your chats sorted by their last active time. 
 
 You will be automatically matched and a chat will be initiated for you. 
@@ -19,8 +19,8 @@ You will be automatically matched and a chat will be initiated for you.
 Notifications will prompt you whenever a match happens or when new messages arrive.
 <br clear="all">
 
-<img src="images/prototype/people-nearby-screen.gif" width="50%" align="right">
 <br>
+<img src="images/prototype/people-nearby-screen.gif" width="50%" align="right">
 Threemoji allows you to see people nearby who were not automatically matched with you.
 
 These people are sorted by the extent of match with you.
@@ -30,8 +30,8 @@ You can then start a chat with any of them.
 
 <br clear="all">
 
-<img src="images/prototype/side-menu.gif" width="50%" align="left">
 <br>
+<img src="images/prototype/side-menu.gif" width="50%" align="left">
 You can change your emoji anytime to match with different people.
 
 If you want to match with people farther away, you can change your radius of match.

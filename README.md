@@ -45,6 +45,10 @@ Our goal is to complete an Android application and perhaps an iOS application if
 * [LICEcap] - For recording gifs
 * [Emoji One] - Open source emoji
 * [Material Design] - Design guidelines for Android applications
+* [Sublime Text 3] - For code editing
+* [MarkdownEditing] - Package for Sublime Text for nicer markdown formatting
+* [Markdown Preview] - Package for Sublime Text to preview formatted markdown documents locally
+* [Markdown Cheatsheet] - For markdown syntax help
 
 
 ---
@@ -58,3 +62,7 @@ An Orbital 2015 project.
 [LICEcap]: http://www.cockos.com/licecap/
 [Emoji One]: http://emojione.com/
 [Material Design]: http://www.google.com/design/spec/material-design/introduction.html
+[Sublime Text 3]: http://www.sublimetext.com/3
+[MarkdownEditing]: https://packagecontrol.io/packages/MarkdownEditing
+[Markdown Preview]: https://packagecontrol.io/packages/Markdown%20Preview
+[Markdown Cheatsheet]: https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet

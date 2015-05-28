@@ -1,9 +1,12 @@
 # Threemoji
 For people who want to meet new people nearby, Threemoji is a social app that matches individuals with like-minded peers. Unlike Tinder, Threemoji matches people based on the 3 emojis they choose to describe themselves with and chats are all anonymous.
 
-We are aiming for Apollo 11. [Ignition presentation][ignition-presentation]
-
+# Overview
 ![Threemoji][ignition-slide]
+
+Threemoji is the go-to app for lonely hearts who desire simplicity. Unlike other social apps, users do not have to go through the hassle of creating an online profile - simply select three emoji and get matched. Threemoji is also distinct from other anonymous chat apps in that there is some degree of preference matching through the use of emoji, a new and fun way of describing oneself.
+
+We are aiming for Apollo 11. [Ignition presentation][ignition-presentation]
 
 # Planned Features
 <br>
@@ -53,6 +56,8 @@ We've come up with some user stories sorted by level of priority: [User Stories]
 * [MarkdownEditing] - Package for Sublime Text for nicer markdown formatting
 * [Markdown Preview] - Package for Sublime Text to preview formatted markdown documents locally
 * [Markdown Cheatsheet] - For markdown syntax help
+* [App Engine Backend] - How to build a mobile app with an App Engine backend
+* [Google Cloud Messaging] - How to create an Instant Messaging app using GCM
 
 
 ---
@@ -72,3 +77,5 @@ An Orbital 2015 project.
 [MarkdownEditing]: https://packagecontrol.io/packages/MarkdownEditing
 [Markdown Preview]: https://packagecontrol.io/packages/Markdown%20Preview
 [Markdown Cheatsheet]: https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet
+[App Engine Backend]: https://cloud.google.com/developers/articles/how-to-build-mobile-app-with-app-engine-backend-tutorial/
+[Google Cloud Messaging]: http://www.appsrox.com/android/tutorials/instachat/

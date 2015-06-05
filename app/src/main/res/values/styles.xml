@@ -1,0 +1,15 @@
+<resources>
+
+    <style name="ThreemojiTheme" parent="ThreemojiTheme.Base">
+
+    </style>
+
+    <!-- Base application theme. -->
+    <style name="ThreemojiTheme.Base" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+        <item name="colorPrimary">@color/threemoji_green</item>
+        <item name="colorPrimaryDark">@color/threemoji_dark_green</item>
+    </style>
+
+</resources>

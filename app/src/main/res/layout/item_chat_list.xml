@@ -5,8 +5,8 @@
     android:gravity="center_vertical"
     android:paddingLeft="16dp"
     android:paddingRight="16dp"
-    android:paddingBottom="8dp"
-    android:paddingTop="8dp">
+    android:paddingBottom="12dp"
+    android:paddingTop="12dp">
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/emoji1"
@@ -27,10 +27,27 @@
         android:src="@mipmap/ic_launcher"
         android:layout_marginRight="16dp" />
 
-    <TextView
-        android:id="@+id/partner_name"
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="?attr/textAppearanceListItem"/>
+        android:layout_height="match_parent"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Medium Text"
+            android:id="@+id/partnerName"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Small Text"
+            android:id="@+id/lastActivity"
+            android:textSize="12sp" />
+
+    </LinearLayout>
 
 </LinearLayout>

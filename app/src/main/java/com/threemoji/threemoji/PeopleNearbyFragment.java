@@ -61,7 +61,7 @@ public class PeopleNearbyFragment extends Fragment {
                 mImageView1 = (ImageView) view.findViewById(R.id.emoji1);
                 mImageView2 = (ImageView) view.findViewById(R.id.emoji2);
                 mImageView3 = (ImageView) view.findViewById(R.id.emoji3);
-                mTextView = (TextView) view.findViewById(R.id.partner_name);
+                mTextView = (TextView) view.findViewById(R.id.partnerName);
             }
 
             @Override

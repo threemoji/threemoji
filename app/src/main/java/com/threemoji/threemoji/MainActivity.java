@@ -1,5 +1,6 @@
 package com.threemoji.threemoji;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
@@ -41,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
             Log.e("MainActivity", e.getMessage());
         }
 
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.main_drawer_layout);
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         if (navigationView != null) {
@@ -91,6 +92,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void selectDrawerItem(MenuItem menuItem) {
         switch(menuItem.getItemId()) {
+            case R.id.nav_settings:
+                Intent settingsIntent = new Intent(this, SettingsActivity.class);
+                startActivity(settingsIntent);
+                break;
 
             case R.id.nav_people_nearby:
                 viewPager.setCurrentItem(1);

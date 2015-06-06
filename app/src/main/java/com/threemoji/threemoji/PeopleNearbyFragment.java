@@ -83,7 +83,7 @@ public class PeopleNearbyFragment extends Fragment {
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.chat_list_item, parent, false);
+                    .inflate(R.layout.item_chat_list, parent, false);
             view.setBackgroundResource(mBackground);
             return new ViewHolder(view);
         }

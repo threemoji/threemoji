@@ -8,7 +8,7 @@
     <style name="ThreemojiTheme.Base" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/threemoji_green</item>
         <item name="colorPrimaryDark">@color/threemoji_dark_green</item>
-        <item name="colorAccent">@color/white</item>
+        <item name="colorAccent">@color/threemoji_700_green</item>
     </style>
 
 </resources>

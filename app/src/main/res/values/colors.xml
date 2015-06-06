@@ -3,6 +3,7 @@
     <color name="threemoji_green"> #8bc34a</color>
     <color name="threemoji_light_green">#9ccc65</color>
     <color name="threemoji_dark_green">#7cb342</color>
+    <color name="threemoji_700_green">#689f38</color>
 
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>

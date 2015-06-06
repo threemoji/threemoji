@@ -15,10 +15,14 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
+import android.support.annotation.LayoutRes;
+import android.support.annotation.Nullable;
+import android.support.v4.app.NavUtils;
+import android.support.v7.app.AppCompatDelegate;
+import android.support.v7.widget.Toolbar;
+import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
 import android.view.MenuItem;
-import android.support.v4.app.NavUtils;
-
 
 import java.util.List;
 
@@ -33,7 +37,7 @@ import java.util.List;
  * href="http://developer.android.com/guide/topics/ui/settings.html">Settings
  * API Guide</a> for more information on developing a Settings UI.
  */
-public class SettingsActivity extends PreferenceActivity {
+public class SettingsActivity extends PreferenceActivity implements Preference.OnPreferenceChangeListener{
     /**
      * Determines whether to always show the simplified settings UI, where
      * settings are presented in a single list. When false, settings are shown
@@ -41,22 +45,33 @@ public class SettingsActivity extends PreferenceActivity {
      * shown on tablets.
      */
     private static final boolean ALWAYS_SIMPLE_PREFS = false;
+    private AppCompatDelegate mDelegate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        getDelegate().installViewFactory();
+        getDelegate().onCreate(savedInstanceState);
         super.onCreate(savedInstanceState);
-        setupActionBar();
+        setContentView(R.layout.activity_settings);
+        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
+        getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME |
+                ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_SHOW_TITLE);
+        addPreferencesFromResource(R.xml.pref_general);
     }
 
-    /**
-     * Set up the {@link android.app.ActionBar}, if the API is available.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    private void setupActionBar() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            // Show the Up button in the action bar.
-            getActionBar().setDisplayHomeAsUpEnabled(true);
+    private ActionBar getSupportActionBar() {
+        return getDelegate().getSupportActionBar();
+    }
+
+    private void setSupportActionBar(@Nullable Toolbar toolbar) {
+        getDelegate().setSupportActionBar(toolbar);
+    }
+
+    private AppCompatDelegate getDelegate() {
+        if (mDelegate == null) {
+            mDelegate = AppCompatDelegate.create(this, null);
         }
+        return mDelegate;
     }
 
     @Override
@@ -81,7 +96,7 @@ public class SettingsActivity extends PreferenceActivity {
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-
+        getDelegate().onPostCreate(savedInstanceState);
         setupSimplePreferencesScreen();
     }
 
@@ -232,6 +247,11 @@ public class SettingsActivity extends PreferenceActivity {
                         .getString(preference.getKey(), ""));
     }
 
+    @Override
+    public boolean onPreferenceChange(Preference preference, Object newValue) {
+        return false;
+    }
+
     /**
      * This fragment shows general preferences only. It is used when the
      * activity is showing a two-pane settings UI.
@@ -288,5 +308,28 @@ public class SettingsActivity extends PreferenceActivity {
             // guidelines.
             bindPreferenceSummaryToValue(findPreference("sync_frequency"));
         }
+    }
+
+    @Override
+    public void setContentView(@LayoutRes int layoutResID) {
+        getDelegate().setContentView(layoutResID);
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        getDelegate().onPostResume();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        getDelegate().onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        getDelegate().onDestroy();
     }
 }

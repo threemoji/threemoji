@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_chats"
+            android:icon="@mipmap/ic_launcher"
+            android:title="Chats" />
+        <item
+            android:id="@+id/nav_people_nearby"
+            android:icon="@mipmap/ic_launcher"
+            android:title="People nearby" />
+
+        <item android:title="Others">
+            <menu>
+                <item
+                    android:icon="@mipmap/ic_launcher"
+                    android:title="Archived chats" />
+                <item
+                    android:icon="@mipmap/ic_launcher"
+                    android:title="Settings" />
+                <item
+                    android:icon="@mipmap/ic_launcher"
+                    android:title="About" />
+            </menu>
+        </item>
+    </group>
+</menu>

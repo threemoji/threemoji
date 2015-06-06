@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingBottom="8dp"
+    android:paddingTop="8dp">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/emoji1"
+        android:layout_width="@dimen/list_item_avatar_size"
+        android:layout_height="@dimen/list_item_avatar_size"
+        android:src="@mipmap/ic_launcher"/>
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/emoji2"
+        android:layout_width="@dimen/list_item_avatar_size"
+        android:layout_height="@dimen/list_item_avatar_size"
+        android:src="@mipmap/ic_launcher"/>
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/emoji3"
+        android:layout_width="@dimen/list_item_avatar_size"
+        android:layout_height="@dimen/list_item_avatar_size"
+        android:src="@mipmap/ic_launcher"
+        android:layout_marginRight="16dp" />
+
+    <TextView
+        android:id="@+id/partner_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?attr/textAppearanceListItem"/>
+
+</LinearLayout>

@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- navigation drawer item labels  -->
-    <string-array name="nav_drawer_labels">
-        <item>@string/nav_item_chats</item>
-        <item>@string/nav_item_people</item>
-        <item>@string/nav_item_archived_chats</item>
-    </string-array>
+
 </resources>

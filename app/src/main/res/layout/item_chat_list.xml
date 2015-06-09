@@ -5,41 +5,49 @@
     android:gravity="center_vertical"
     android:paddingLeft="16dp"
     android:paddingRight="16dp"
-    android:paddingBottom="12dp"
-    android:paddingTop="12dp">
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp">
 
-    <de.hdodenhof.circleimageview.CircleImageView
+    <ImageView
         android:id="@+id/emoji1"
         android:layout_width="@dimen/list_item_avatar_size"
         android:layout_height="@dimen/list_item_avatar_size"
-        android:src="@mipmap/ic_launcher"/>
+        android:src="@mipmap/ic_launcher"
+        android:paddingEnd="6dp"
+        android:paddingStart="6dp" />
 
-    <de.hdodenhof.circleimageview.CircleImageView
+    <ImageView
         android:id="@+id/emoji2"
         android:layout_width="@dimen/list_item_avatar_size"
         android:layout_height="@dimen/list_item_avatar_size"
-        android:src="@mipmap/ic_launcher"/>
+        android:src="@mipmap/ic_launcher"
+        android:paddingEnd="6dp"
+        android:paddingStart="6dp" />
 
-    <de.hdodenhof.circleimageview.CircleImageView
+    <ImageView
         android:id="@+id/emoji3"
         android:layout_width="@dimen/list_item_avatar_size"
         android:layout_height="@dimen/list_item_avatar_size"
         android:src="@mipmap/ic_launcher"
-        android:layout_marginRight="16dp" />
+        android:paddingEnd="6dp"
+        android:paddingStart="6dp" />
 
     <LinearLayout
         android:orientation="vertical"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:layout_marginLeft="8dp"
+        android:layout_weight="1">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Medium Text"
+            android:text="Violetred Zebrafish"
             android:id="@+id/partnerName"
             android:textSize="14sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:maxLines="1" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -49,5 +57,18 @@
             android:textSize="12sp" />
 
     </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="99+"
+        android:id="@+id/textView"
+        android:gravity="center|right"
+        android:background="@drawable/rounded_corners"
+        android:padding="4dp"
+        android:layout_marginLeft="4dp"
+        android:textColor="@color/white" />
+
 
 </LinearLayout>

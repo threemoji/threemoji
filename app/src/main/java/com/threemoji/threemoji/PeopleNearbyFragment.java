@@ -19,7 +19,8 @@ import java.util.List;
 public class PeopleNearbyFragment extends Fragment {
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
         RecyclerView rv = (RecyclerView) inflater.inflate(
                 R.layout.fragment_chat_list, container, false);
         setupRecyclerView(rv);
@@ -27,15 +28,16 @@ public class PeopleNearbyFragment extends Fragment {
     }
 
     private void setupRecyclerView(RecyclerView recyclerView) {
-        String[] chatPartners = {"Flying Pig", "Jumping Spider", "Hopping Elephant",
-                "Flying Pig", "Jumping Spider", "Hopping Elephant",
-                "Flying Pig", "Jumping Spider", "Hopping Elephant",
-                "Flying Pig", "Jumping Spider", "Hopping Elephant",
-                "Flying Pig", "Jumping Spider", "Hopping Elephant",
-                "Flying Pig", "Jumping Spider", "Hopping Elephant"};
+        String[] chatPartners = {"Violetred Zebrafish", "Jumping Spider", "Hopping Elephant",
+                                 "Flying Pig", "Jumping Spider", "Hopping Elephant",
+                                 "Flying Pig", "Jumping Spider", "Hopping Elephant",
+                                 "Flying Pig", "Jumping Spider", "Hopping Elephant",
+                                 "Flying Pig", "Jumping Spider", "Hopping Elephant",
+                                 "Flying Pig", "Jumping Spider", "Hopping Elephant"};
 
         recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
-        recyclerView.setAdapter(new RecyclerViewAdapter(getActivity(), Arrays.asList(chatPartners)));
+        recyclerView.setAdapter(
+                new RecyclerViewAdapter(getActivity(), Arrays.asList(chatPartners)));
     }
 
 
@@ -83,7 +85,7 @@ public class PeopleNearbyFragment extends Fragment {
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_chat_list, parent, false);
+                                      .inflate(R.layout.item_chat_list, parent, false);
             view.setBackgroundResource(mBackground);
             return new ViewHolder(view);
         }
@@ -93,7 +95,7 @@ public class PeopleNearbyFragment extends Fragment {
             holder.mBoundString = mValues.get(position);
             holder.mTextView.setText(mValues.get(position));
 
-//            holder.mView.setOnClickListener(new View.OnClickListener() {
+//            holder.view.setOnClickListener(new View.OnClickListener() {
 //                @Override
 //                public void onClick(View v) {
 //                    Context context = v.getContext();

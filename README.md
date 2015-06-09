@@ -11,9 +11,9 @@ We are aiming for Apollo 11. [Ignition presentation][ignition-presentation]
 # Planned Features
 <br>
 <img src="images/prototype/main-screen.gif" width="50%" align="left">
-Threemoji displays your chats sorted by their last active time. 
+Threemoji displays your chats sorted by their last active time.
 
-You will be automatically matched and a chat will be initiated for you. 
+You will be automatically matched and a chat will be initiated for you.
 
 >We are still in the process of defining the meaning of match. Currently, our plan is to categorise the various emoji, where emoji of the same category will be highly similar. Each emoji will have several categories and emoji that share a higher number of similar categories will have a higher level of similarity.
 
@@ -51,31 +51,45 @@ We've come up with some user stories sorted by level of priority: [User Stories]
 * [Proto] - Prototyping web application for making the prototypes above
 * [LICEcap] - For recording gifs
 * [Emoji One] - Open source emoji
-* [Material Design] - Design guidelines for Android applications
+* [Gfycat wordlist] - Words used by Gfycat to generate their URLs
+
 * [Sublime Text 3] - For code editing
 * [MarkdownEditing] - Package for Sublime Text for nicer markdown formatting
 * [Markdown Preview] - Package for Sublime Text to preview formatted markdown documents locally
 * [Markdown Cheatsheet] - For markdown syntax help
+
 * [App Engine Backend] - How to build a mobile app with an App Engine backend
 * [Google Cloud Messaging] - How to create an Instant Messaging app using GCM
 
+* [Material Design] - Design guidelines for Android applications
+* [Android guides] - Useful guides for Android development
+* [Demo app] - Uses the latest Android design library from Google I/O 2015
+* [Hex value transparency] - Translucent colors represented by hex values
 
 ---
 An Orbital 2015 project.
 
 [ignition-slide]: images/ignition/155.png "Threemoji"
 [ignition-presentation]: https://youtu.be/osQjStOAci0?t=1h59m10s
-[main-screen]: images/prototype/main-screen.gif 
+[main-screen]: images/prototype/main-screen.gif
 
 [User Stories]: User-Stories.md
 
 [Proto]: http://proto.io
 [LICEcap]: http://www.cockos.com/licecap/
 [Emoji One]: http://emojione.com/
-[Material Design]: http://www.google.com/design/spec/material-design/introduction.html
+[Gfycat wordlist]: http://www.reddit.com/r/gfycat/comments/2bkl5j/gfycat_url_generator/
+
 [Sublime Text 3]: http://www.sublimetext.com/3
 [MarkdownEditing]: https://packagecontrol.io/packages/MarkdownEditing
 [Markdown Preview]: https://packagecontrol.io/packages/Markdown%20Preview
 [Markdown Cheatsheet]: https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet
+
 [App Engine Backend]: https://cloud.google.com/developers/articles/how-to-build-mobile-app-with-app-engine-backend-tutorial/
 [Google Cloud Messaging]: http://www.appsrox.com/android/tutorials/instachat/
+
+[Material Design]: http://www.google.com/design/spec/material-design/introduction.html
+[Android guides]: http://guides.codepath.com/android
+[Demo app]: https://github.com/chrisbanes/cheesesquare
+
+[Hex value transparency]: http://stackoverflow.com/questions/15852122/hex-transparency-in-colors

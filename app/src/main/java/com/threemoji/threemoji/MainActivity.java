@@ -1,5 +1,9 @@
 package com.threemoji.threemoji;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -29,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+//        checkGooglePlayServices();
+
         // Set a Toolbar to replace the ActionBar.
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -57,6 +63,24 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        checkGooglePlayServices();
+    }
+
+    private void checkGooglePlayServices() {
+        // https://developers.google.com/android/guides/setup#ensure_devices_have_the_google_play_services_apk
+        GoogleApiAvailability googleApiAvailability = GoogleApiAvailability.getInstance();
+        int resultCode = googleApiAvailability.isGooglePlayServicesAvailable(this);
+        if (resultCode == ConnectionResult.SERVICE_MISSING ||
+            resultCode == ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED ||
+            resultCode == ConnectionResult.SERVICE_DISABLED) {
+            Dialog dialog = googleApiAvailability.getErrorDialog(this, resultCode, 1);
+            dialog.show();
+        }
     }
 
     @Override
@@ -91,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void selectDrawerItem(MenuItem menuItem) {
-        switch(menuItem.getItemId()) {
+        switch (menuItem.getItemId()) {
             case R.id.nav_settings:
                 Intent settingsIntent = new Intent(this, SettingsActivity.class);
                 startActivity(settingsIntent);

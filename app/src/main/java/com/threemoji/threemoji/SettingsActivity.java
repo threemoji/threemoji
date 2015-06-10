@@ -16,11 +16,10 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 import android.support.annotation.LayoutRes;
-import android.support.annotation.Nullable;
 import android.support.v4.app.NavUtils;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
-import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
 import android.view.MenuItem;
 
@@ -49,20 +48,30 @@ public class SettingsActivity extends PreferenceActivity implements Preference.O
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        getDelegate().installViewFactory();
-        getDelegate().onCreate(savedInstanceState);
+        initAppCompatDelegate(savedInstanceState);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+
+        initActionBar();
+    }
+
+    private void initActionBar() {
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
         getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME |
                 ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_SHOW_TITLE);
+    }
+
+    private void initAppCompatDelegate(Bundle savedInstanceState) {
+        getDelegate().installViewFactory();
+        getDelegate().onCreate(savedInstanceState);
     }
 
     private ActionBar getSupportActionBar() {
         return getDelegate().getSupportActionBar();
     }
 
-    private void setSupportActionBar(@Nullable Toolbar toolbar) {
+    private void setSupportActionBar(Toolbar toolbar) {
         getDelegate().setSupportActionBar(toolbar);
     }
 

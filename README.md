@@ -52,6 +52,8 @@ We've come up with some user stories sorted by level of priority: [User Stories]
 * [LICEcap] - For recording gifs
 * [Emoji One] - Open source emoji
 * [Gfycat wordlist] - Words used by Gfycat to generate their URLs
+* [SVG Explorer Extension] - View SVG in windows explorer
+* [AndroidSVG] - SVG rendering library for Android
 
 * [Sublime Text 3] - For code editing
 * [MarkdownEditing] - Package for Sublime Text for nicer markdown formatting
@@ -79,6 +81,8 @@ An Orbital 2015 project.
 [LICEcap]: http://www.cockos.com/licecap/
 [Emoji One]: http://emojione.com/
 [Gfycat wordlist]: http://www.reddit.com/r/gfycat/comments/2bkl5j/gfycat_url_generator/
+[SVG Explorer Extension]: https://svgextension.codeplex.com/
+[AndroidSVG]: https://code.google.com/p/androidsvg/
 
 [Sublime Text 3]: http://www.sublimetext.com/3
 [MarkdownEditing]: https://packagecontrol.io/packages/MarkdownEditing

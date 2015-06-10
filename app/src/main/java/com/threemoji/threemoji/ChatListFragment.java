@@ -1,7 +1,7 @@
 package com.threemoji.threemoji;
 
 import android.content.Context;
-import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -40,19 +41,30 @@ public class ChatListFragment extends Fragment {
     }
 
     private void addDummyData(ArrayList<ChatItem> chats) {
+        int emojiSize = 40;
         for (int i = 0; i < 20; i++) {
-            chats.add(new ChatItem(getRandomEmoji(), getRandomEmoji(), getRandomEmoji(),
+            chats.add(new ChatItem(getRandomEmoji(emojiSize), getRandomEmoji(emojiSize), getRandomEmoji(emojiSize),
                                    NameGenerator.getName(), getRandomTime()));
         }
     }
 
-    private int getRandomEmoji() {
+    private Drawable getRandomEmoji(int size) {
         Random rand = new Random();
-        String name = "emoji_" + (rand.nextInt(20) + 1);
-        Resources resources = getActivity().getResources();
-        int id = resources.getIdentifier(name, "drawable",
-                                         getActivity().getPackageName());
-        return id;
+        Class raw = R.raw.class;
+        Field[] fields = raw.getFields();
+        try {
+            int id = fields[rand.nextInt(fields.length)].getInt(null);
+            return SvgUtils.svgToBitmapDrawable(getActivity().getResources(), id,
+                                                size);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            return null;
+        }
+//        String name = "emoji_" + (rand.nextInt(20) + 1);
+//        Resources resources = getActivity().getResources();
+//        int id = resources.getIdentifier(name, "drawable",
+//                                         getActivity().getPackageName());
+//        return id;
     }
 
     private String getRandomTime() {
@@ -61,13 +73,13 @@ public class ChatListFragment extends Fragment {
     }
 
     public class ChatItem {
-        public int emoji1;
-        public int emoji2;
-        public int emoji3;
+        public Drawable emoji1;
+        public Drawable emoji2;
+        public Drawable emoji3;
         public String partnerName;
         public String lastActivity;
 
-        public ChatItem(int emoji1, int emoji2, int emoji3, String partnerName,
+        public ChatItem(Drawable emoji1, Drawable emoji2, Drawable emoji3, String partnerName,
                         String lastActivity) {
             this.emoji1 = emoji1;
             this.emoji2 = emoji2;
@@ -115,7 +127,7 @@ public class ChatListFragment extends Fragment {
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_chat_list, parent, false);
+                                      .inflate(R.layout.item_chat_list, parent, false);
 
             // Sets the animated background of each list item to show when item is touched.
             view.setBackgroundResource(mBackground);
@@ -126,9 +138,9 @@ public class ChatListFragment extends Fragment {
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
             ChatItem currentItem = mItems.get(position);
-            holder.emoji1.setImageResource(currentItem.emoji1);
-            holder.emoji2.setImageResource(currentItem.emoji2);
-            holder.emoji3.setImageResource(currentItem.emoji3);
+            holder.emoji1.setImageDrawable(currentItem.emoji1);
+            holder.emoji2.setImageDrawable(currentItem.emoji2);
+            holder.emoji3.setImageDrawable(currentItem.emoji3);
             holder.partnerName.setText(currentItem.partnerName);
             holder.lastActivity.setText(currentItem.lastActivity);
 

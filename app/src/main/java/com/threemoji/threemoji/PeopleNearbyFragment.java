@@ -28,7 +28,7 @@ public class PeopleNearbyFragment extends Fragment {
     }
 
     private void setupRecyclerView(RecyclerView recyclerView) {
-        String[] chatPartners = {"Violetred Zebrafish", "Jumping Spider", "Hopping Elephant",
+        String[] chatPartners = {"Violetred Zebrafish", "aaaaaaaaa aaaaaaaaa", "Hopping Elephant",
                                  "Flying Pig", "Jumping Spider", "Hopping Elephant",
                                  "Flying Pig", "Jumping Spider", "Hopping Elephant",
                                  "Flying Pig", "Jumping Spider", "Hopping Elephant",

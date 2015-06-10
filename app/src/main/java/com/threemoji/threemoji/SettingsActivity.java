@@ -56,7 +56,6 @@ public class SettingsActivity extends PreferenceActivity implements Preference.O
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
         getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME |
                 ActionBar.DISPLAY_HOME_AS_UP | ActionBar.DISPLAY_SHOW_TITLE);
-        addPreferencesFromResource(R.xml.pref_general);
     }
 
     private ActionBar getSupportActionBar() {

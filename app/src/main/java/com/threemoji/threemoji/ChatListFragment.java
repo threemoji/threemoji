@@ -1,11 +1,14 @@
 package com.threemoji.threemoji;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,7 +36,7 @@ public class ChatListFragment extends Fragment {
         addDummyData(chats);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
-        recyclerView.setAdapter(new RecyclerViewAdapter(chats));
+        recyclerView.setAdapter(new RecyclerViewAdapter(getActivity(), chats));
     }
 
     private void addDummyData(ArrayList<ChatItem> chats) {
@@ -78,6 +81,8 @@ public class ChatListFragment extends Fragment {
             extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
 
         private List<ChatItem> mItems;
+        private final TypedValue mTypedValue = new TypedValue();
+        private int mBackground;
 
         public static class ViewHolder extends RecyclerView.ViewHolder {
 
@@ -99,7 +104,11 @@ public class ChatListFragment extends Fragment {
             }
         }
 
-        public RecyclerViewAdapter(List<ChatItem> items) {
+        public RecyclerViewAdapter(Context context, List<ChatItem> items) {
+            // Initialises the animated background of the each list item.
+            context.getTheme().resolveAttribute(R.attr.selectableItemBackground, mTypedValue, true);
+            mBackground = mTypedValue.resourceId;
+
             mItems = items;
         }
 
@@ -107,6 +116,10 @@ public class ChatListFragment extends Fragment {
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.item_chat_list, parent, false);
+
+            // Sets the animated background of each list item to show when item is touched.
+            view.setBackgroundResource(mBackground);
+
             return new ViewHolder(view);
         }
 
@@ -119,16 +132,17 @@ public class ChatListFragment extends Fragment {
             holder.partnerName.setText(currentItem.partnerName);
             holder.lastActivity.setText(currentItem.lastActivity);
 
-//            holder.view.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
+            holder.view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 //                    Context context = v.getContext();
 //                    Intent intent = new Intent(context, ChatActivity.class);
 //                    intent.putExtra(ChatActivity.EXTRA_NAME, holder.mBoundString);
 //
 //                    context.startActivity(intent);
-//                }
-//            });
+                    Log.d("onBindViewHolder", holder.partnerName.getText().toString());
+                }
+            });
         }
 
         @Override

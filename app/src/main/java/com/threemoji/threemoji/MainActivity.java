@@ -3,7 +3,10 @@ package com.threemoji.threemoji;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
+import com.threemoji.threemoji.service.RegistrationIntentService;
+
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -25,6 +28,9 @@ import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = MainActivity.class.getSimpleName();
+
+    private BroadcastReceiver mRegistrationBroadcastReceiver;
     private DrawerLayout mDrawerLayout;
     private ViewPager viewPager;
 
@@ -33,11 +39,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        checkGooglePlayServices();
+        checkGooglePlayServices();
+        Intent intent = new Intent(this, RegistrationIntentService.class);
+        startService(intent);
 
         // Set a Toolbar to replace the ActionBar.
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        Log.i(TAG, "added action bar");
 
         // Set the menu icon instead of the launcher icon.
         final ActionBar ab = getSupportActionBar();
@@ -68,25 +77,34 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        checkGooglePlayServices();
+//        checkGooglePlayServices();
+//        Intent intent = new Intent(this, RegistrationIntentService.class);
+//        startService(intent);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 
     private void checkGooglePlayServices() {
         // https://developers.google.com/android/guides/setup#ensure_devices_have_the_google_play_services_apk
         GoogleApiAvailability googleApiAvailability = GoogleApiAvailability.getInstance();
         int resultCode = googleApiAvailability.isGooglePlayServicesAvailable(this);
-        if (resultCode == ConnectionResult.SERVICE_MISSING ||
-            resultCode == ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED ||
-            resultCode == ConnectionResult.SERVICE_DISABLED) {
-            Dialog dialog = googleApiAvailability.getErrorDialog(this, resultCode, 1);
-            dialog.show();
+        Log.i(TAG, "checking for Google Play Services");
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (googleApiAvailability.isUserResolvableError(resultCode)) {
+                Dialog dialog = googleApiAvailability.getErrorDialog(this, resultCode, 1);
+                dialog.show();
+            } else {
+                Log.i(TAG, "This device is not supported");
+            }
         }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // The action bar home/up action should open or close the drawer.
-
         switch (item.getItemId()) {
             case android.R.id.home:
                 mDrawerLayout.openDrawer(GravityCompat.START);

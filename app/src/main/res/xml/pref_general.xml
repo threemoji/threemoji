@@ -1,39 +1,33 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <CheckBoxPreference
-        android:key="example_checkbox"
-        android:title="@string/pref_title_social_recommendations"
-        android:summary="@string/pref_description_social_recommendations"
-        android:defaultValue="true" />
-
     <EditTextPreference
-        android:key="gcmToken"
-        android:title="@string/pref_token"
         android:defaultValue=""
-        android:selectAllOnFocus="true" />
-
-    <!-- NOTE: EditTextPreference accepts EditText attributes. -->
-    <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->
-    <EditTextPreference
-        android:key="example_text"
-        android:title="@string/pref_title_display_name"
-        android:defaultValue="@string/pref_default_display_name"
+        android:key="@string/pref_token_key"
         android:selectAllOnFocus="true"
-        android:inputType="textCapWords"
-        android:capitalize="words"
-        android:singleLine="true"
-        android:maxLines="1" />
+        android:title="@string/pref_token_label" />
 
-    <!-- NOTE: Hide buttons to simplify the UI. Users can touch outside the dialog to
-         dismiss it. -->
-    <!-- NOTE: ListPreference's summary should be set to its value by the activity code. -->
     <ListPreference
-        android:key="example_list"
-        android:title="@string/pref_title_add_friends_to_messages"
-        android:defaultValue="-1"
-        android:entries="@array/pref_example_list_titles"
-        android:entryValues="@array/pref_example_list_values"
-        android:negativeButtonText="@null"
-        android:positiveButtonText="@null" />
+        android:defaultValue="@string/pref_filter_gender_default"
+        android:entries="@array/pref_filter_gender_values"
+        android:entryValues="@array/pref_filter_gender_values"
+        android:key="@string/pref_filter_gender_key"
+        android:title="@string/pref_filter_gender_label" />
+
+    <EditTextPreference
+        android:defaultValue="@string/pref_max_distance_default"
+        android:key="@string/pref_max_distance_key"
+        android:title="@string/pref_max_distance_label" />
+
+    <EditTextPreference
+        android:defaultValue="@string/pref_chat_archive_duration_default"
+        android:key="@string/pref_chat_archive_duration_key"
+        android:title="@string/pref_chat_archive_duration_label" />
+
+    <ListPreference
+        android:defaultValue="@string/pref_chat_notifications_default"
+        android:key="@string/pref_chat_notifications_key"
+        android:title="@string/pref_chat_notifications_label"
+        android:entries="@array/pref_chat_notifications_values"
+        android:entryValues="@array/pref_chat_notifications_values"/>
 
 </PreferenceScreen>

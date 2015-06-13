@@ -9,4 +9,35 @@
     <string name="nav_item_people">People nearby</string>
     <string name="nav_item_archived_chats">Archived chats</string>
 
+    <!-- Strings related to Settings -->
+    <string name="title_activity_settings">Settings</string>
+
+    <string name="pref_token_label">Token</string>
+    <string name="pref_token_key">gcmToken</string>
+
+    <string name="pref_filter_gender_label">Filter by gender</string>
+    <string name="pref_filter_gender_key">filterGender</string>
+    <string name="pref_filter_gender_default">All</string>
+    <string-array name="pref_filter_gender_values">
+        <item>All</item>
+        <item>Female</item>
+        <item>Male</item>
+    </string-array>
+
+    <string name="pref_max_distance_label">Distance radius</string>
+    <string name="pref_max_distance_key">maxRadius</string>
+    <string name="pref_max_distance_default">10km</string>
+
+    <string name="pref_chat_archive_duration_label">Chat archive duration (days)</string>
+    <string name="pref_chat_archive_duration_key">archiveDuration</string>
+    <string name="pref_chat_archive_duration_default">30</string>
+
+    <string name="pref_chat_notifications_label">Chat notifications</string>
+    <string name="pref_chat_notifications_key">notifications</string>
+    <string name="pref_chat_notifications_default">Yes</string>
+    <string-array name="pref_chat_notifications_values">
+        <item>Yes</item>
+        <item>No</item>
+    </string-array>
+
 </resources>

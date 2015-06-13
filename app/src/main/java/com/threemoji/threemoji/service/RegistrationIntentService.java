@@ -78,7 +78,7 @@ public class RegistrationIntentService extends IntentService {
     private void storeToken(String token) {
         Log.i(TAG, "Saving token to prefs: " + token);
         SharedPreferences.Editor editor = getPrefs().edit();
-        editor.putString("gcmToken", token).apply();
+        editor.putString(getString(R.string.pref_token_key), token).apply();
     }
 
     private int getNextMsgId() {

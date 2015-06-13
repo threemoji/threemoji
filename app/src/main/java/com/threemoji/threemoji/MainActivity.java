@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean hasToken() {
-        String token = getPrefs().getString("gcmToken", "");
+        String token = getPrefs().getString(getString(R.string.pref_token_key), "");
         if (token.length() == 0) {
             Log.v(TAG, "Registration not found.");
             return false;

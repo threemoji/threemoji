@@ -42,7 +42,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         if (hasGooglePlayServices()) {
-            if (!hasToken() || hasVersionChanged()) {
+            // hasVersionChanged is always checked first to ensure shared preferences is updated
+            if (hasVersionChanged() || !hasToken()) {
                 Intent intent = new Intent(this, RegistrationIntentService.class);
                 startService(intent);
             }
@@ -113,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
             Log.v(TAG, "Registration not found.");
             return false;
         }
+        Log.v(TAG, "Current token " + token);
         return true;
     }
 
@@ -120,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
         int registeredVersion = getPrefs().getInt("appVersion", Integer.MIN_VALUE);
         int currentVersion = BuildConfig.VERSION_CODE;
         if (registeredVersion != currentVersion ) {
-            Log.v(TAG, "App version changed");
+            Log.v(TAG, "App version changed " + registeredVersion + " vs " + currentVersion);
             updateVersionInPrefs(currentVersion);
             return true;
         }

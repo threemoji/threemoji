@@ -24,20 +24,29 @@
         <item>Male</item>
     </string-array>
 
-    <string name="pref_max_distance_label">Distance radius</string>
+    <string name="pref_max_distance_label">Distance radius (km)</string>
     <string name="pref_max_distance_key">maxRadius</string>
-    <string name="pref_max_distance_default">10km</string>
+    <string name="pref_max_distance_default">10</string>
+    <string name="pref_max_distance_max">100</string>
+    <string name="pref_max_distance_min">1</string>
 
-    <string name="pref_chat_archive_duration_label">Chat archive duration (days)</string>
+    <string name="pref_chat_archive_duration_label">Chat archive duration</string>
     <string name="pref_chat_archive_duration_key">archiveDuration</string>
-    <string name="pref_chat_archive_duration_default">30</string>
+    <string name="pref_chat_archive_duration_default">1 month</string>
+    <string-array name="pref_chat_archive_duration_choices">
+        <item>2 weeks</item>
+        <item>1 month</item>
+        <item>3 months</item>
+    </string-array>
+    <string-array name="pref_chat_archive_duration_values">
+        <item>14</item>
+        <item>30</item>
+        <item>90</item>
+    </string-array>
 
     <string name="pref_chat_notifications_label">Chat notifications</string>
-    <string name="pref_chat_notifications_key">notifications</string>
-    <string name="pref_chat_notifications_default">Yes</string>
-    <string-array name="pref_chat_notifications_values">
-        <item>Yes</item>
-        <item>No</item>
-    </string-array>
+    <string name="pref_chat_notifications_key">notificationsEnabled</string>
+    <string name="pref_chat_notifications_default">true</string>
+    <string name="pref_chat_notifications_summary">Includes notifications for new matches and new messages</string>
 
 </resources>

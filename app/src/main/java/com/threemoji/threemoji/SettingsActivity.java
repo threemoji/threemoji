@@ -108,11 +108,8 @@ public class SettingsActivity extends PreferenceActivity implements Preference.O
         // to reflect the new value, per the Android Design guidelines.
         bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_token_key)));
         bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_filter_gender_key)));
-        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_max_distance_key)));
         bindPreferenceSummaryToValue(
                 findPreference(getString(R.string.pref_chat_archive_duration_key)));
-        bindPreferenceSummaryToValue(
-                findPreference(getString(R.string.pref_chat_notifications_key)));
     }
 
     /**
@@ -144,6 +141,8 @@ public class SettingsActivity extends PreferenceActivity implements Preference.O
             if (prefIndex >= 0) {
                 preference.setSummary(listPreference.getEntries()[prefIndex]);
             }
+        } else if (preference instanceof DistancePreference) {
+            return true;
         } else {
             // For other preferences, set the summary to the value's simple string representation.
             preference.setSummary(stringValue);

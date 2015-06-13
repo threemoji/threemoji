@@ -54,8 +54,8 @@ public class RegistrationIntentService extends IntentService {
         InstanceID instanceID = InstanceID.getInstance(this);
         instanceID.deleteToken(getString(R.string.gcm_project_id),
                                GoogleCloudMessaging.INSTANCE_ID_SCOPE);
-        instanceID.deleteToken(getString(R.string.gcm_defaultSenderId),
-                               GoogleCloudMessaging.INSTANCE_ID_SCOPE);
+//        instanceID.deleteToken(getString(R.string.gcm_defaultSenderId),
+//                               GoogleCloudMessaging.INSTANCE_ID_SCOPE);
 //        instanceID.deleteInstanceID(); // to delete all tokens on GCM
 
     }

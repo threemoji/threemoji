@@ -1,4 +1,5 @@
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <EditTextPreference
         android:defaultValue=""
@@ -13,21 +14,20 @@
         android:key="@string/pref_filter_gender_key"
         android:title="@string/pref_filter_gender_label" />
 
-    <EditTextPreference
-        android:defaultValue="@string/pref_max_distance_default"
-        android:key="@string/pref_max_distance_key"
-        android:title="@string/pref_max_distance_label" />
+    <com.threemoji.threemoji.DistancePreference android:title="@string/pref_max_distance_label" />
 
-    <EditTextPreference
+    <ListPreference
         android:defaultValue="@string/pref_chat_archive_duration_default"
+        android:entries="@array/pref_chat_archive_duration_choices"
+        android:entryValues="@array/pref_chat_archive_duration_values"
         android:key="@string/pref_chat_archive_duration_key"
         android:title="@string/pref_chat_archive_duration_label" />
 
-    <ListPreference
+    <SwitchPreference
         android:defaultValue="@string/pref_chat_notifications_default"
         android:key="@string/pref_chat_notifications_key"
-        android:title="@string/pref_chat_notifications_label"
-        android:entries="@array/pref_chat_notifications_values"
-        android:entryValues="@array/pref_chat_notifications_values"/>
+        android:summary="@string/pref_chat_notifications_summary"
+        android:title="@string/pref_chat_notifications_label" />
+
 
 </PreferenceScreen>

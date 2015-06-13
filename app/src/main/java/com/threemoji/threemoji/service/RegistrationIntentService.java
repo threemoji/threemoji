@@ -27,14 +27,14 @@ public class RegistrationIntentService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         Log.v(TAG, "intent string: " + intent.toString());
         try {
-            // In the (unlikely) event that multiple refresh operations occur simultaneously,
-            // ensure that they are processed sequentially.
-            synchronized (TAG) {
+//            // In the (unlikely) event that multiple refresh operations occur simultaneously,
+//            // ensure that they are processed sequentially.
+//            synchronized (TAG) {
                 unregisterFromServer();
                 String token = getGcmToken();
                 sendTokenToServer(token);
                 storeToken(token);
-            }
+//            }
         } catch (Exception e) {
             Log.d(TAG, "Failed to complete token refresh", e);
         } finally {
@@ -45,8 +45,7 @@ public class RegistrationIntentService extends IntentService {
     private String getGcmToken() throws IOException {
         InstanceID instanceID = InstanceID.getInstance(this);
         String token = instanceID.getToken(getString(R.string.gcm_project_id),
-                                           GoogleCloudMessaging.INSTANCE_ID_SCOPE,
-                                           null);
+                                           GoogleCloudMessaging.INSTANCE_ID_SCOPE);
         Log.i(TAG, "GCM Registration Token: " + token);
         return token;
     }
@@ -55,13 +54,17 @@ public class RegistrationIntentService extends IntentService {
         InstanceID instanceID = InstanceID.getInstance(this);
         instanceID.deleteToken(getString(R.string.gcm_project_id),
                                GoogleCloudMessaging.INSTANCE_ID_SCOPE);
+        instanceID.deleteToken(getString(R.string.gcm_defaultSenderId),
+                               GoogleCloudMessaging.INSTANCE_ID_SCOPE);
+//        instanceID.deleteInstanceID(); // to delete all tokens on GCM
+
     }
 
     private void sendTokenToServer(String token) {
         GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
         try {
             Bundle data = new Bundle();
-            data.putString("payload", "test payload");
+            data.putString("payload", token);
             String msgId = Integer.toString(getNextMsgId());
             gcm.send(getString(R.string.gcm_project_id) + "@gcm.googleapis.com", msgId,
                      timeToLive, data);
@@ -82,6 +85,7 @@ public class RegistrationIntentService extends IntentService {
         int id = getPrefs().getInt("keyMsgId", 0);
         SharedPreferences.Editor editor = getPrefs().edit();
         editor.putInt("keyMsgId", ++id).apply();
+        Log.i(TAG, "message id " + id);
         return id;
     }
 

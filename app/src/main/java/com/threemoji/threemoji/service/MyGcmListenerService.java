@@ -15,6 +15,8 @@ import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import java.util.Random;
+
 public class MyGcmListenerService extends GcmListenerService {
     private static final String TAG = MyGcmListenerService.class.getSimpleName();
 
@@ -87,6 +89,7 @@ public class MyGcmListenerService extends GcmListenerService {
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+        Random rand = new Random();
+        notificationManager.notify(rand.nextInt() /* ID of notification */, notificationBuilder.build());
     }
 }

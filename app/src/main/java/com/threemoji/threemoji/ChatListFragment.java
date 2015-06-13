@@ -53,9 +53,13 @@ public class ChatListFragment extends Fragment {
         Class raw = R.raw.class;
         Field[] fields = raw.getFields();
         try {
-            int id = fields[rand.nextInt(fields.length)].getInt(null);
-            return SvgUtils.svgToBitmapDrawable(getActivity().getResources(), id,
-                                                size);
+            Field field = fields[rand.nextInt(fields.length)];
+            if (field.toString().contains("R$raw.emoji_")) {
+                int id = field.getInt(null);
+                return SvgUtils.svgToBitmapDrawable(getActivity().getResources(), id,
+                                                    size);
+            }
+            return null;
         } catch (IllegalAccessException e) {
             e.printStackTrace();
             return null;

@@ -8,7 +8,9 @@ import com.threemoji.threemoji.service.RegistrationIntentService;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -39,9 +41,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        checkGooglePlayServices();
-        Intent intent = new Intent(this, RegistrationIntentService.class);
-        startService(intent);
+        if (hasGooglePlayServices()) {
+            if (!hasToken() || hasVersionChanged()) {
+                Intent intent = new Intent(this, RegistrationIntentService.class);
+                startService(intent);
+            }
+        }
 
         // Set a Toolbar to replace the ActionBar.
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -77,9 +82,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-//        checkGooglePlayServices();
-//        Intent intent = new Intent(this, RegistrationIntentService.class);
-//        startService(intent);
     }
 
     @Override
@@ -87,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
     }
 
-    private void checkGooglePlayServices() {
+    private boolean hasGooglePlayServices() {
         // https://developers.google.com/android/guides/setup#ensure_devices_have_the_google_play_services_apk
         GoogleApiAvailability googleApiAvailability = GoogleApiAvailability.getInstance();
         int resultCode = googleApiAvailability.isGooglePlayServicesAvailable(this);
@@ -98,8 +100,39 @@ public class MainActivity extends AppCompatActivity {
                 dialog.show();
             } else {
                 Log.i(TAG, "This device is not supported");
+                finish();
             }
+            return false;
         }
+        return true;
+    }
+
+    private boolean hasToken() {
+        String token = getPrefs().getString("gcmToken", "");
+        if (token.length() == 0) {
+            Log.v(TAG, "Registration not found.");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean hasVersionChanged() {
+        int registeredVersion = getPrefs().getInt("appVersion", Integer.MIN_VALUE);
+        int currentVersion = BuildConfig.VERSION_CODE;
+        if (registeredVersion != currentVersion ) {
+            Log.v(TAG, "App version changed");
+            updateVersionInPrefs(currentVersion);
+            return true;
+        }
+        return false;
+    }
+
+    private void updateVersionInPrefs(int currentVersion) {
+        getPrefs().edit().putInt("appVersion", currentVersion).apply();
+    }
+
+    private SharedPreferences getPrefs() {
+        return PreferenceManager.getDefaultSharedPreferences(this);
     }
 
     @Override

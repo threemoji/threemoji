@@ -6,9 +6,9 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.threemoji.threemoji.service.RegistrationIntentService;
 
 import android.app.Dialog;
-import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
@@ -24,15 +24,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.ImageView;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private BroadcastReceiver mRegistrationBroadcastReceiver;
     private DrawerLayout mDrawerLayout;
     private ViewPager viewPager;
 
@@ -70,6 +72,8 @@ public class MainActivity extends AppCompatActivity {
             setupDrawerContent(navigationView);
         }
 
+        initProfileEmoji();
+
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         if (viewPager != null) {
             setupViewPager(viewPager);
@@ -78,6 +82,34 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
+    }
+
+    private void initProfileEmoji() {
+        int size = 64;
+        ImageView userEmoji1 = (ImageView) findViewById(R.id.user_emoji1);
+        ImageView userEmoji2 = (ImageView) findViewById(R.id.user_emoji2);
+        ImageView userEmoji3 = (ImageView) findViewById(R.id.user_emoji3);
+        userEmoji1.setImageDrawable(getRandomEmoji(size));
+        userEmoji2.setImageDrawable(getRandomEmoji(size));
+        userEmoji3.setImageDrawable(getRandomEmoji(size));
+    }
+
+    private Drawable getRandomEmoji(int size) {
+        Random rand = new Random();
+        Class raw = R.raw.class;
+        Field[] fields = raw.getFields();
+        try {
+            Field field = fields[rand.nextInt(fields.length)];
+            if (field.toString().contains("R$raw.emoji_")) {
+                int id = field.getInt(null);
+                return SvgUtils.svgToBitmapDrawable(this.getResources(), id,
+                                                    size);
+            }
+            return null;
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
@@ -121,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean hasVersionChanged() {
         int registeredVersion = getPrefs().getInt("appVersion", Integer.MIN_VALUE);
         int currentVersion = BuildConfig.VERSION_CODE;
-        if (registeredVersion != currentVersion ) {
+        if (registeredVersion != currentVersion) {
             Log.v(TAG, "App version changed " + registeredVersion + " vs " + currentVersion);
             updateVersionInPrefs(currentVersion);
             return true;

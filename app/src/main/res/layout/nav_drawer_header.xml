@@ -3,34 +3,43 @@
     android:layout_width="match_parent"
     android:layout_height="192dp"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@color/threemoji_light_green"
+    android:background="@color/threemoji_orange"
     android:theme="@style/ThemeOverlay.AppCompat.Dark"
-    android:gravity="bottom">
+    android:gravity="bottom"
+    android:paddingTop="32dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingBottom="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:gravity="center_vertical|center_horizontal">
+        android:gravity="center_vertical|center_horizontal"
+        android:layout_weight="1">
 
         <ImageView
             android:id="@+id/user_emoji1"
             android:layout_width="@dimen/user_profile_emoji_size"
             android:layout_height="@dimen/user_profile_emoji_size"
-            android:src="@mipmap/ic_launcher" />
+            android:src="@mipmap/ic_launcher"
+            android:layout_marginRight="8dp"
+            android:layout_marginLeft="8dp" />
 
         <ImageView
             android:id="@+id/user_emoji2"
             android:layout_width="@dimen/user_profile_emoji_size"
             android:layout_height="@dimen/user_profile_emoji_size"
-            android:src="@mipmap/ic_launcher" />
+            android:src="@mipmap/ic_launcher"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp" />
 
         <ImageView
             android:id="@+id/user_emoji3"
             android:layout_width="@dimen/user_profile_emoji_size"
             android:layout_height="@dimen/user_profile_emoji_size"
-            android:src="@mipmap/ic_launcher" />
+            android:src="@mipmap/ic_launcher"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp" />
 
     </LinearLayout>
     <TextView

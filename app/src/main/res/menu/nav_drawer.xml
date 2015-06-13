@@ -3,26 +3,21 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_chats"
-            android:icon="@mipmap/ic_launcher"
-            android:title="Chats" />
+            android:icon="@drawable/ic_chat_black_24dp"
+            android:title="@string/nav_item_chats" />
         <item
             android:id="@+id/nav_people_nearby"
-            android:icon="@mipmap/ic_launcher"
-            android:title="People nearby" />
-
-        <item android:title="Others">
-            <menu>
-                <item
-                    android:icon="@mipmap/ic_launcher"
-                    android:title="Archived chats" />
-                <item
-                    android:id="@+id/nav_settings"
-                    android:icon="@mipmap/ic_launcher"
-                    android:title="Settings" />
-                <item
-                    android:icon="@mipmap/ic_launcher"
-                    android:title="About" />
-            </menu>
-        </item>
+            android:icon="@drawable/ic_people_black_24dp"
+            android:title="@string/nav_item_people_nearby" />
+        <item
+            android:icon="@drawable/ic_archive_black_24dp"
+            android:title="@string/nav_item_archived_chats" />
+        <item
+            android:id="@+id/nav_settings"
+            android:icon="@drawable/ic_settings_black_24dp"
+            android:title="@string/nav_item_settings" />
+        <item
+            android:icon="@drawable/ic_info_black_24dp"
+            android:title="@string/nav_item_about" />
     </group>
 </menu>

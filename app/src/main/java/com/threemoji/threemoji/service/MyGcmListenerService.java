@@ -12,8 +12,8 @@ import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 public class MyGcmListenerService extends GcmListenerService {
     private static final String TAG = MyGcmListenerService.class.getSimpleName();
@@ -48,6 +48,21 @@ public class MyGcmListenerService extends GcmListenerService {
 
     }
     // [END receive_message]
+
+    @Override
+    public void onDeletedMessages() {
+        sendNotification("Deleted messages on server");
+    }
+
+    @Override
+    public void onMessageSent(String msgId) {
+        sendNotification("Upstream message sent. Id=" + msgId);
+    }
+
+    @Override
+    public void onSendError(String msgId, String error) {
+        sendNotification("Upstream message send error. Id=" + msgId + ", error" + error);
+    }
 
     /**
      * Create and show a simple notification containing the received GCM message.

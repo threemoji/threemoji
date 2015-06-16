@@ -1,7 +1,6 @@
 package com.threemoji.threemoji;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -41,34 +40,27 @@ public class ChatListFragment extends Fragment {
     }
 
     private void addDummyData(ArrayList<ChatItem> chats) {
-        int emojiSize = 40;
         for (int i = 0; i < 20; i++) {
-            chats.add(new ChatItem(getRandomEmoji(emojiSize), getRandomEmoji(emojiSize), getRandomEmoji(emojiSize),
+            chats.add(new ChatItem(getRandomEmoji(), getRandomEmoji(), getRandomEmoji(),
                                    NameGenerator.getName(), getRandomTime()));
         }
     }
 
-    private Drawable getRandomEmoji(int size) {
+    private int getRandomEmoji() {
         Random rand = new Random();
-        Class raw = R.raw.class;
-        Field[] fields = raw.getFields();
+        Class drawable = R.drawable.class;
+        Field[] fields = drawable.getFields();
         try {
-            Field field = fields[rand.nextInt(fields.length)];
-            if (field.toString().contains("R$raw.emoji_")) {
-                int id = field.getInt(null);
-                return SvgUtils.svgToBitmapDrawable(getActivity().getResources(), id,
-                                                    size);
+            while (true) {
+                Field field = fields[rand.nextInt(fields.length)];
+                if (field.toString().contains("R$drawable.emoji_")) {
+                    return field.getInt(null);
+                }
             }
-            return null;
         } catch (IllegalAccessException e) {
             e.printStackTrace();
-            return null;
+            return -1;
         }
-//        String name = "emoji_" + (rand.nextInt(20) + 1);
-//        Resources resources = getActivity().getResources();
-//        int id = resources.getIdentifier(name, "drawable",
-//                                         getActivity().getPackageName());
-//        return id;
     }
 
     private String getRandomTime() {
@@ -77,13 +69,13 @@ public class ChatListFragment extends Fragment {
     }
 
     public class ChatItem {
-        public Drawable emoji1;
-        public Drawable emoji2;
-        public Drawable emoji3;
+        public int emoji1;
+        public int emoji2;
+        public int emoji3;
         public String partnerName;
         public String lastActivity;
 
-        public ChatItem(Drawable emoji1, Drawable emoji2, Drawable emoji3, String partnerName,
+        public ChatItem(int emoji1, int emoji2, int emoji3, String partnerName,
                         String lastActivity) {
             this.emoji1 = emoji1;
             this.emoji2 = emoji2;
@@ -142,9 +134,9 @@ public class ChatListFragment extends Fragment {
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
             ChatItem currentItem = mItems.get(position);
-            holder.emoji1.setImageDrawable(currentItem.emoji1);
-            holder.emoji2.setImageDrawable(currentItem.emoji2);
-            holder.emoji3.setImageDrawable(currentItem.emoji3);
+            holder.emoji1.setImageResource(currentItem.emoji1);
+            holder.emoji2.setImageResource(currentItem.emoji2);
+            holder.emoji3.setImageResource(currentItem.emoji3);
             holder.partnerName.setText(currentItem.partnerName);
             holder.lastActivity.setText(currentItem.lastActivity);
 

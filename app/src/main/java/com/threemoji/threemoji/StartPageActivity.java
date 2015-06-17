@@ -60,6 +60,24 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_page);
         initEmojiButtons();
+        initGender();
+    }
+
+    private void initGender() {
+        String genderPref = getPrefs().getString(getString(R.string.profile_gender_key), null);
+        if (genderPref != null) {
+            Gender gender = Gender.valueOf(genderPref);
+            switch (gender) {
+                case FEMALE:
+                    ((RadioGroup) findViewById(R.id.radio_group_gender)).check(
+                            R.id.radio_button_female);
+                    break;
+                case MALE:
+                    ((RadioGroup) findViewById(R.id.radio_group_gender)).check(
+                            R.id.radio_button_male);
+                    break;
+            }
+        }
     }
 
     private void initEmojiButtons() {

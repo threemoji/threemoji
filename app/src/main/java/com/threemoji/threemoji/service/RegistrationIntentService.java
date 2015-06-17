@@ -30,10 +30,10 @@ public class RegistrationIntentService extends IntentService {
 //            // In the (unlikely) event that multiple refresh operations occur simultaneously,
 //            // ensure that they are processed sequentially.
 //            synchronized (TAG) {
-                unregisterFromServer();
-                String token = getGcmToken();
-                sendTokenToServer(token);
-                storeToken(token);
+            unregisterFromServer();
+            String token = getGcmToken();
+            sendTokenToServer(token);
+            storeToken(token);
 //            }
         } catch (Exception e) {
             Log.d(TAG, "Failed to complete token refresh", e);
@@ -65,7 +65,7 @@ public class RegistrationIntentService extends IntentService {
         try {
             Bundle data = new Bundle();
             data.putString("payload", token);
-            String msgId = Integer.toString(getNextMsgId());
+            String msgId = getNextMsgId(token);
             gcm.send(getString(R.string.gcm_project_id) + "@gcm.googleapis.com", msgId,
                      timeToLive, data);
             Log.v(TAG, "token sent: " + token);
@@ -81,12 +81,8 @@ public class RegistrationIntentService extends IntentService {
         editor.putString(getString(R.string.pref_token_key), token).apply();
     }
 
-    private int getNextMsgId() {
-        int id = getPrefs().getInt("keyMsgId", 0);
-        SharedPreferences.Editor editor = getPrefs().edit();
-        editor.putInt("keyMsgId", ++id).apply();
-        Log.i(TAG, "message id " + id);
-        return id;
+    public String getNextMsgId(String token) {
+        return token.substring(token.length() - 5).concat("" + System.currentTimeMillis());
     }
 
     private SharedPreferences getPrefs() {

@@ -2,6 +2,7 @@ package com.threemoji.threemoji;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
@@ -17,11 +18,16 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
     private enum Gender {FEMALE, MALE}
 
     private ImageButton mCurrentEmojiButton;
+    private int sizeOfEmojiIcon = 72;
 
     @Override
     public void onEmojiClick(int position) {
         int imageResource = EmojiList.allEmoji[position];
-        mCurrentEmojiButton.setBackgroundResource(imageResource);
+        Drawable drawable = SvgUtils.getSvgDrawable(imageResource, sizeOfEmojiIcon,
+                                                    getPackageName());
+        mCurrentEmojiButton.setBackgroundResource(0);
+        mCurrentEmojiButton.setImageDrawable(drawable);
+//        mCurrentEmojiButton.setBackgroundResource(imageResource);
         setProfileEmoji(mCurrentEmojiButton, imageResource);
         mCurrentEmojiButton = null;
     }
@@ -61,13 +67,28 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
         int emoji3ImageResource = prefs.getInt(getString(R.string.profile_emoji_three_key), -1);
 
         if (emoji1ImageResource != -1) {
-            findViewById(R.id.start_page_emoji1).setBackgroundResource(emoji1ImageResource);
+//            findViewById(R.id.start_page_emoji1).setBackgroundResource(emoji1ImageResource);
+            Drawable emoji1DrawableResource = SvgUtils.getSvgDrawable(emoji1ImageResource,
+                                                                      sizeOfEmojiIcon,
+                                                                      getPackageName());
+            ((ImageButton) findViewById(R.id.start_page_emoji1)).setImageDrawable(
+                    emoji1DrawableResource);
         }
         if (emoji2ImageResource != -1) {
-            findViewById(R.id.start_page_emoji2).setBackgroundResource(emoji2ImageResource);
+//            findViewById(R.id.start_page_emoji2).setBackgroundResource(emoji2ImageResource);
+            Drawable emoji2DrawableResource = SvgUtils.getSvgDrawable(emoji2ImageResource,
+                                                                      sizeOfEmojiIcon,
+                                                                      getPackageName());
+            ((ImageButton) findViewById(R.id.start_page_emoji2)).setImageDrawable(
+                    emoji2DrawableResource);
         }
         if (emoji3ImageResource != -1) {
-            findViewById(R.id.start_page_emoji3).setBackgroundResource(emoji3ImageResource);
+//            findViewById(R.id.start_page_emoji3).setBackgroundResource(emoji3ImageResource);
+            Drawable emoji3DrawableResource = SvgUtils.getSvgDrawable(emoji3ImageResource,
+                                                                      sizeOfEmojiIcon,
+                                                                      getPackageName());
+            ((ImageButton) findViewById(R.id.start_page_emoji3)).setImageDrawable(
+                    emoji3DrawableResource);
         }
     }
 

@@ -13,7 +13,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:gravity="center_vertical|center_horizontal"
         android:layout_weight="1">
 
@@ -22,24 +22,24 @@
             android:layout_width="@dimen/user_profile_emoji_size"
             android:layout_height="@dimen/user_profile_emoji_size"
             android:src="@mipmap/ic_launcher"
-            android:layout_marginRight="8dp"
-            android:layout_marginLeft="8dp" />
+            android:layout_marginRight="4dp"
+            android:layout_marginLeft="4dp" />
 
         <ImageView
             android:id="@+id/user_emoji2"
             android:layout_width="@dimen/user_profile_emoji_size"
             android:layout_height="@dimen/user_profile_emoji_size"
             android:src="@mipmap/ic_launcher"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp" />
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp" />
 
         <ImageView
             android:id="@+id/user_emoji3"
             android:layout_width="@dimen/user_profile_emoji_size"
             android:layout_height="@dimen/user_profile_emoji_size"
             android:src="@mipmap/ic_launcher"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp" />
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp" />
 
     </LinearLayout>
     <TextView

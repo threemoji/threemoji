@@ -8,6 +8,7 @@ import com.threemoji.threemoji.service.RegistrationIntentService;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
@@ -34,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
 
     private DrawerLayout mDrawerLayout;
     private ViewPager viewPager;
+    private int sizeOfEmojiIcon = 72;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,16 +91,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initProfileEmoji() {
+        SharedPreferences prefs = getPrefs();
         ImageView userEmoji1 = (ImageView) findViewById(R.id.user_emoji1);
         ImageView userEmoji2 = (ImageView) findViewById(R.id.user_emoji2);
         ImageView userEmoji3 = (ImageView) findViewById(R.id.user_emoji3);
-        if (getPrefs().getBoolean(getString(R.string.pref_has_seen_start_page_key), false)) {
-            userEmoji1.setImageResource(
-                    getPrefs().getInt(getString(R.string.profile_emoji_one_key), -1));
-            userEmoji2.setImageResource(
-                    getPrefs().getInt(getString(R.string.profile_emoji_two_key), -1));
-            userEmoji3.setImageResource(
-                    getPrefs().getInt(getString(R.string.profile_emoji_three_key), -1));
+
+        if (prefs.getBoolean(getString(R.string.pref_has_seen_start_page_key), false)) {
+            int emoji1ImageResource = prefs.getInt(getString(R.string.profile_emoji_one_key), -1);
+            int emoji2ImageResource = prefs.getInt(getString(R.string.profile_emoji_two_key), -1);
+            int emoji3ImageResource = prefs.getInt(getString(R.string.profile_emoji_three_key), -1);
+
+            Drawable emoji1DrawableResource = SvgUtils.getSvgDrawable(emoji1ImageResource,
+                                                                      sizeOfEmojiIcon,
+                                                                      getPackageName());
+            Drawable emoji2DrawableResource = SvgUtils.getSvgDrawable(emoji2ImageResource,
+                                                                      sizeOfEmojiIcon,
+                                                                      getPackageName());
+            Drawable emoji3DrawableResource = SvgUtils.getSvgDrawable(emoji3ImageResource,
+                                                                      sizeOfEmojiIcon,
+                                                                      getPackageName());
+            userEmoji1.setImageDrawable(emoji1DrawableResource);
+            userEmoji2.setImageDrawable(emoji2DrawableResource);
+            userEmoji3.setImageDrawable(emoji3DrawableResource);
         }
     }
 

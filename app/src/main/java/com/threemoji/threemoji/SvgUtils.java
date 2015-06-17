@@ -7,6 +7,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 
 
 public class SvgUtils {
@@ -34,5 +35,12 @@ public class SvgUtils {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static Drawable getSvgDrawable(int imageResource, int size, String packageName) {
+        Resources resources = Threemoji.getContext().getResources();
+        String resourceName = resources.getResourceEntryName(imageResource);
+        int rawResourceId = resources.getIdentifier(resourceName, "raw", packageName);
+        return SvgUtils.svgToBitmapDrawable(resources, rawResourceId, size);
     }
 }

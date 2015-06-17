@@ -99,12 +99,18 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
             getPrefs().edit()
                       .putBoolean(getString(R.string.pref_has_seen_start_page_key), true)
                       .apply();
+            setProfileGeneratedName();
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
             finish();
         } else {
             Toast.makeText(this, "Please select 3 emoji", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void setProfileGeneratedName() {
+        String name = NameGenerator.getName();
+        getPrefs().edit().putString(getString(R.string.profile_generated_name_key), name).apply();
     }
 
     private boolean hasUserSelectedAllEmoji() {

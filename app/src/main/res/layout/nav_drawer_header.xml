@@ -18,7 +18,7 @@
         android:layout_weight="1">
 
         <ImageView
-            android:id="@+id/user_emoji1"
+            android:id="@+id/profile_emoji1"
             android:layout_width="@dimen/user_profile_emoji_size"
             android:layout_height="@dimen/user_profile_emoji_size"
             android:src="@mipmap/ic_launcher"
@@ -26,7 +26,7 @@
             android:layout_marginLeft="4dp" />
 
         <ImageView
-            android:id="@+id/user_emoji2"
+            android:id="@+id/profile_emoji2"
             android:layout_width="@dimen/user_profile_emoji_size"
             android:layout_height="@dimen/user_profile_emoji_size"
             android:src="@mipmap/ic_launcher"
@@ -34,7 +34,7 @@
             android:layout_marginRight="4dp" />
 
         <ImageView
-            android:id="@+id/user_emoji3"
+            android:id="@+id/profile_emoji3"
             android:layout_width="@dimen/user_profile_emoji_size"
             android:layout_height="@dimen/user_profile_emoji_size"
             android:src="@mipmap/ic_launcher"
@@ -43,9 +43,9 @@
 
     </LinearLayout>
     <TextView
+        android:id="@+id/profile_generated_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="You"
         android:textColor="@color/white"/>
 
 </LinearLayout>

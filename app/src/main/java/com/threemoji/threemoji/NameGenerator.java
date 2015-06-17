@@ -332,7 +332,7 @@ public class NameGenerator {
                                "zebradove", "zebrafish", "zebu", "zenaida", "zeren", "zopilote",
                                "zorilla"};
 
-    static Random rand = new Random();
+    private static Random rand = new Random();
 
     public static String getName() {
         String adjective = adjectives[rand.nextInt(adjectives.length)];

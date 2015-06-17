@@ -60,4 +60,6 @@
     <string name="profile_emoji_three_key">profileEmoji3</string>
 
     <string name="profile_gender_key">profileGender</string>
+
+    <string name="profile_generated_name_key">profileGeneratedName</string>
 </resources>

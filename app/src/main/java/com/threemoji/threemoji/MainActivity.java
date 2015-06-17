@@ -25,6 +25,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
             setupDrawerContent(navigationView);
         }
 
-        initProfileEmoji();
+        initProfile();
 
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         if (viewPager != null) {
@@ -90,30 +91,41 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void initProfile() {
+        if (getPrefs().getBoolean(getString(R.string.pref_has_seen_start_page_key), false)) {
+            initProfileEmoji();
+            initProfileGeneratedName();
+        }
+    }
+
+    private void initProfileGeneratedName() {
+        String name = getPrefs().getString(getString(R.string.profile_generated_name_key), "");
+        ((TextView) findViewById(R.id.profile_generated_name)).setText("You: " + name);
+    }
+
     private void initProfileEmoji() {
         SharedPreferences prefs = getPrefs();
-        ImageView userEmoji1 = (ImageView) findViewById(R.id.user_emoji1);
-        ImageView userEmoji2 = (ImageView) findViewById(R.id.user_emoji2);
-        ImageView userEmoji3 = (ImageView) findViewById(R.id.user_emoji3);
+        ImageView userEmoji1 = (ImageView) findViewById(R.id.profile_emoji1);
+        ImageView userEmoji2 = (ImageView) findViewById(R.id.profile_emoji2);
+        ImageView userEmoji3 = (ImageView) findViewById(R.id.profile_emoji3);
 
-        if (prefs.getBoolean(getString(R.string.pref_has_seen_start_page_key), false)) {
-            int emoji1ImageResource = prefs.getInt(getString(R.string.profile_emoji_one_key), -1);
-            int emoji2ImageResource = prefs.getInt(getString(R.string.profile_emoji_two_key), -1);
-            int emoji3ImageResource = prefs.getInt(getString(R.string.profile_emoji_three_key), -1);
+        int emoji1ImageResource = prefs.getInt(getString(R.string.profile_emoji_one_key), -1);
+        int emoji2ImageResource = prefs.getInt(getString(R.string.profile_emoji_two_key), -1);
+        int emoji3ImageResource = prefs.getInt(getString(R.string.profile_emoji_three_key), -1);
 
-            Drawable emoji1DrawableResource = SvgUtils.getSvgDrawable(emoji1ImageResource,
-                                                                      sizeOfEmojiIcon,
-                                                                      getPackageName());
-            Drawable emoji2DrawableResource = SvgUtils.getSvgDrawable(emoji2ImageResource,
-                                                                      sizeOfEmojiIcon,
-                                                                      getPackageName());
-            Drawable emoji3DrawableResource = SvgUtils.getSvgDrawable(emoji3ImageResource,
-                                                                      sizeOfEmojiIcon,
-                                                                      getPackageName());
-            userEmoji1.setImageDrawable(emoji1DrawableResource);
-            userEmoji2.setImageDrawable(emoji2DrawableResource);
-            userEmoji3.setImageDrawable(emoji3DrawableResource);
-        }
+        Drawable emoji1DrawableResource = SvgUtils.getSvgDrawable(emoji1ImageResource,
+                                                                  sizeOfEmojiIcon,
+                                                                  getPackageName());
+        Drawable emoji2DrawableResource = SvgUtils.getSvgDrawable(emoji2ImageResource,
+                                                                  sizeOfEmojiIcon,
+                                                                  getPackageName());
+        Drawable emoji3DrawableResource = SvgUtils.getSvgDrawable(emoji3ImageResource,
+                                                                  sizeOfEmojiIcon,
+                                                                  getPackageName());
+        userEmoji1.setImageDrawable(emoji1DrawableResource);
+        userEmoji2.setImageDrawable(emoji2DrawableResource);
+        userEmoji3.setImageDrawable(emoji3DrawableResource);
+
     }
 
     @Override

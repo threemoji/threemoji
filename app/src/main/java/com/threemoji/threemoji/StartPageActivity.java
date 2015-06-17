@@ -18,12 +18,14 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
     private enum Gender {FEMALE, MALE}
 
     private ImageButton mCurrentEmojiButton;
-    private int sizeOfEmojiIcon = 72;
+    private int mSizeOfEmojiIcon = 72;
+    private int mScrollPositionInDialog = 0;
 
     @Override
-    public void onEmojiClick(int position) {
+    public void onEmojiClick(int position, int scrollPosition) {
+        mScrollPositionInDialog = scrollPosition;
         int imageResource = EmojiList.allEmoji[position];
-        Drawable drawable = SvgUtils.getSvgDrawable(imageResource, sizeOfEmojiIcon,
+        Drawable drawable = SvgUtils.getSvgDrawable(imageResource, mSizeOfEmojiIcon,
                                                     getPackageName());
         mCurrentEmojiButton.setBackgroundResource(0);
         mCurrentEmojiButton.setImageDrawable(drawable);
@@ -69,26 +71,29 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
         if (emoji1ImageResource != -1) {
 //            findViewById(R.id.start_page_emoji1).setBackgroundResource(emoji1ImageResource);
             Drawable emoji1DrawableResource = SvgUtils.getSvgDrawable(emoji1ImageResource,
-                                                                      sizeOfEmojiIcon,
+                                                                      mSizeOfEmojiIcon,
                                                                       getPackageName());
-            ((ImageButton) findViewById(R.id.start_page_emoji1)).setImageDrawable(
-                    emoji1DrawableResource);
+            ImageButton emoji1 = (ImageButton) findViewById(R.id.start_page_emoji1);
+            emoji1.setBackgroundResource(0);
+            emoji1.setImageDrawable(emoji1DrawableResource);
         }
         if (emoji2ImageResource != -1) {
 //            findViewById(R.id.start_page_emoji2).setBackgroundResource(emoji2ImageResource);
             Drawable emoji2DrawableResource = SvgUtils.getSvgDrawable(emoji2ImageResource,
-                                                                      sizeOfEmojiIcon,
+                                                                      mSizeOfEmojiIcon,
                                                                       getPackageName());
-            ((ImageButton) findViewById(R.id.start_page_emoji2)).setImageDrawable(
-                    emoji2DrawableResource);
+            ImageButton emoji2 = (ImageButton) findViewById(R.id.start_page_emoji2);
+            emoji2.setBackgroundResource(0);
+            emoji2.setImageDrawable(emoji2DrawableResource);
         }
         if (emoji3ImageResource != -1) {
 //            findViewById(R.id.start_page_emoji3).setBackgroundResource(emoji3ImageResource);
             Drawable emoji3DrawableResource = SvgUtils.getSvgDrawable(emoji3ImageResource,
-                                                                      sizeOfEmojiIcon,
+                                                                      mSizeOfEmojiIcon,
                                                                       getPackageName());
-            ((ImageButton) findViewById(R.id.start_page_emoji3)).setImageDrawable(
-                    emoji3DrawableResource);
+            ImageButton emoji3 = (ImageButton) findViewById(R.id.start_page_emoji3);
+            emoji3.setBackgroundResource(0);
+            emoji3.setImageDrawable(emoji3DrawableResource);
         }
     }
 
@@ -146,6 +151,11 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
     public void selectEmoji(View view) {
         mCurrentEmojiButton = (ImageButton) view;
         DialogFragment selectEmoji = new SelectEmojiDialogFragment();
+
+        Bundle args = new Bundle();
+        args.putInt("scrollPosition", mScrollPositionInDialog);
+        selectEmoji.setArguments(args);
+
         selectEmoji.show(getSupportFragmentManager(), "select emoji");
     }
 

@@ -35,8 +35,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private DrawerLayout mDrawerLayout;
-    private ViewPager viewPager;
-    private int sizeOfEmojiIcon = 72;
+    private ViewPager mViewPager;
+    private int mSizeOfEmojiIcon = 72;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,13 +81,13 @@ public class MainActivity extends AppCompatActivity {
 
         initProfile();
 
-        viewPager = (ViewPager) findViewById(R.id.viewpager);
-        if (viewPager != null) {
-            setupViewPager(viewPager);
+        mViewPager = (ViewPager) findViewById(R.id.viewpager);
+        if (mViewPager != null) {
+            setupViewPager(mViewPager);
         }
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(viewPager);
+        tabLayout.setupWithViewPager(mViewPager);
 
     }
 
@@ -114,13 +114,13 @@ public class MainActivity extends AppCompatActivity {
         int emoji3ImageResource = prefs.getInt(getString(R.string.profile_emoji_three_key), -1);
 
         Drawable emoji1DrawableResource = SvgUtils.getSvgDrawable(emoji1ImageResource,
-                                                                  sizeOfEmojiIcon,
+                                                                  mSizeOfEmojiIcon,
                                                                   getPackageName());
         Drawable emoji2DrawableResource = SvgUtils.getSvgDrawable(emoji2ImageResource,
-                                                                  sizeOfEmojiIcon,
+                                                                  mSizeOfEmojiIcon,
                                                                   getPackageName());
         Drawable emoji3DrawableResource = SvgUtils.getSvgDrawable(emoji3ImageResource,
-                                                                  sizeOfEmojiIcon,
+                                                                  mSizeOfEmojiIcon,
                                                                   getPackageName());
         userEmoji1.setImageDrawable(emoji1DrawableResource);
         userEmoji2.setImageDrawable(emoji2DrawableResource);
@@ -223,12 +223,12 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.nav_people_nearby:
-                viewPager.setCurrentItem(1);
+                mViewPager.setCurrentItem(1);
                 break;
 
             case R.id.nav_chats:
             default:
-                viewPager.setCurrentItem(0);
+                mViewPager.setCurrentItem(0);
                 break;
         }
     }

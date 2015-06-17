@@ -15,7 +15,7 @@ import android.widget.GridView;
 public class SelectEmojiDialogFragment extends DialogFragment {
 
     public interface SelectEmojiDialogListener {
-        void onEmojiClick(int position);
+        void onEmojiClick(int position, int scrollPosition);
     }
 
     private SelectEmojiDialogListener mListener;
@@ -34,10 +34,12 @@ public class SelectEmojiDialogFragment extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        int scrollPosition = getArguments().getInt("scrollPosition");
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        GridView gridView = (GridView) inflater.inflate(R.layout.dialog_select_emoji, null);
+        final GridView gridView = (GridView) inflater.inflate(R.layout.dialog_select_emoji, null);
 
         gridView.setAdapter(new SelectEmojiAdapter(getActivity()));
 
@@ -45,10 +47,12 @@ public class SelectEmojiDialogFragment extends DialogFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
-                mListener.onEmojiClick(position);
+                mListener.onEmojiClick(position, gridView.getFirstVisiblePosition());
                 dismiss();
             }
         });
+
+        gridView.setSelection(scrollPosition);
 
         builder.setView(gridView);
         return builder.create();

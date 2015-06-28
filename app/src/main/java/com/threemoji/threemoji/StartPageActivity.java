@@ -72,6 +72,7 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
         initEmojiButtons();
         initGender();
         initUid();
+        initPassword();
     }
 
     private void initUid() {
@@ -80,6 +81,15 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
             getPrefs().edit()
                       .putString(getString(R.string.profile_uid_key), UUID.randomUUID().toString())
                       .apply();
+        }
+    }
+
+    private void initPassword() {
+        String password = getPrefs().getString(getString(R.string.profile_password_key), null);
+        if (password == null) {
+            getPrefs().edit()
+                    .putString(getString(R.string.profile_password_key), InstanceID.getInstance(this).getId())
+                    .apply();
         }
     }
 
@@ -218,7 +228,7 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
             Bundle data = new Bundle();
             data.putString("action", update ? getString(R.string.backend_action_update_profile_key) : getString(R.string.backend_action_upload_profile_key));
             data.putString(getString(R.string.backend_uid_key), getPrefs().getString(getString(R.string.profile_uid_key), ""));
-            data.putString(getString(R.string.backend_password_key), InstanceID.getInstance(this).getId());
+            data.putString(getString(R.string.backend_password_key), getPrefs().getString(getString(R.string.profile_password_key), ""));
             data.putString(getString(R.string.backend_token_key), token);
             data.putString(getString(R.string.backend_emoji_one_key), String.valueOf(getPrefs().getInt(getString(R.string.profile_emoji_one_key), -1)));
             data.putString(getString(R.string.backend_emoji_two_key), String.valueOf(getPrefs().getInt(getString(R.string.profile_emoji_two_key), -1)));
@@ -226,7 +236,7 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
             data.putString(getString(R.string.backend_generated_name_key), getPrefs().getString(getString(R.string.profile_generated_name_key), ""));
             data.putString(getString(R.string.backend_gender_key), getPrefs().getString(getString(R.string.profile_gender_key), ""));
             data.putString(getString(R.string.backend_location_key), "LOCATION");
-            data.putString(getString(R.string.backend_radius_key), String.valueOf(getPrefs().getInt(getString(R.string.pref_max_distance_key), 10)));
+            data.putString(getString(R.string.backend_radius_key), getPrefs().getString(getString(R.string.pref_max_distance_key), "10"));
             String msgId = getNextMsgId(token);
             gcm.send(getString(R.string.gcm_project_id) + "@gcm.googleapis.com", msgId,
                     timeToLive, data);

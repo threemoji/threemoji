@@ -58,7 +58,7 @@ public class MyGcmListenerService extends GcmListenerService {
 
     @Override
     public void onMessageSent(String msgId) {
-        sendNotification("Upstream message sent. Id=" + msgId);
+        //sendNotification("Upstream message sent. Id=" + msgId);
     }
 
     @Override

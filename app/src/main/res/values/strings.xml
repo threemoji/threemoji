@@ -56,6 +56,7 @@
     <string name="title_activity_start_page">Start Page</string>
 
     <string name="profile_uid_key">profileUid</string>
+    <string name="profile_password_key">profilePassword</string>
     <string name="profile_emoji_one_key">profileEmoji1</string>
     <string name="profile_emoji_two_key">profileEmoji2</string>
     <string name="profile_emoji_three_key">profileEmoji3</string>

@@ -48,7 +48,7 @@ public class RegistrationIntentService extends IntentService {
 
     private String getGcmToken() throws IOException {
         InstanceID instanceID = InstanceID.getInstance(this);
-        String token = instanceID.getToken(getString(R.string.gcm_project_id),
+        String token = instanceID.getToken(getString(R.string.gcm_project_num),
                                            GoogleCloudMessaging.INSTANCE_ID_SCOPE);
         Log.i(TAG, "GCM Registration Token: " + token);
         return token;
@@ -56,7 +56,7 @@ public class RegistrationIntentService extends IntentService {
 
     private void unregisterFromServer() throws IOException {
         InstanceID instanceID = InstanceID.getInstance(this);
-        instanceID.deleteToken(getString(R.string.gcm_project_id),
+        instanceID.deleteToken(getString(R.string.gcm_project_num),
                                GoogleCloudMessaging.INSTANCE_ID_SCOPE);
 //        instanceID.deleteToken(getString(R.string.gcm_defaultSenderId),
 //                               GoogleCloudMessaging.INSTANCE_ID_SCOPE);
@@ -70,7 +70,7 @@ public class RegistrationIntentService extends IntentService {
             Bundle data = new Bundle();
             data.putString("payload", token);
             String msgId = getNextMsgId(token);
-            gcm.send(getString(R.string.gcm_project_id) + "@gcm.googleapis.com", msgId,
+            gcm.send(getString(R.string.gcm_project_num) + "@gcm.googleapis.com", msgId,
                      timeToLive, data);
             Log.v(TAG, "token sent: " + token);
         } catch (IOException e) {
@@ -88,7 +88,7 @@ public class RegistrationIntentService extends IntentService {
             data.putString(getString(R.string.backend_password_key), getPrefs().getString(getString(R.string.profile_password_key), ""));
             data.putString(getString(R.string.backend_token_key), token);
             String msgId = getNextMsgId(token);
-            gcm.send(getString(R.string.gcm_project_id) + "@gcm.googleapis.com", msgId,
+            gcm.send(getString(R.string.gcm_project_num) + "@gcm.googleapis.com", msgId,
                     timeToLive, data);
             Log.v(TAG, "token updated: " + token);
         } catch (IOException e) {

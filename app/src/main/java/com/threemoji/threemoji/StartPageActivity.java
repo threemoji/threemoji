@@ -1,8 +1,5 @@
 package com.threemoji.threemoji;
 
-import com.google.android.gms.gcm.GoogleCloudMessaging;
-import com.google.android.gms.iid.InstanceID;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
@@ -15,6 +12,9 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
+
+import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.google.android.gms.iid.InstanceID;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -31,19 +31,15 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
     private int mSizeOfEmojiIcon = 72;
     private int mScrollPositionInDialog = 0;
 
-    // ================================================================
-    // Methods to handle emoji selection from the popup dialog
-    // ================================================================
     @Override
     public void onEmojiClick(int position, int scrollPosition) {
         mScrollPositionInDialog = scrollPosition;
-
         int imageResource = EmojiList.allEmoji[position];
         Drawable drawable = SvgUtils.getSvgDrawable(imageResource, mSizeOfEmojiIcon,
                                                     getPackageName());
-
         mCurrentEmojiButton.setBackgroundResource(0);
         mCurrentEmojiButton.setImageDrawable(drawable);
+//        mCurrentEmojiButton.setBackgroundResource(imageResource);
         setProfileEmoji(mCurrentEmojiButton, imageResource);
         mCurrentEmojiButton = null;
     }
@@ -69,9 +65,6 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
         getPrefs().edit().putInt(preferenceKey, imageResource).apply();
     }
 
-    // ================================================================
-    // Initiation methods when this activity is created
-    // ================================================================
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,35 +75,21 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
         initPassword();
     }
 
-    private void initEmojiButtons() {
-        SharedPreferences prefs = getPrefs();
-        int emoji1ImageResource = prefs.getInt(getString(R.string.profile_emoji_one_key), -1);
-        int emoji2ImageResource = prefs.getInt(getString(R.string.profile_emoji_two_key), -1);
-        int emoji3ImageResource = prefs.getInt(getString(R.string.profile_emoji_three_key), -1);
+    private void initUid() {
+        String uid = getPrefs().getString(getString(R.string.profile_uid_key), null);
+        if (uid == null) {
+            getPrefs().edit()
+                      .putString(getString(R.string.profile_uid_key), UUID.randomUUID().toString())
+                      .apply();
+        }
+    }
 
-        if (emoji1ImageResource != -1) {
-            Drawable emoji1DrawableResource = SvgUtils.getSvgDrawable(emoji1ImageResource,
-                                                                      mSizeOfEmojiIcon,
-                                                                      getPackageName());
-            ImageButton emoji1 = (ImageButton) findViewById(R.id.start_page_emoji1);
-            emoji1.setBackgroundResource(0);
-            emoji1.setImageDrawable(emoji1DrawableResource);
-        }
-        if (emoji2ImageResource != -1) {
-            Drawable emoji2DrawableResource = SvgUtils.getSvgDrawable(emoji2ImageResource,
-                                                                      mSizeOfEmojiIcon,
-                                                                      getPackageName());
-            ImageButton emoji2 = (ImageButton) findViewById(R.id.start_page_emoji2);
-            emoji2.setBackgroundResource(0);
-            emoji2.setImageDrawable(emoji2DrawableResource);
-        }
-        if (emoji3ImageResource != -1) {
-            Drawable emoji3DrawableResource = SvgUtils.getSvgDrawable(emoji3ImageResource,
-                                                                      mSizeOfEmojiIcon,
-                                                                      getPackageName());
-            ImageButton emoji3 = (ImageButton) findViewById(R.id.start_page_emoji3);
-            emoji3.setBackgroundResource(0);
-            emoji3.setImageDrawable(emoji3DrawableResource);
+    private void initPassword() {
+        String password = getPrefs().getString(getString(R.string.profile_password_key), null);
+        if (password == null) {
+            getPrefs().edit()
+                    .putString(getString(R.string.profile_password_key), InstanceID.getInstance(this).getId())
+                    .apply();
         }
     }
 
@@ -131,38 +110,50 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
         }
     }
 
-    private void initUid() {
-        String uid = getPrefs().getString(getString(R.string.profile_uid_key), null);
-        if (uid == null) {
-            getPrefs().edit()
-                      .putString(getString(R.string.profile_uid_key), UUID.randomUUID().toString())
-                      .apply();
+    private void initEmojiButtons() {
+        SharedPreferences prefs = getPrefs();
+        int emoji1ImageResource = prefs.getInt(getString(R.string.profile_emoji_one_key), -1);
+        int emoji2ImageResource = prefs.getInt(getString(R.string.profile_emoji_two_key), -1);
+        int emoji3ImageResource = prefs.getInt(getString(R.string.profile_emoji_three_key), -1);
+
+        if (emoji1ImageResource != -1) {
+//            findViewById(R.id.start_page_emoji1).setBackgroundResource(emoji1ImageResource);
+            Drawable emoji1DrawableResource = SvgUtils.getSvgDrawable(emoji1ImageResource,
+                                                                      mSizeOfEmojiIcon,
+                                                                      getPackageName());
+            ImageButton emoji1 = (ImageButton) findViewById(R.id.start_page_emoji1);
+            emoji1.setBackgroundResource(0);
+            emoji1.setImageDrawable(emoji1DrawableResource);
+        }
+        if (emoji2ImageResource != -1) {
+//            findViewById(R.id.start_page_emoji2).setBackgroundResource(emoji2ImageResource);
+            Drawable emoji2DrawableResource = SvgUtils.getSvgDrawable(emoji2ImageResource,
+                                                                      mSizeOfEmojiIcon,
+                                                                      getPackageName());
+            ImageButton emoji2 = (ImageButton) findViewById(R.id.start_page_emoji2);
+            emoji2.setBackgroundResource(0);
+            emoji2.setImageDrawable(emoji2DrawableResource);
+        }
+        if (emoji3ImageResource != -1) {
+//            findViewById(R.id.start_page_emoji3).setBackgroundResource(emoji3ImageResource);
+            Drawable emoji3DrawableResource = SvgUtils.getSvgDrawable(emoji3ImageResource,
+                                                                      mSizeOfEmojiIcon,
+                                                                      getPackageName());
+            ImageButton emoji3 = (ImageButton) findViewById(R.id.start_page_emoji3);
+            emoji3.setBackgroundResource(0);
+            emoji3.setImageDrawable(emoji3DrawableResource);
         }
     }
 
-    private void initPassword() {
-        String password = getPrefs().getString(getString(R.string.profile_password_key), null);
-        if (password == null) {
-            getPrefs().edit()
-                      .putString(getString(R.string.profile_password_key),
-                                 InstanceID.getInstance(this).getId())
-                      .apply();
-        }
-    }
-
-
-    // ================================================================
-    // Methods for when the start page is submitted
-    // ================================================================
     public void submitStartPage(View view) {
         setProfileGender();
 
         if (hasUserSelectedAllEmoji()) {
             setProfileGeneratedName();
-            if (getPrefs().getBoolean(getString(R.string.pref_has_seen_start_page_key), false)) {
-                uploadProfile(true);
-            } else {
+            if (!getPrefs().getBoolean(getString(R.string.pref_has_seen_start_page_key), false)) {
                 uploadProfile(false);
+            } else {
+                uploadProfile(true);
             }
             getPrefs().edit()
                     .putBoolean(getString(R.string.pref_has_seen_start_page_key), true)
@@ -174,6 +165,18 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
         } else {
             Toast.makeText(this, "Please select 3 emoji", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void setProfileGeneratedName() {
+        String name = NameGenerator.getName();
+        getPrefs().edit().putString(getString(R.string.profile_generated_name_key), name).apply();
+    }
+
+    private boolean hasUserSelectedAllEmoji() {
+        SharedPreferences prefs = getPrefs();
+        return prefs.getInt(getString(R.string.profile_emoji_one_key), -1) != -1 &&
+               prefs.getInt(getString(R.string.profile_emoji_two_key), -1) != -1 &&
+               prefs.getInt(getString(R.string.profile_emoji_three_key), -1) != -1;
     }
 
     private void setProfileGender() {
@@ -199,16 +202,23 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
                   .apply();
     }
 
-    private boolean hasUserSelectedAllEmoji() {
-        SharedPreferences prefs = getPrefs();
-        return prefs.getInt(getString(R.string.profile_emoji_one_key), -1) != -1 &&
-               prefs.getInt(getString(R.string.profile_emoji_two_key), -1) != -1 &&
-               prefs.getInt(getString(R.string.profile_emoji_three_key), -1) != -1;
+    public void selectEmoji(View view) {
+        mCurrentEmojiButton = (ImageButton) view;
+        DialogFragment selectEmoji = new SelectEmojiDialogFragment();
+
+        Bundle args = new Bundle();
+        args.putInt("scrollPosition", mScrollPositionInDialog);
+        selectEmoji.setArguments(args);
+
+        selectEmoji.show(getSupportFragmentManager(), "select emoji");
     }
 
-    private void setProfileGeneratedName() {
-        String name = NameGenerator.getName();
-        getPrefs().edit().putString(getString(R.string.profile_generated_name_key), name).apply();
+    private SharedPreferences getPrefs() {
+        return PreferenceManager.getDefaultSharedPreferences(this);
+    }
+
+    public String getNextMsgId(String token) {
+        return token.substring(token.length() - 5).concat("" + System.currentTimeMillis());
     }
 
     private void uploadProfile(boolean update) {
@@ -226,41 +236,15 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
             data.putString(getString(R.string.backend_generated_name_key), getPrefs().getString(getString(R.string.profile_generated_name_key), ""));
             data.putString(getString(R.string.backend_gender_key), getPrefs().getString(getString(R.string.profile_gender_key), ""));
             data.putString(getString(R.string.backend_location_key), "LOCATION");
-            data.putString(getString(R.string.backend_radius_key), getPrefs().getString(getString(R.string.pref_max_distance_key), getString(R.string.pref_max_distance_default)));
+            data.putString(getString(R.string.backend_radius_key), getPrefs().getString(getString(R.string.pref_max_distance_key), "10"));
             String msgId = getNextMsgId(token);
-            gcm.send(getString(R.string.gcm_project_id) + "@gcm.googleapis.com", msgId,
-                     timeToLive, data);
+            gcm.send(getString(R.string.gcm_project_num) + "@gcm.googleapis.com", msgId,
+                    timeToLive, data);
             Log.v(TAG, "profile uploaded");
         } catch (IOException e) {
             Log.e(TAG,
-                  "IOException while uploading profile to backend...", e);
+                    "IOException while uploading profile to backend...", e);
         }
     }
 
-    public String getNextMsgId(String token) {
-        return token.substring(token.length() - 5).concat("" + System.currentTimeMillis());
-    }
-
-
-    // ================================================================
-    // Handler for button that creates the select-emoji-dialog
-    // ================================================================
-    public void selectEmoji(View view) {
-        mCurrentEmojiButton = (ImageButton) view;
-        DialogFragment selectEmoji = new SelectEmojiDialogFragment();
-
-        Bundle args = new Bundle();
-        args.putInt("scrollPosition", mScrollPositionInDialog);
-        selectEmoji.setArguments(args);
-
-        selectEmoji.show(getSupportFragmentManager(), "select emoji");
-    }
-
-
-    // ================================================================
-    // Utility methods
-    // ================================================================
-    private SharedPreferences getPrefs() {
-        return PreferenceManager.getDefaultSharedPreferences(this);
-    }
 }

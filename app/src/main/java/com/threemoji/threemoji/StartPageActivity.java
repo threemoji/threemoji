@@ -7,15 +7,25 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.google.android.gms.iid.InstanceID;
+
+import java.io.IOException;
+import java.util.UUID;
+
 
 public class StartPageActivity extends AppCompatActivity implements SelectEmojiDialogFragment.SelectEmojiDialogListener {
 
     private enum Gender {FEMALE, MALE}
+
+    private static final String TAG = StartPageActivity.class.getSimpleName();
+    private int timeToLive = 60 * 60; // one hour
 
     private ImageButton mCurrentEmojiButton;
     private int mSizeOfEmojiIcon = 72;
@@ -61,6 +71,16 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
         setContentView(R.layout.activity_start_page);
         initEmojiButtons();
         initGender();
+        initUid();
+    }
+
+    private void initUid() {
+        String uid = getPrefs().getString(getString(R.string.profile_uid_key), null);
+        if (uid == null) {
+            getPrefs().edit()
+                      .putString(getString(R.string.profile_uid_key), UUID.randomUUID().toString())
+                      .apply();
+        }
     }
 
     private void initGender() {
@@ -119,10 +139,15 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
         setProfileGender();
 
         if (hasUserSelectedAllEmoji()) {
-            getPrefs().edit()
-                      .putBoolean(getString(R.string.pref_has_seen_start_page_key), true)
-                      .apply();
             setProfileGeneratedName();
+            if (!getPrefs().getBoolean(getString(R.string.pref_has_seen_start_page_key), false)) {
+                uploadProfile(false);
+            } else {
+                uploadProfile(true);
+            }
+            getPrefs().edit()
+                    .putBoolean(getString(R.string.pref_has_seen_start_page_key), true)
+                    .apply();
             Intent intent = new Intent(this, MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
@@ -180,6 +205,36 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
 
     private SharedPreferences getPrefs() {
         return PreferenceManager.getDefaultSharedPreferences(this);
+    }
+
+    public String getNextMsgId(String token) {
+        return token.substring(token.length() - 5).concat("" + System.currentTimeMillis());
+    }
+
+    private void uploadProfile(boolean update) {
+        GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
+        String token = getPrefs().getString(getString(R.string.pref_token_key), "");
+        try {
+            Bundle data = new Bundle();
+            data.putString("action", update ? getString(R.string.backend_action_update_profile_key) : getString(R.string.backend_action_upload_profile_key));
+            data.putString(getString(R.string.backend_uid_key), getPrefs().getString(getString(R.string.profile_uid_key), ""));
+            data.putString(getString(R.string.backend_password_key), InstanceID.getInstance(this).getId());
+            data.putString(getString(R.string.backend_token_key), token);
+            data.putString(getString(R.string.backend_emoji_one_key), String.valueOf(getPrefs().getInt(getString(R.string.profile_emoji_one_key), -1)));
+            data.putString(getString(R.string.backend_emoji_two_key), String.valueOf(getPrefs().getInt(getString(R.string.profile_emoji_two_key), -1)));
+            data.putString(getString(R.string.backend_emoji_three_key), String.valueOf(getPrefs().getInt(getString(R.string.profile_emoji_three_key), -1)));
+            data.putString(getString(R.string.backend_generated_name_key), getPrefs().getString(getString(R.string.profile_generated_name_key), ""));
+            data.putString(getString(R.string.backend_gender_key), getPrefs().getString(getString(R.string.profile_gender_key), ""));
+            data.putString(getString(R.string.backend_location_key), "LOCATION");
+            data.putString(getString(R.string.backend_radius_key), String.valueOf(getPrefs().getInt(getString(R.string.pref_max_distance_key), 10)));
+            String msgId = getNextMsgId(token);
+            gcm.send(getString(R.string.gcm_project_id) + "@gcm.googleapis.com", msgId,
+                    timeToLive, data);
+            Log.v(TAG, "profile uploaded");
+        } catch (IOException e) {
+            Log.e(TAG,
+                    "IOException while uploading profile to backend...", e);
+        }
     }
 
 }

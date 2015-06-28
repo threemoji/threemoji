@@ -53,13 +53,26 @@
     <string name="pref_chat_notifications_default">true</string>
     <string name="pref_chat_notifications_summary">Includes notifications for new matches and new messages</string>
 
-
     <string name="title_activity_start_page">Start Page</string>
+
+    <string name="profile_uid_key">profileUid</string>
     <string name="profile_emoji_one_key">profileEmoji1</string>
     <string name="profile_emoji_two_key">profileEmoji2</string>
     <string name="profile_emoji_three_key">profileEmoji3</string>
-
     <string name="profile_gender_key">profileGender</string>
-
     <string name="profile_generated_name_key">profileGeneratedName</string>
+
+    <string name="backend_action_upload_profile_key">upload_profile</string>
+    <string name="backend_action_update_profile_key">update_profile</string>
+
+    <string name="backend_uid_key">uid</string>
+    <string name="backend_password_key">password</string>
+    <string name="backend_token_key">token</string>
+    <string name="backend_emoji_one_key">emoji_1</string>
+    <string name="backend_emoji_two_key">emoji_2</string>
+    <string name="backend_emoji_three_key">emoji_3</string>
+    <string name="backend_generated_name_key">generated_name</string>
+    <string name="backend_gender_key">gender</string>
+    <string name="backend_location_key">location</string>
+    <string name="backend_radius_key">radius</string>
 </resources>

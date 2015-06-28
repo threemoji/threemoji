@@ -228,8 +228,8 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
             data.putString(getString(R.string.backend_location_key), "LOCATION");
             data.putString(getString(R.string.backend_radius_key), getPrefs().getString(getString(R.string.pref_max_distance_key), getString(R.string.pref_max_distance_default)));
             String msgId = getNextMsgId(token);
-            gcm.send(getString(R.string.gcm_project_id) + "@gcm.googleapis.com", msgId,
-                     timeToLive, data);
+            gcm.send(getString(R.string.gcm_project_num) + "@gcm.googleapis.com", msgId,
+                    timeToLive, data);
             Log.v(TAG, "profile uploaded");
         } catch (IOException e) {
             Log.e(TAG,

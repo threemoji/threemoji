@@ -65,6 +65,7 @@
 
     <string name="backend_action_upload_profile_key">upload_profile</string>
     <string name="backend_action_update_profile_key">update_profile</string>
+    <string name="backend_action_update_token_key">update_token</string>
 
     <string name="backend_uid_key">uid</string>
     <string name="backend_password_key">password</string>

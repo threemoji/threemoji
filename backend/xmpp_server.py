@@ -32,9 +32,9 @@ def message_callback(session, message):
       if msg.has_key('data'):
         data = msg["data"]
         if data.has_key('action'):
+          uid = data["uid"]
+          password = data["password"]
           if data["action"] == "upload_profile" or data["action"] == "update_profile":
-            uid = data["uid"]
-            password = data["password"]
             token = data["token"]
             emoji_1 = data["emoji_1"]
             emoji_2 = data["emoji_2"]
@@ -46,7 +46,13 @@ def message_callback(session, message):
             if data["action"] == "upload_profile":
               add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, gender, location, radius)
             else:
-              update_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, gender, location, radius)
+              data_dict = {"token": token,
+                           "emoji_1": emoji_1, "emoji_2": emoji_2, "emoji_3": emoji_3,
+                           "generated_name": generated_name, "gender": gender,
+                           "location": location, "radius": radius}
+              update_user(uid, password, data_dict, data["action"])
+          elif data["action"] == "update_token":
+            update_user(uid, password, {"token": data["token"]}, data["action"])
 
       sent_message_id += 1
 
@@ -103,8 +109,7 @@ def add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, ge
 
     resp = datastore.commit(req)
     logging.info('Added user: ' + generated_name + ' (' + uid + ')')
-    # auto_id_key = resp.mutation_result.insert_auto_id_key[0].path_element[0].id
-    # return auto_id_key
+
   except datastore.RPCError as e:
     # RPCError is raised if any error happened during a RPC.
     # It includes the `method` called and the `reason` of the
@@ -117,12 +122,8 @@ def add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, ge
                   {'status': e.response.status,
                    'reason': e.response.reason})
 
-def update_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, gender, location, radius):
+def update_user(uid, password, data_dict, action):
   datastore.set_options(dataset=os.environ.get('PROJECT_ID'))
-  data_dict = {"token": token,
-               "emoji_1": emoji_1, "emoji_2": emoji_2, "emoji_3": emoji_3,
-               "generated_name": generated_name, "gender": gender,
-               "location": location, "radius": radius}
   try:
     req = datastore.LookupRequest()
 
@@ -136,7 +137,6 @@ def update_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name,
     resp = datastore.lookup(req)
     user = resp.found[0].entity
     for prop in user.property:
-      print "processing property " + prop.name
       if prop.name == 'password':
         if password != prop.value.string_value:
           print "expected " + prop.value.string_value
@@ -155,15 +155,14 @@ def update_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name,
         continue
 
     if fail_password:
-      logging.error('Access denied for user: ' + generated_name + ' (' + uid + ') action: update_profile')
+      logging.error('Access denied for user: ' + uid + ' action: ' + action)
     else:
       req = datastore.CommitRequest()
       req.mode = datastore.CommitRequest.NON_TRANSACTIONAL
       req.mutation.update.extend([user])
       datastore.commit(req)
-      logging.info('Updated user: ' + generated_name + ' (' + uid + ')')
-    # auto_id_key = resp.mutation_result.insert_auto_id_key[0].path_element[0].id
-    # return auto_id_key
+      logging.info('Updated user: ' + uid + ' action: ' + action)
+
   except datastore.RPCError as e:
     # RPCError is raised if any error happened during a RPC.
     # It includes the `method` called and the `reason` of the

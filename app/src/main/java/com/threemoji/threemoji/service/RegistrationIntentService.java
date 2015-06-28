@@ -32,7 +32,11 @@ public class RegistrationIntentService extends IntentService {
 //            synchronized (TAG) {
             unregisterFromServer();
             String token = getGcmToken();
-            sendTokenToServer(token);
+            if (!getPrefs().getBoolean(getString(R.string.pref_has_seen_start_page_key), false)) {
+                sendTokenToServer(token);
+            } else {
+                updateTokenOnServer(token);
+            }
             storeToken(token);
 //            }
         } catch (Exception e) {
@@ -72,6 +76,24 @@ public class RegistrationIntentService extends IntentService {
         } catch (IOException e) {
             Log.e(TAG,
                   "IOException while sending token to backend...", e);
+        }
+    }
+
+    private void updateTokenOnServer(String token) {
+        GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
+        try {
+            Bundle data = new Bundle();
+            data.putString("action", getString(R.string.backend_action_update_token_key));
+            data.putString(getString(R.string.backend_uid_key), getPrefs().getString(getString(R.string.profile_uid_key), ""));
+            data.putString(getString(R.string.backend_password_key), getPrefs().getString(getString(R.string.profile_password_key), ""));
+            data.putString(getString(R.string.backend_token_key), token);
+            String msgId = getNextMsgId(token);
+            gcm.send(getString(R.string.gcm_project_id) + "@gcm.googleapis.com", msgId,
+                    timeToLive, data);
+            Log.v(TAG, "token updated: " + token);
+        } catch (IOException e) {
+            Log.e(TAG,
+                    "IOException while sending token to backend...", e);
         }
     }
 

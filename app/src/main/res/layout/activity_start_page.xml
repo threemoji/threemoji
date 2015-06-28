@@ -112,7 +112,7 @@
             android:layout_height="wrap_content"
             android:onClick="submitStartPage"
             android:padding="24dp"
-            android:text="CONTINUE" />
+            android:text="Create New Profile" />
 
     </LinearLayout>
 

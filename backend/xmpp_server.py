@@ -32,7 +32,7 @@ def message_callback(session, message):
       if msg.has_key('data'):
         data = msg["data"]
         if data.has_key('action'):
-          if data["action"] == "upload_profile":
+          if data["action"] == "upload_profile" or data["action"] == "update_profile":
             uid = data["uid"]
             password = data["password"]
             token = data["token"]
@@ -43,7 +43,10 @@ def message_callback(session, message):
             gender = data["gender"]
             location = data["location"]
             radius = data["radius"]
-            add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, gender, location, radius)
+            if data["action"] == "upload_profile":
+              add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, gender, location, radius)
+            else:
+              update_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, gender, location, radius)
 
       sent_message_id += 1
 
@@ -99,7 +102,7 @@ def add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, ge
     date_modified_property.value.timestamp_microseconds_value = current_time
 
     resp = datastore.commit(req)
-    logging.debug('Added user: ' + generated_name + ' (' + uid + ')')
+    logging.info('Added user: ' + generated_name + ' (' + uid + ')')
     # auto_id_key = resp.mutation_result.insert_auto_id_key[0].path_element[0].id
     # return auto_id_key
   except datastore.RPCError as e:
@@ -114,7 +117,66 @@ def add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, ge
                   {'status': e.response.status,
                    'reason': e.response.reason})
 
-logging.basicConfig(level=logging.DEBUG)
+def update_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, gender, location, radius):
+  datastore.set_options(dataset=os.environ.get('PROJECT_ID'))
+  data_dict = {"token": token,
+               "emoji_1": emoji_1, "emoji_2": emoji_2, "emoji_3": emoji_3,
+               "generated_name": generated_name, "gender": gender,
+               "location": location, "radius": radius}
+  try:
+    req = datastore.LookupRequest()
+
+    user_key = datastore.Key()
+    path = user_key.path_element.add()
+    path.name = uid
+    path.kind = 'User'
+    fail_password = False
+
+    req.key.extend([user_key])
+    resp = datastore.lookup(req)
+    user = resp.found[0].entity
+    for prop in user.property:
+      print "processing property " + prop.name
+      if prop.name == 'password':
+        if password != prop.value.string_value:
+          print "expected " + prop.value.string_value
+          print "got " + password
+          fail_password = True
+          break
+        else:
+          continue
+      elif prop.name == 'date_created':
+        continue
+      elif prop.name == 'date_modified':
+        prop.value.timestamp_microseconds_value = long(time.time() * 1e6)
+      elif data_dict.has_key(prop.name):
+        prop.value.string_value = data_dict[prop.name]
+      else:
+        continue
+
+    if fail_password:
+      logging.error('Access denied for user: ' + generated_name + ' (' + uid + ') action: update_profile')
+    else:
+      req = datastore.CommitRequest()
+      req.mode = datastore.CommitRequest.NON_TRANSACTIONAL
+      req.mutation.update.extend([user])
+      datastore.commit(req)
+      logging.info('Updated user: ' + generated_name + ' (' + uid + ')')
+    # auto_id_key = resp.mutation_result.insert_auto_id_key[0].path_element[0].id
+    # return auto_id_key
+  except datastore.RPCError as e:
+    # RPCError is raised if any error happened during a RPC.
+    # It includes the `method` called and the `reason` of the
+    # failure as well as the original `HTTPResponse` object.
+    logging.error('Error while doing datastore operation')
+    logging.error('RPCError: %(method)s %(reason)s',
+                  {'method': e.method,
+                   'reason': e.reason})
+    logging.error('HTTPError: %(status)s %(reason)s',
+                  {'status': e.response.status,
+                   'reason': e.response.reason})
+
+logging.basicConfig(level=logging.INFO)
 client = xmpp.Client(SERVER, debug=['socket'])
 client.connect(server=(SERVER,PORT), secure=1, use_srv=False)
 auth = client.auth(USERNAME, PASSWORD)

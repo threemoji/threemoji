@@ -50,7 +50,8 @@ def message_callback(session, message):
                            "emoji_1": emoji_1, "emoji_2": emoji_2, "emoji_3": emoji_3,
                            "generated_name": generated_name, "gender": gender,
                            "location": location, "radius": radius}
-              update_user(uid, password, data_dict, data["action"])
+              if update_user(uid, password, data_dict, data["action"]) == 404:
+                add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, gender, location, radius)
           elif data["action"] == "update_token":
             update_user(uid, password, {"token": data["token"]}, data["action"])
 
@@ -137,35 +138,35 @@ def update_user(uid, password, data_dict, action):
     resp = datastore.lookup(req)
     if len(resp.missing) is 1:
       logging.error('Entity not found for user: ' + uid + ' action: ' + action)
-    else:
+      return 404
 
-      user = resp.found[0].entity
-      for prop in user.property:
-        if prop.name == 'password':
-          if password != prop.value.string_value:
-            print "expected " + prop.value.string_value
-            print "got " + password
-            fail_password = True
-            break
-          else:
-            continue
-        elif prop.name == 'date_created':
-          continue
-        elif prop.name == 'date_modified':
-          prop.value.timestamp_microseconds_value = long(time.time() * 1e6)
-        elif data_dict.has_key(prop.name):
-          prop.value.string_value = data_dict[prop.name]
+    user = resp.found[0].entity
+    for prop in user.property:
+      if prop.name == 'password':
+        if password != prop.value.string_value:
+          print "expected " + prop.value.string_value
+          print "got " + password
+          fail_password = True
+          break
         else:
           continue
-
-      if fail_password:
-        logging.error('Access denied for user: ' + uid + ' action: ' + action)
+      elif prop.name == 'date_created':
+        continue
+      elif prop.name == 'date_modified':
+        prop.value.timestamp_microseconds_value = long(time.time() * 1e6)
+      elif data_dict.has_key(prop.name):
+        prop.value.string_value = data_dict[prop.name]
       else:
-        req = datastore.CommitRequest()
-        req.mode = datastore.CommitRequest.NON_TRANSACTIONAL
-        req.mutation.update.extend([user])
-        datastore.commit(req)
-        logging.info('Updated user: ' + uid + ' action: ' + action)
+        continue
+
+    if fail_password:
+      logging.error('Access denied for user: ' + uid + ' action: ' + action)
+    else:
+      req = datastore.CommitRequest()
+      req.mode = datastore.CommitRequest.NON_TRANSACTIONAL
+      req.mutation.update.extend([user])
+      datastore.commit(req)
+      logging.info('Updated user: ' + uid + ' action: ' + action)
 
   except datastore.RPCError as e:
     # RPCError is raised if any error happened during a RPC.

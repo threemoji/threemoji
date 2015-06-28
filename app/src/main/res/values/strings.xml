@@ -1,5 +1,5 @@
 <resources>
-    <string name="gcm_project_id">347398514227</string>
+    <string name="gcm_project_num">347398514227</string>
     <string name="app_name">Threemoji</string>
 
     <string name="drawer_open">Open</string>

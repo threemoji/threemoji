@@ -135,6 +135,9 @@ def update_user(uid, password, data_dict, action):
 
     req.key.extend([user_key])
     resp = datastore.lookup(req)
+    if len(resp.missing) is 1:
+      raise Exception('entity not found')
+
     user = resp.found[0].entity
     for prop in user.property:
       if prop.name == 'password':

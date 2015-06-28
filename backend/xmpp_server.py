@@ -136,35 +136,36 @@ def update_user(uid, password, data_dict, action):
     req.key.extend([user_key])
     resp = datastore.lookup(req)
     if len(resp.missing) is 1:
-      raise Exception('entity not found')
+      logging.error('Entity not found for user: ' + uid + ' action: ' + action)
+    else:
 
-    user = resp.found[0].entity
-    for prop in user.property:
-      if prop.name == 'password':
-        if password != prop.value.string_value:
-          print "expected " + prop.value.string_value
-          print "got " + password
-          fail_password = True
-          break
+      user = resp.found[0].entity
+      for prop in user.property:
+        if prop.name == 'password':
+          if password != prop.value.string_value:
+            print "expected " + prop.value.string_value
+            print "got " + password
+            fail_password = True
+            break
+          else:
+            continue
+        elif prop.name == 'date_created':
+          continue
+        elif prop.name == 'date_modified':
+          prop.value.timestamp_microseconds_value = long(time.time() * 1e6)
+        elif data_dict.has_key(prop.name):
+          prop.value.string_value = data_dict[prop.name]
         else:
           continue
-      elif prop.name == 'date_created':
-        continue
-      elif prop.name == 'date_modified':
-        prop.value.timestamp_microseconds_value = long(time.time() * 1e6)
-      elif data_dict.has_key(prop.name):
-        prop.value.string_value = data_dict[prop.name]
-      else:
-        continue
 
-    if fail_password:
-      logging.error('Access denied for user: ' + uid + ' action: ' + action)
-    else:
-      req = datastore.CommitRequest()
-      req.mode = datastore.CommitRequest.NON_TRANSACTIONAL
-      req.mutation.update.extend([user])
-      datastore.commit(req)
-      logging.info('Updated user: ' + uid + ' action: ' + action)
+      if fail_password:
+        logging.error('Access denied for user: ' + uid + ' action: ' + action)
+      else:
+        req = datastore.CommitRequest()
+        req.mode = datastore.CommitRequest.NON_TRANSACTIONAL
+        req.mutation.update.extend([user])
+        datastore.commit(req)
+        logging.info('Updated user: ' + uid + ' action: ' + action)
 
   except datastore.RPCError as e:
     # RPCError is raised if any error happened during a RPC.

@@ -75,7 +75,7 @@ An Orbital 2015 project.
 [ignition-presentation]: https://youtu.be/osQjStOAci0?t=1h59m10s
 [main-screen]: images/prototype/main-screen.gif
 
-[User Stories]: User-Stories.md
+[User Stories]: wiki/User-Stories
 
 [Proto]: http://proto.io
 [LICEcap]: http://www.cockos.com/licecap/

@@ -20,19 +20,19 @@ public class ChatDbHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         final String SQL_CREATE_PARTNER_TABLE =
-                "CREATE_TABLE " + PartnerEntry.TABLE_NAME + " (" +
+                "CREATE TABLE " + PartnerEntry.TABLE_NAME + " (" +
                 PartnerEntry._ID + " INTEGER PRIMARY KEY, " +
                 PartnerEntry.COLUMN_UUID + " TEXT NOT NULL, " +
                 PartnerEntry.COLUMN_EMOJI_1 + " INTEGER NOT NULL, " +
                 PartnerEntry.COLUMN_EMOJI_2 + " INTEGER NOT NULL, " +
                 PartnerEntry.COLUMN_EMOJI_3 + " INTEGER NOT NULL, " +
                 PartnerEntry.COLUMN_GENDER + " TEXT NOT NULL, " +
-                PartnerEntry.COLUMN_GENERATED_NAME + " TEXT NOT NULL, " +
+                PartnerEntry.COLUMN_GENERATED_NAME + " TEXT NOT NULL " +
 //                "PRIMARY KEY (" + PartnerEntry.COLUMN_UUID + ", " + PartnerEntry._ID + ") " +
                 " );";
 
         final String SQL_CREATE_MESSAGE_TABLE =
-                "CREATE_TABLE " + MessageEntry.TABLE_NAME + " (" +
+                "CREATE TABLE " + MessageEntry.TABLE_NAME + " (" +
                 MessageEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 MessageEntry.COLUMN_PARTNER_KEY + " INTEGER NOT NULL, " +
                 MessageEntry.COLUMN_DATETIME + " BIGINT NOT NULL, " +

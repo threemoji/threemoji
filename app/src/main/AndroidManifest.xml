@@ -47,7 +47,7 @@
         </service>
         <service
             android:name=".service.RegistrationIntentService"
-            android:exported="false"></service>
+            android:exported="false"/>
 
         <activity
             android:name=".MainActivity"
@@ -69,7 +69,13 @@
         <activity
             android:name=".StartPageActivity"
             android:label="@string/title_activity_start_page"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait"/>
+
+        <provider
+            android:authorities="@string/content_authority"
+            android:name=".data.ChatProvider"
+            android:exported="false"
+            android:syncable="true" />
     </application>
 
 </manifest>

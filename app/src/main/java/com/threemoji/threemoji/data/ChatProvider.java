@@ -119,7 +119,7 @@ public class ChatProvider extends ContentProvider {
             case MESSAGES_WITH_PARTNER: {
                 long _id = db.insert(MessageEntry.TABLE_NAME, null, values);
                 if (_id > 0) {
-                    returnUri = MessageEntry.buildMessagesUri(_id);
+                    returnUri = MessageEntry.buildMessageUri(_id);
                 } else {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 }

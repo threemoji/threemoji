@@ -1,8 +1,10 @@
 package com.threemoji.threemoji;
 
+import com.threemoji.threemoji.data.ChatContract;
 import com.threemoji.threemoji.utility.NameGenerator;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -22,6 +24,16 @@ import java.util.List;
 import java.util.Random;
 
 public class ChatListFragment extends Fragment {
+
+    private static final String TAG = ChatListFragment.class.getSimpleName();
+
+    private final String[] CHAT_ITEM_PROJECTION = new String[]{
+            ChatContract.PartnerEntry.COLUMN_EMOJI_1,
+            ChatContract.PartnerEntry.COLUMN_EMOJI_2,
+            ChatContract.PartnerEntry.COLUMN_EMOJI_3,
+            ChatContract.PartnerEntry.COLUMN_GENERATED_NAME,
+    };
+
     // ================================================================
     // Methods for initialising the components of the chat list
     // ================================================================
@@ -38,7 +50,38 @@ public class ChatListFragment extends Fragment {
     private void setupRecyclerView(RecyclerView recyclerView) {
         ArrayList<ChatItem> chats = new ArrayList<ChatItem>();
 
-        addDummyData(chats);
+//        Uri uri;
+//        ContentValues testValues = new ContentValues();
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_UUID, "bc54eb07-03cb-48e8-8bf8-002eee94723b");
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_1, "2130838236");
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_2, "2130838233");
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_3, "2130838228");
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_GENDER, "FEMALE");
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_GENERATED_NAME, "Woeful Quagga");
+//
+//        uri = getActivity().getContentResolver().insert(ChatContract.PartnerEntry.CONTENT_URI, testValues);
+//        Log.v(TAG, uri.toString());
+
+//        int rowsDeleted = getActivity().getContentResolver().delete(ChatContract.PartnerEntry.CONTENT_URI,
+//                                                                    ChatContract.PartnerEntry.COLUMN_GENERATED_NAME + " = ?",
+//                                                                    new String[] {"Shiny Boubou"});
+//        Log.v(TAG, rowsDeleted+"");
+
+        Cursor cursor = getActivity().getContentResolver()
+                                     .query(ChatContract.PartnerEntry.CONTENT_URI,
+                                            CHAT_ITEM_PROJECTION, null, null, null);
+//        addDummyData(chats);
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                chats.add(
+                        new ChatItem(
+                                Integer.parseInt(cursor.getString(0)),
+                                Integer.parseInt(cursor.getString(1)),
+                                Integer.parseInt(cursor.getString(2)),
+                                cursor.getString(3),
+                                getRandomTime()));
+            }
+        }
 
         recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
         recyclerView.setAdapter(new RecyclerViewAdapter(getActivity(), chats));

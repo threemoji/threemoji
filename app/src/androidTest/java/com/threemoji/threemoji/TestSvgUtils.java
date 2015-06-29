@@ -1,5 +1,7 @@
 package com.threemoji.threemoji;
 
+import com.threemoji.threemoji.utility.SvgUtils;
+
 import android.graphics.drawable.Drawable;
 import android.test.AndroidTestCase;
 

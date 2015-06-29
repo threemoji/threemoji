@@ -1,4 +1,6 @@
-package com.threemoji.threemoji;
+package com.threemoji.threemoji.utility;
+
+import com.threemoji.threemoji.R;
 
 public class EmojiList {
     public static int[] emoticons = {R.drawable.emoji_1f604, R.drawable.emoji_1f603,

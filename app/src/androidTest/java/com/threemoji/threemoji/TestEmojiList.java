@@ -1,5 +1,7 @@
 package com.threemoji.threemoji;
 
+import com.threemoji.threemoji.utility.EmojiList;
+
 import android.test.AndroidTestCase;
 
 public class TestEmojiList extends AndroidTestCase {

@@ -1,5 +1,7 @@
 package com.threemoji.threemoji;
 
+import com.threemoji.threemoji.utility.EmojiList;
+
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;

@@ -4,6 +4,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
 import com.threemoji.threemoji.service.RegistrationIntentService;
+import com.threemoji.threemoji.utility.SvgUtils;
 
 import android.app.Dialog;
 import android.content.Intent;

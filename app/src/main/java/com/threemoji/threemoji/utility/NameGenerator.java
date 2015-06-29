@@ -1,4 +1,4 @@
-package com.threemoji.threemoji;
+package com.threemoji.threemoji.utility;
 
 import java.util.Random;
 

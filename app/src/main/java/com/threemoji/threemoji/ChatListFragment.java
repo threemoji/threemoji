@@ -1,5 +1,7 @@
 package com.threemoji.threemoji;
 
+import com.threemoji.threemoji.utility.NameGenerator;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;

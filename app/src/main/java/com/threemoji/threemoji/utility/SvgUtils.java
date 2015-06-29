@@ -1,7 +1,8 @@
-package com.threemoji.threemoji;
+package com.threemoji.threemoji.utility;
 
 import com.caverock.androidsvg.SVG; // https://code.google.com/p/androidsvg/
 import com.caverock.androidsvg.SVGParseException;
+import com.threemoji.threemoji.Threemoji;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;

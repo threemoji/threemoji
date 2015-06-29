@@ -3,6 +3,10 @@ package com.threemoji.threemoji;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
 
+import com.threemoji.threemoji.utility.EmojiList;
+import com.threemoji.threemoji.utility.NameGenerator;
+import com.threemoji.threemoji.utility.SvgUtils;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;

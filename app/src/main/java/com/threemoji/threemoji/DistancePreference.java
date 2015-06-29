@@ -12,6 +12,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 /**
+ * This class is for the custom seekbar preference item seen in settings
  * http://stackoverflow.com/questions/16108609/android-creating-custom-preference
  * http://www.codeproject.com/Articles/163541/SeekBar-Preference
  * http://stackoverflow.com/questions/8956218/android-seekbar-setonseekbarchangelistener
@@ -26,7 +27,6 @@ public class DistancePreference extends Preference {
     private final String distanceKey = getContext().getString(R.string.pref_max_distance_key);
     private final String distanceDefault = getContext().getString(
             R.string.pref_max_distance_default);
-    ;
 
     public DistancePreference(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);

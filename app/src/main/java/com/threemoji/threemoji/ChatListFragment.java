@@ -20,6 +20,9 @@ import java.util.List;
 import java.util.Random;
 
 public class ChatListFragment extends Fragment {
+    // ================================================================
+    // Methods for initialising the components of the chat list
+    // ================================================================
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -68,6 +71,10 @@ public class ChatListFragment extends Fragment {
         return rand.nextInt(60) + " minutes ago";
     }
 
+
+    // ================================================================
+    // Inner class to represent each row of the chat list
+    // ================================================================
     public class ChatItem {
         public int emoji1;
         public int emoji2;
@@ -85,32 +92,16 @@ public class ChatListFragment extends Fragment {
         }
     }
 
+
+    // ================================================================
+    // Inner class to handle the population of items in the list
+    // ================================================================
     public static class RecyclerViewAdapter
             extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
 
         private List<ChatItem> mItems;
         private final TypedValue mTypedValue = new TypedValue();
         private int mBackground;
-
-        public static class ViewHolder extends RecyclerView.ViewHolder {
-
-            public final View view;
-            public final ImageView emoji1;
-            public final ImageView emoji2;
-            public final ImageView emoji3;
-            public final TextView partnerName;
-            public final TextView lastActivity;
-
-            public ViewHolder(View view) {
-                super(view);
-                this.view = view;
-                emoji1 = (ImageView) view.findViewById(R.id.emoji1);
-                emoji2 = (ImageView) view.findViewById(R.id.emoji2);
-                emoji3 = (ImageView) view.findViewById(R.id.emoji3);
-                partnerName = (TextView) view.findViewById(R.id.partnerName);
-                lastActivity = (TextView) view.findViewById(R.id.lastActivity);
-            }
-        }
 
         public RecyclerViewAdapter(Context context, List<ChatItem> items) {
             // Initialises the animated background of the each list item.
@@ -156,6 +147,29 @@ public class ChatListFragment extends Fragment {
         @Override
         public int getItemCount() {
             return mItems.size();
+        }
+
+
+        // ================================================================
+        // Inner class to represent ChatItems in actual views
+        // ================================================================
+        public static class ViewHolder extends RecyclerView.ViewHolder {
+            public final View view;
+            public final ImageView emoji1;
+            public final ImageView emoji2;
+            public final ImageView emoji3;
+            public final TextView partnerName;
+            public final TextView lastActivity;
+
+            public ViewHolder(View view) {
+                super(view);
+                this.view = view;
+                emoji1 = (ImageView) view.findViewById(R.id.emoji1);
+                emoji2 = (ImageView) view.findViewById(R.id.emoji2);
+                emoji3 = (ImageView) view.findViewById(R.id.emoji3);
+                partnerName = (TextView) view.findViewById(R.id.partnerName);
+                lastActivity = (TextView) view.findViewById(R.id.lastActivity);
+            }
         }
     }
 }

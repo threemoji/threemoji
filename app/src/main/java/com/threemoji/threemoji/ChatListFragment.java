@@ -1,7 +1,6 @@
 package com.threemoji.threemoji;
 
 import com.threemoji.threemoji.data.ChatContract;
-import com.threemoji.threemoji.utility.NameGenerator;
 
 import android.content.Context;
 import android.content.Intent;
@@ -29,6 +28,7 @@ public class ChatListFragment extends Fragment {
     private static final String TAG = ChatListFragment.class.getSimpleName();
 
     private final String[] CHAT_ITEM_PROJECTION = new String[]{
+            ChatContract.PartnerEntry.COLUMN_UUID,
             ChatContract.PartnerEntry.COLUMN_EMOJI_1,
             ChatContract.PartnerEntry.COLUMN_EMOJI_2,
             ChatContract.PartnerEntry.COLUMN_EMOJI_3,
@@ -76,10 +76,11 @@ public class ChatListFragment extends Fragment {
             while (cursor.moveToNext()) {
                 chats.add(
                         new ChatItem(
-                                Integer.parseInt(cursor.getString(0)),
+                                cursor.getString(0),
                                 Integer.parseInt(cursor.getString(1)),
                                 Integer.parseInt(cursor.getString(2)),
-                                cursor.getString(3),
+                                Integer.parseInt(cursor.getString(3)),
+                                cursor.getString(4),
                                 getRandomTime()));
             }
         }
@@ -88,12 +89,12 @@ public class ChatListFragment extends Fragment {
         recyclerView.setAdapter(new RecyclerViewAdapter(getActivity(), chats));
     }
 
-    private void addDummyData(ArrayList<ChatItem> chats) {
-        for (int i = 0; i < 20; i++) {
-            chats.add(new ChatItem(getRandomEmoji(), getRandomEmoji(), getRandomEmoji(),
-                                   NameGenerator.getName(), getRandomTime()));
-        }
-    }
+//    private void addDummyData(ArrayList<ChatItem> chats) {
+//        for (int i = 0; i < 20; i++) {
+//            chats.add(new ChatItem(getRandomEmoji(), getRandomEmoji(), getRandomEmoji(),
+//                                   NameGenerator.getName(), getRandomTime()));
+//        }
+//    }
 
     private int getRandomEmoji() {
         Random rand = new Random();
@@ -122,14 +123,16 @@ public class ChatListFragment extends Fragment {
     // Inner class to represent each row of the chat list
     // ================================================================
     public class ChatItem {
+        public String uuid;
         public int emoji1;
         public int emoji2;
         public int emoji3;
         public String partnerName;
         public String lastActivity;
 
-        public ChatItem(int emoji1, int emoji2, int emoji3, String partnerName,
+        public ChatItem(String uuid, int emoji1, int emoji2, int emoji3, String partnerName,
                         String lastActivity) {
+            this.uuid = uuid;
             this.emoji1 = emoji1;
             this.emoji2 = emoji2;
             this.emoji3 = emoji3;
@@ -170,13 +173,10 @@ public class ChatListFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
-            ChatItem currentItem = mItems.get(position);
+            final ChatItem currentItem = mItems.get(position);
             holder.emoji1.setImageResource(currentItem.emoji1);
-            holder.emoji1.setTag(currentItem.emoji1);
             holder.emoji2.setImageResource(currentItem.emoji2);
-            holder.emoji2.setTag(currentItem.emoji2);
             holder.emoji3.setImageResource(currentItem.emoji3);
-            holder.emoji3.setTag(currentItem.emoji3);
             holder.partnerName.setText(currentItem.partnerName);
             holder.lastActivity.setText(currentItem.lastActivity);
 
@@ -185,11 +185,11 @@ public class ChatListFragment extends Fragment {
                 public void onClick(View v) {
                     Context context = v.getContext();
                     Intent intent = new Intent(context, ChatActivity.class);
+                    intent.putExtra("uuid", currentItem.uuid);
+                    intent.putExtra("emoji_1", currentItem.emoji1);
+                    intent.putExtra("emoji_2", currentItem.emoji2);
+                    intent.putExtra("emoji_3", currentItem.emoji3);
                     intent.putExtra("generated_name", holder.partnerName.getText());
-                    intent.putExtra("emoji_1", (int) holder.emoji1.getTag());
-                    intent.putExtra("emoji_2", (int) holder.emoji2.getTag());
-                    intent.putExtra("emoji_3", (int) holder.emoji3.getTag());
-
                     context.startActivity(intent);
                     Log.d("onBindViewHolder", holder.partnerName.getText().toString());
                 }

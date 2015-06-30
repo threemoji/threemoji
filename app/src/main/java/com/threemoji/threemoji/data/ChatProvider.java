@@ -1,7 +1,7 @@
 package com.threemoji.threemoji.data;
 
-import com.threemoji.threemoji.data.ChatContract.PartnerEntry;
 import com.threemoji.threemoji.data.ChatContract.MessageEntry;
+import com.threemoji.threemoji.data.ChatContract.PartnerEntry;
 
 import android.annotation.TargetApi;
 import android.content.ContentProvider;
@@ -40,20 +40,24 @@ public class ChatProvider extends ContentProvider {
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
         final String authority = ChatContract.CONTENT_AUTHORITY;
 
-        matcher.addURI(authority, ChatContract.PATH_MESSAGES + "/*", MESSAGES_WITH_PARTNER);
+        matcher.addURI(authority, ChatContract.PATH_MESSAGES, MESSAGES_WITH_PARTNER);
         matcher.addURI(authority, ChatContract.PATH_PARTNERS, PARTNERS);
 
         return matcher;
     }
 
     private Cursor getMessagesWithPartner(Uri uri, String[] projection, String sortOrder) {
-        String[] selectionArgs = MessageEntry.getQueryParamsFromUri(uri);
+        String[] selectionArgs =
+                new String[]{uri.getQueryParameter(PartnerEntry.COLUMN_UUID),
+                             uri.getQueryParameter(PartnerEntry.COLUMN_EMOJI_1),
+                             uri.getQueryParameter(PartnerEntry.COLUMN_EMOJI_2),
+                             uri.getQueryParameter(PartnerEntry.COLUMN_EMOJI_3),
+                             uri.getQueryParameter(PartnerEntry.COLUMN_GENERATED_NAME)};
         String selection =
                 PartnerEntry.TABLE_NAME + "." + PartnerEntry.COLUMN_UUID + " = ? AND " +
                 PartnerEntry.TABLE_NAME + "." + PartnerEntry.COLUMN_EMOJI_1 + " = ? AND " +
                 PartnerEntry.TABLE_NAME + "." + PartnerEntry.COLUMN_EMOJI_2 + " = ? AND " +
                 PartnerEntry.TABLE_NAME + "." + PartnerEntry.COLUMN_EMOJI_3 + " = ? AND " +
-                PartnerEntry.TABLE_NAME + "." + PartnerEntry.COLUMN_GENDER + " = ? AND " +
                 PartnerEntry.TABLE_NAME + "." + PartnerEntry.COLUMN_GENERATED_NAME + " = ? ";
 
         return sMessagesWithPartnerQueryBuilder.query(mChatDbHelper.getReadableDatabase(),

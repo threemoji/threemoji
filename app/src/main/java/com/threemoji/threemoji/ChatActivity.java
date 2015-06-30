@@ -3,20 +3,24 @@ package com.threemoji.threemoji;
 import com.threemoji.threemoji.data.ChatContract;
 import com.threemoji.threemoji.utility.SvgUtils;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -25,6 +29,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ChatActivity extends AppCompatActivity {
+    private static final String TAG = ChatActivity.class.getSimpleName();
+    ArrayList<Message> mMessages;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,7 +66,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private void initMessages(String uuid, int emoji1, int emoji2, int emoji3,
                               String generatedName) {
-        ArrayList<Message> messages = new ArrayList<Message>();
+        mMessages = new ArrayList<Message>();
         String[] projection = new String[]{ChatContract.MessageEntry.COLUMN_DATETIME,
                                            ChatContract.MessageEntry.COLUMN_SENT_OR_RECEIVED,
                                            ChatContract.MessageEntry.COLUMN_MESSAGE_DATA};
@@ -69,11 +76,11 @@ public class ChatActivity extends AppCompatActivity {
         Cursor cursor = getContentResolver().query(
                 ChatContract.MessageEntry.buildMessagesWithPartner(uuid, emoji1 + "", emoji2 + "",
                                                                    emoji3 + "", generatedName),
-                projection, null, null, null);
+                projection, null, null, ChatContract.MessageEntry.TABLE_NAME + "." + ChatContract.MessageEntry._ID + " DESC");
 
         if (cursor != null) {
             while (cursor.moveToNext()) {
-                messages.add(
+                mMessages.add(
                         new Message(cursor.getString(0),
                                     cursor.getString(1),
                                     cursor.getString(2)));
@@ -81,7 +88,7 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         RecyclerView messagesView = (RecyclerView) findViewById(R.id.chat_messages);
-        setupRecyclerView(messagesView, messages);
+        setupRecyclerView(messagesView, mMessages);
     }
 
     private void addDummyMessages() {
@@ -99,8 +106,32 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView(RecyclerView messagesView, ArrayList<Message> messages) {
-        messagesView.setLayoutManager(new LinearLayoutManager(messagesView.getContext()));
-        messagesView.setAdapter(new MessagesRecyclerViewAdapter(this, messages));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(messagesView.getContext());
+        layoutManager.setStackFromEnd(true);
+        layoutManager.setReverseLayout(true);
+
+        messagesView.setLayoutManager(layoutManager);
+        MessagesRecyclerViewAdapter adapter = new MessagesRecyclerViewAdapter(this, messages);
+        messagesView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+    }
+
+    public void sendMessage(View view) {
+        EditText editText = (EditText) findViewById(R.id.user_message);
+        String userMessage = editText.getText().toString();
+        editText.setText("");
+
+        if (userMessage.trim().length() > 0) {
+            Uri uri;
+            ContentValues dummyValues = new ContentValues();
+            dummyValues.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, "2");
+            dummyValues.put(ChatContract.MessageEntry.COLUMN_DATETIME, "124");
+            dummyValues.put(ChatContract.MessageEntry.COLUMN_SENT_OR_RECEIVED, "sent");
+            dummyValues.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, userMessage.trim());
+            uri = getContentResolver().insert(ChatContract.MessageEntry.CONTENT_URI, dummyValues);
+            Log.v("", uri.toString());
+            mMessages.add(0, new Message("124", "sent", userMessage.trim()));
+        }
     }
 
     public class Message {

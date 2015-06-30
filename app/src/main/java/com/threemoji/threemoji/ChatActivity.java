@@ -31,6 +31,7 @@ import java.util.List;
 public class ChatActivity extends AppCompatActivity {
     private static final String TAG = ChatActivity.class.getSimpleName();
     ArrayList<Message> mMessages;
+    MessagesRecyclerViewAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +77,9 @@ public class ChatActivity extends AppCompatActivity {
         Cursor cursor = getContentResolver().query(
                 ChatContract.MessageEntry.buildMessagesWithPartner(uuid, emoji1 + "", emoji2 + "",
                                                                    emoji3 + "", generatedName),
-                projection, null, null, ChatContract.MessageEntry.TABLE_NAME + "." + ChatContract.MessageEntry._ID + " DESC");
+                projection, null, null,
+                ChatContract.MessageEntry.TABLE_NAME + "." + ChatContract.MessageEntry._ID +
+                " DESC");
 
         if (cursor != null) {
             while (cursor.moveToNext()) {
@@ -88,7 +91,7 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         RecyclerView messagesView = (RecyclerView) findViewById(R.id.chat_messages);
-        setupRecyclerView(messagesView, mMessages);
+        setupRecyclerView(messagesView);
     }
 
     private void addDummyMessages() {
@@ -102,18 +105,18 @@ public class ChatActivity extends AppCompatActivity {
 //        dummyValues.put(ChatContract.MessageEntry.COLUMN_SENT_OR_RECEIVED, "received");
 //        dummyValues.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, "Hello Shiny Boubou");
 //        uri = getContentResolver().insert(ChatContract.MessageEntry.CONTENT_URI, dummyValues);
-//        Log.v("", uri.toString());
+//        Log.v(TAG, uri.toString());
     }
 
-    private void setupRecyclerView(RecyclerView messagesView, ArrayList<Message> messages) {
+    private void setupRecyclerView(RecyclerView messagesView) {
         LinearLayoutManager layoutManager = new LinearLayoutManager(messagesView.getContext());
         layoutManager.setStackFromEnd(true);
         layoutManager.setReverseLayout(true);
+        layoutManager.scrollToPosition(0);
 
         messagesView.setLayoutManager(layoutManager);
-        MessagesRecyclerViewAdapter adapter = new MessagesRecyclerViewAdapter(this, messages);
-        messagesView.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
+        mAdapter = new MessagesRecyclerViewAdapter(this, mMessages);
+        messagesView.setAdapter(mAdapter);
     }
 
     public void sendMessage(View view) {
@@ -122,6 +125,9 @@ public class ChatActivity extends AppCompatActivity {
         editText.setText("");
 
         if (userMessage.trim().length() > 0) {
+            mMessages.add(0, new Message("124", "sent", userMessage.trim()));
+            mAdapter.notifyDataSetChanged();
+            mAdapter.moveToEnd();
             Uri uri;
             ContentValues dummyValues = new ContentValues();
             dummyValues.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, "2");
@@ -129,8 +135,7 @@ public class ChatActivity extends AppCompatActivity {
             dummyValues.put(ChatContract.MessageEntry.COLUMN_SENT_OR_RECEIVED, "sent");
             dummyValues.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, userMessage.trim());
             uri = getContentResolver().insert(ChatContract.MessageEntry.CONTENT_URI, dummyValues);
-            Log.v("", uri.toString());
-            mMessages.add(0, new Message("124", "sent", userMessage.trim()));
+            Log.v(TAG, uri.toString());
         }
     }
 
@@ -150,6 +155,7 @@ public class ChatActivity extends AppCompatActivity {
             extends RecyclerView.Adapter<MessagesRecyclerViewAdapter.ViewHolder> {
 
         List<Message> mMessages;
+        RecyclerView rv;
 
         public MessagesRecyclerViewAdapter(Context context, List<Message> items) {
             mMessages = items;
@@ -160,6 +166,7 @@ public class ChatActivity extends AppCompatActivity {
                                              int viewType) {
             View view = LayoutInflater.from(parent.getContext())
                                       .inflate(R.layout.item_chat_message, parent, false);
+            rv = (RecyclerView) parent;
             return new ViewHolder(view);
         }
 
@@ -180,6 +187,10 @@ public class ChatActivity extends AppCompatActivity {
         @Override
         public int getItemCount() {
             return mMessages.size();
+        }
+
+        public void moveToEnd() {
+            rv.scrollToPosition(0);
         }
 
         public static class ViewHolder extends RecyclerView.ViewHolder {

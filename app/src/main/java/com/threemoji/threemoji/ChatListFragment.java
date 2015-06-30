@@ -4,6 +4,7 @@ import com.threemoji.threemoji.data.ChatContract;
 import com.threemoji.threemoji.utility.NameGenerator;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -171,19 +172,25 @@ public class ChatListFragment extends Fragment {
         public void onBindViewHolder(final ViewHolder holder, int position) {
             ChatItem currentItem = mItems.get(position);
             holder.emoji1.setImageResource(currentItem.emoji1);
+            holder.emoji1.setTag(currentItem.emoji1);
             holder.emoji2.setImageResource(currentItem.emoji2);
+            holder.emoji2.setTag(currentItem.emoji2);
             holder.emoji3.setImageResource(currentItem.emoji3);
+            holder.emoji3.setTag(currentItem.emoji3);
             holder.partnerName.setText(currentItem.partnerName);
             holder.lastActivity.setText(currentItem.lastActivity);
 
             holder.view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-//                    Context context = v.getContext();
-//                    Intent intent = new Intent(context, ChatActivity.class);
-//                    intent.putExtra(ChatActivity.EXTRA_NAME, holder.mBoundString);
-//
-//                    context.startActivity(intent);
+                    Context context = v.getContext();
+                    Intent intent = new Intent(context, ChatActivity.class);
+                    intent.putExtra("generated_name", holder.partnerName.getText());
+                    intent.putExtra("emoji_1", (int) holder.emoji1.getTag());
+                    intent.putExtra("emoji_2", (int) holder.emoji2.getTag());
+                    intent.putExtra("emoji_3", (int) holder.emoji3.getTag());
+
+                    context.startActivity(intent);
                     Log.d("onBindViewHolder", holder.partnerName.getText().toString());
                 }
             });

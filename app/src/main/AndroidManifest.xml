@@ -70,6 +70,14 @@
             android:name=".StartPageActivity"
             android:label="@string/title_activity_start_page"
             android:screenOrientation="portrait"/>
+        <activity
+            android:name=".ChatActivity"
+            android:windowSoftInputMode="adjustResize"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.threemoji.threemoji.MainActivity" />
+        </activity>
 
         <provider
             android:authorities="@string/content_authority"

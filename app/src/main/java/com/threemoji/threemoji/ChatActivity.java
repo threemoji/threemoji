@@ -41,6 +41,7 @@ public class ChatActivity extends AppCompatActivity {
         Intent intent = getIntent();
         String uuid = intent.getStringExtra("uuid");
         String generatedName = intent.getStringExtra("generated_name");
+//        String generatedName = "aaaaaaaaa aaaaaaaaa";
         int emoji1 = intent.getIntExtra("emoji_1", 0);
         int emoji2 = intent.getIntExtra("emoji_2", 0);
         int emoji3 = intent.getIntExtra("emoji_3", 0);
@@ -75,8 +76,9 @@ public class ChatActivity extends AppCompatActivity {
         addDummyMessages();
 
         Cursor cursor = getContentResolver().query(
-                ChatContract.MessageEntry.buildMessagesWithPartner(uuid, emoji1 + "", emoji2 + "",
-                                                                   emoji3 + "", generatedName),
+                ChatContract.MessageEntry.buildMessagesWithPartnerUri(uuid, emoji1 + "",
+                                                                      emoji2 + "",
+                                                                      emoji3 + "", generatedName),
                 projection, null, null,
                 ChatContract.MessageEntry.TABLE_NAME + "." + ChatContract.MessageEntry._ID +
                 " DESC");

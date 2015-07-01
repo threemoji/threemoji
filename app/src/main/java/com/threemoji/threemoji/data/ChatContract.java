@@ -7,6 +7,7 @@ import android.provider.BaseColumns;
 
 public class ChatContract {
     public static final String CONTENT_AUTHORITY = "com.threemoji.threemoji";
+
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
     public static final String PATH_PARTNERS = "partners";
@@ -63,9 +64,8 @@ public class ChatContract {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
-        public static Uri buildMessagesWithPartner(String uuid, String emoji_1, String emoji_2,
-                                                   String emoji_3,
-                                                   String generated_name) {
+        public static Uri buildMessagesWithPartnerUri(String uuid, String emoji_1, String emoji_2,
+                                                      String emoji_3, String generated_name) {
             return CONTENT_URI.buildUpon()
                               .appendQueryParameter(PartnerEntry.COLUMN_UUID, uuid)
                               .appendQueryParameter(PartnerEntry.COLUMN_EMOJI_1, emoji_1)

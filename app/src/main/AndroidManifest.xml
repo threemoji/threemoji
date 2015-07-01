@@ -72,7 +72,7 @@
             android:screenOrientation="portrait"/>
         <activity
             android:name=".ChatActivity"
-            android:windowSoftInputMode="adjustResize"
+            
             android:parentActivityName=".MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

@@ -1,8 +1,10 @@
 package com.threemoji.threemoji;
 
+import com.threemoji.threemoji.service.ChatIntentService;
 import com.threemoji.threemoji.utility.NameGenerator;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -136,6 +138,9 @@ public class ChatListFragment extends Fragment {
             holder.view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    Context context = v.getContext();
+                    Intent intent = new Intent(context, ChatIntentService.class);
+                    context.startService(intent);
 //                    Context context = v.getContext();
 //                    Intent intent = new Intent(context, ChatActivity.class);
 //                    intent.putExtra(ChatActivity.EXTRA_NAME, holder.mBoundString);

@@ -48,6 +48,9 @@
         <service
             android:name=".service.RegistrationIntentService"
             android:exported="false"></service>
+        <service
+            android:name=".service.ChatIntentService"
+            android:exported="false"></service>
 
         <activity
             android:name=".MainActivity"

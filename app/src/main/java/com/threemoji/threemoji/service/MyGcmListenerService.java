@@ -31,12 +31,14 @@ public class MyGcmListenerService extends GcmListenerService {
     @Override
     public void onMessageReceived(String from, Bundle data) {
         Log.d(TAG, data.toString());
-        String message = data.getString("message");
         Log.d(TAG, "From: " + from);
         String messageType = data.getString("message_type");
         if (messageType != null && messageType.equals("ack")) {
             Log.d(TAG, "ACK");
         } else {
+            String message = "Message: " + data.getString("body")
+                             + " From: " + data.getString("from_uid")
+                             + " Timestamp: " + data.getString("timestamp");
             sendNotification(message);
             Log.d(TAG, "Message: " + message);
         }

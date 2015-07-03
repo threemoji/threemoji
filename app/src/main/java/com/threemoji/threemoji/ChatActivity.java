@@ -33,6 +33,7 @@ public class ChatActivity extends AppCompatActivity {
     private static final String TAG = ChatActivity.class.getSimpleName();
     ArrayList<Message> mMessages;
     MessagesRecyclerViewAdapter mAdapter;
+    String uuid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +41,7 @@ public class ChatActivity extends AppCompatActivity {
         setContentView(R.layout.activity_chat);
 
         Intent intent = getIntent();
-        String uuid = intent.getStringExtra("uuid");
+        uuid = intent.getStringExtra("uuid");
         String generatedName = intent.getStringExtra("generated_name");
 //        String generatedName = "aaaaaaaaa aaaaaaaaa";
         int emoji1 = intent.getIntExtra("emoji_1", 0);
@@ -49,7 +50,7 @@ public class ChatActivity extends AppCompatActivity {
 
         initActionBar(emoji1, emoji2, emoji3, generatedName);
 
-        initMessages(uuid, emoji1, emoji2, emoji3, generatedName);
+        initMessages(uuid);
     }
 
 
@@ -67,8 +68,7 @@ public class ChatActivity extends AppCompatActivity {
         ((ImageView) findViewById(R.id.title_emoji_3)).setImageDrawable(emoji3Drawable);
     }
 
-    private void initMessages(String uuid, int emoji1, int emoji2, int emoji3,
-                              String generatedName) {
+    private void initMessages(String uuid) {
         mMessages = new ArrayList<Message>();
         String[] projection = new String[]{ChatContract.MessageEntry.COLUMN_DATETIME,
                                            ChatContract.MessageEntry.COLUMN_SENT_OR_RECEIVED,
@@ -77,9 +77,7 @@ public class ChatActivity extends AppCompatActivity {
         addDummyMessages();
 
         Cursor cursor = getContentResolver().query(
-                ChatContract.MessageEntry.buildMessagesWithPartnerUri(uuid, emoji1 + "",
-                                                                      emoji2 + "",
-                                                                      emoji3 + "", generatedName),
+                ChatContract.MessageEntry.buildMessagesWithPartnerUri(uuid),
                 projection, null, null,
                 ChatContract.MessageEntry.TABLE_NAME + "." + ChatContract.MessageEntry._ID +
                 " DESC");
@@ -136,11 +134,11 @@ public class ChatActivity extends AppCompatActivity {
             this.startService(intent);
             Uri uri;
             ContentValues dummyValues = new ContentValues();
-            dummyValues.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, "2");
+            dummyValues.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, uuid);
             dummyValues.put(ChatContract.MessageEntry.COLUMN_DATETIME, "124");
             dummyValues.put(ChatContract.MessageEntry.COLUMN_SENT_OR_RECEIVED, "sent");
             dummyValues.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, userMessage.trim());
-            uri = getContentResolver().insert(ChatContract.MessageEntry.CONTENT_URI, dummyValues);
+            uri = getContentResolver().insert(ChatContract.MessageEntry.buildMessagesWithPartnerUri(uuid), dummyValues);
             Log.v(TAG, uri.toString());
         }
     }
@@ -196,7 +194,9 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         public void moveToEnd() {
-            rv.scrollToPosition(0);
+            if (rv != null) {
+                rv.scrollToPosition(0);
+            }
         }
 
         public static class ViewHolder extends RecyclerView.ViewHolder {

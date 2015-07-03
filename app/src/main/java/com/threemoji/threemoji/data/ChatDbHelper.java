@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class ChatDbHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 3;
 
     static final String DATABASE_NAME = "chat.db";
 
@@ -21,14 +21,13 @@ public class ChatDbHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         final String SQL_CREATE_PARTNER_TABLE =
                 "CREATE TABLE " + PartnerEntry.TABLE_NAME + " (" +
-                PartnerEntry._ID + " INTEGER PRIMARY KEY, " +
-                PartnerEntry.COLUMN_UUID + " TEXT NOT NULL, " +
-                PartnerEntry.COLUMN_EMOJI_1 + " INTEGER NOT NULL, " +
-                PartnerEntry.COLUMN_EMOJI_2 + " INTEGER NOT NULL, " +
-                PartnerEntry.COLUMN_EMOJI_3 + " INTEGER NOT NULL, " +
+                PartnerEntry._ID + " INTEGER, " +
+                PartnerEntry.COLUMN_UUID + " TEXT PRIMARY KEY NOT NULL, " +
+                PartnerEntry.COLUMN_EMOJI_1 + " TEXT NOT NULL, " +
+                PartnerEntry.COLUMN_EMOJI_2 + " TEXT NOT NULL, " +
+                PartnerEntry.COLUMN_EMOJI_3 + " TEXT NOT NULL, " +
                 PartnerEntry.COLUMN_GENDER + " TEXT NOT NULL, " +
                 PartnerEntry.COLUMN_GENERATED_NAME + " TEXT NOT NULL " +
-//                "PRIMARY KEY (" + PartnerEntry.COLUMN_UUID + ", " + PartnerEntry._ID + ") " +
                 " );";
 
         final String SQL_CREATE_MESSAGE_TABLE =
@@ -40,7 +39,7 @@ public class ChatDbHelper extends SQLiteOpenHelper {
                 MessageEntry.COLUMN_MESSAGE_DATA + " TEXT NOT NULL, " +
 
                 " FOREIGN KEY (" + MessageEntry.COLUMN_PARTNER_KEY + ") REFERENCES " +
-                PartnerEntry.TABLE_NAME + " (" + PartnerEntry._ID + ") " +
+                PartnerEntry.TABLE_NAME + " (" + PartnerEntry.COLUMN_UUID + ") " +
                 " );";
 
         db.execSQL(SQL_CREATE_PARTNER_TABLE);
@@ -49,6 +48,8 @@ public class ChatDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+        db.execSQL("DROP TABLE IF EXISTS " + PartnerEntry.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + MessageEntry.TABLE_NAME);
+        onCreate(db);
     }
 }

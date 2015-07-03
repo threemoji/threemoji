@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.util.Log;
 
 public class ChatProvider extends ContentProvider {
 
@@ -25,14 +26,14 @@ public class ChatProvider extends ContentProvider {
     static {
         sMessagesWithPartnerQueryBuilder = new SQLiteQueryBuilder();
 
-        // messages INNER JOIN partners ON messages.partner_id = partners._id
+        // messages INNER JOIN partners ON messages.partner_id = partners.uuid
         sMessagesWithPartnerQueryBuilder.setTables(
                 MessageEntry.TABLE_NAME + " INNER JOIN " +
                 PartnerEntry.TABLE_NAME + " ON " +
                 MessageEntry.TABLE_NAME + "." +
                 MessageEntry.COLUMN_PARTNER_KEY + " = " +
                 PartnerEntry.TABLE_NAME + "." +
-                PartnerEntry._ID
+                PartnerEntry.COLUMN_UUID
         );
     }
 
@@ -40,7 +41,7 @@ public class ChatProvider extends ContentProvider {
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
         final String authority = ChatContract.CONTENT_AUTHORITY;
 
-        matcher.addURI(authority, ChatContract.PATH_MESSAGES, MESSAGES_WITH_PARTNER);
+        matcher.addURI(authority, ChatContract.PATH_MESSAGES + "/*", MESSAGES_WITH_PARTNER);
         matcher.addURI(authority, ChatContract.PATH_PARTNERS, PARTNERS);
 
         return matcher;
@@ -48,17 +49,9 @@ public class ChatProvider extends ContentProvider {
 
     private Cursor getMessagesWithPartner(Uri uri, String[] projection, String sortOrder) {
         String[] selectionArgs =
-                new String[]{uri.getQueryParameter(PartnerEntry.COLUMN_UUID),
-                             uri.getQueryParameter(PartnerEntry.COLUMN_EMOJI_1),
-                             uri.getQueryParameter(PartnerEntry.COLUMN_EMOJI_2),
-                             uri.getQueryParameter(PartnerEntry.COLUMN_EMOJI_3),
-                             uri.getQueryParameter(PartnerEntry.COLUMN_GENERATED_NAME)};
+                new String[]{uri.getPathSegments().get(1)};
         String selection =
-                PartnerEntry.TABLE_NAME + "." + PartnerEntry.COLUMN_UUID + " = ? AND " +
-                PartnerEntry.TABLE_NAME + "." + PartnerEntry.COLUMN_EMOJI_1 + " = ? AND " +
-                PartnerEntry.TABLE_NAME + "." + PartnerEntry.COLUMN_EMOJI_2 + " = ? AND " +
-                PartnerEntry.TABLE_NAME + "." + PartnerEntry.COLUMN_EMOJI_3 + " = ? AND " +
-                PartnerEntry.TABLE_NAME + "." + PartnerEntry.COLUMN_GENERATED_NAME + " = ? ";
+                PartnerEntry.TABLE_NAME + "." + PartnerEntry.COLUMN_UUID + " = ? ";
 
         return sMessagesWithPartnerQueryBuilder.query(mChatDbHelper.getReadableDatabase(),
                                                       projection,
@@ -116,6 +109,7 @@ public class ChatProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
+        Log.v("", uri.toString());
         final SQLiteDatabase db = mChatDbHelper.getWritableDatabase();
         Uri returnUri;
 

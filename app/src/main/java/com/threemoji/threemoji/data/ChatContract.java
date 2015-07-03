@@ -64,15 +64,9 @@ public class ChatContract {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
-        public static Uri buildMessagesWithPartnerUri(String uuid, String emoji_1, String emoji_2,
-                                                      String emoji_3, String generated_name) {
+        public static Uri buildMessagesWithPartnerUri(String uuid) {
             return CONTENT_URI.buildUpon()
-                              .appendQueryParameter(PartnerEntry.COLUMN_UUID, uuid)
-                              .appendQueryParameter(PartnerEntry.COLUMN_EMOJI_1, emoji_1)
-                              .appendQueryParameter(PartnerEntry.COLUMN_EMOJI_2, emoji_2)
-                              .appendQueryParameter(PartnerEntry.COLUMN_EMOJI_3, emoji_3)
-                              .appendQueryParameter(PartnerEntry.COLUMN_GENERATED_NAME,
-                                                    generated_name).build();
+                              .appendPath(uuid).build();
         }
     }
 }

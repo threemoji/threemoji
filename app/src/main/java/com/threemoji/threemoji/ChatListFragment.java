@@ -53,12 +53,12 @@ public class ChatListFragment extends Fragment {
 
 //        Uri uri;
 //        ContentValues testValues = new ContentValues();
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_UUID, "bc54eb07-03cb-48e8-8bf8-002eee94723b");
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_1, "2130838236");
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_2, "2130838233");
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_3, "2130838228");
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_GENDER, "FEMALE");
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_GENERATED_NAME, "Woeful Quagga");
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_UUID, "47778f91-6ece-4813-b200-a438a6cfdf46");
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_1, "emoji_1f601");
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_2, "emoji_1f601");
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_3, "emoji_1f601");
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_GENDER, "MALE");
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_GENERATED_NAME, "Several Finwhale");
 //
 //        uri = getActivity().getContentResolver().insert(ChatContract.PartnerEntry.CONTENT_URI, testValues);
 //        Log.v(TAG, uri.toString());
@@ -77,9 +77,9 @@ public class ChatListFragment extends Fragment {
                 chats.add(
                         new ChatItem(
                                 cursor.getString(0),
-                                Integer.parseInt(cursor.getString(1)),
-                                Integer.parseInt(cursor.getString(2)),
-                                Integer.parseInt(cursor.getString(3)),
+                                cursor.getString(1),
+                                cursor.getString(2),
+                                cursor.getString(3),
                                 cursor.getString(4),
                                 getRandomTime()));
             }
@@ -130,12 +130,12 @@ public class ChatListFragment extends Fragment {
         public String partnerName;
         public String lastActivity;
 
-        public ChatItem(String uuid, int emoji1, int emoji2, int emoji3, String partnerName,
+        public ChatItem(String uuid, String emoji1, String emoji2, String emoji3, String partnerName,
                         String lastActivity) {
             this.uuid = uuid;
-            this.emoji1 = emoji1;
-            this.emoji2 = emoji2;
-            this.emoji3 = emoji3;
+            this.emoji1 = getResources().getIdentifier(emoji1, "drawable", getActivity().getPackageName());
+            this.emoji2 = getResources().getIdentifier(emoji2, "drawable", getActivity().getPackageName());
+            this.emoji3 = getResources().getIdentifier(emoji3, "drawable", getActivity().getPackageName());
             this.partnerName = partnerName;
             this.lastActivity = lastActivity;
         }

@@ -48,30 +48,11 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
 
         mCurrentEmojiButton.setBackgroundResource(0);
         mCurrentEmojiButton.setImageDrawable(drawable);
-        setProfileEmoji(mCurrentEmojiButton, imageResource);
+
+        mCurrentEmojiButton.setTag(getResources().getResourceEntryName(imageResource));
         mCurrentEmojiButton = null;
     }
 
-    private void setProfileEmoji(ImageButton currentEmojiButton, int imageResource) {
-        int buttonId = currentEmojiButton.getId();
-        String preferenceKey;
-        switch (buttonId) {
-            case R.id.start_page_emoji1:
-                preferenceKey = getString(R.string.profile_emoji_one_key);
-                break;
-            case R.id.start_page_emoji2:
-                preferenceKey = getString(R.string.profile_emoji_two_key);
-                break;
-            case R.id.start_page_emoji3:
-                preferenceKey = getString(R.string.profile_emoji_three_key);
-                break;
-            default:
-                preferenceKey = null;
-        }
-
-        assert preferenceKey != null;
-        getPrefs().edit().putInt(preferenceKey, imageResource).apply();
-    }
 
     // ================================================================
     // Initiation methods when this activity is created
@@ -88,34 +69,63 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
 
     private void initEmojiButtons() {
         SharedPreferences prefs = getPrefs();
+
+        try {
+            updateOldData(prefs);
+        } catch (ClassCastException e) {
+            Log.v(TAG, "Data already up to date");
+        }
+
+        String emoji1ResourceName = prefs.getString(getString(R.string.profile_emoji_one_key),
+                                                    null);
+        String emoji2ResourceName = prefs.getString(getString(R.string.profile_emoji_two_key),
+                                                    null);
+        String emoji3ResourceName = prefs.getString(getString(R.string.profile_emoji_three_key),
+                                                    null);
+
+        if (emoji1ResourceName != null) {
+            updateImageById(emoji1ResourceName, R.id.start_page_emoji1);
+        }
+        if (emoji2ResourceName != null) {
+            updateImageById(emoji2ResourceName, R.id.start_page_emoji2);
+        }
+        if (emoji3ResourceName != null) {
+            updateImageById(emoji3ResourceName, R.id.start_page_emoji3);
+        }
+    }
+
+    private void updateOldData(SharedPreferences prefs) throws ClassCastException {
         int emoji1ImageResource = prefs.getInt(getString(R.string.profile_emoji_one_key), -1);
         int emoji2ImageResource = prefs.getInt(getString(R.string.profile_emoji_two_key), -1);
         int emoji3ImageResource = prefs.getInt(getString(R.string.profile_emoji_three_key), -1);
 
+        SharedPreferences.Editor editor = prefs.edit();
+
         if (emoji1ImageResource != -1) {
-            Drawable emoji1DrawableResource = SvgUtils.getSvgDrawable(emoji1ImageResource,
-                                                                      mSizeOfEmojiIcon,
-                                                                      getPackageName());
-            ImageButton emoji1 = (ImageButton) findViewById(R.id.start_page_emoji1);
-            emoji1.setBackgroundResource(0);
-            emoji1.setImageDrawable(emoji1DrawableResource);
+            editor.remove(getString(R.string.profile_emoji_one_key));
+            editor.putString(getString(R.string.profile_emoji_one_key),
+                             getResources().getResourceEntryName(emoji1ImageResource));
         }
         if (emoji2ImageResource != -1) {
-            Drawable emoji2DrawableResource = SvgUtils.getSvgDrawable(emoji2ImageResource,
-                                                                      mSizeOfEmojiIcon,
-                                                                      getPackageName());
-            ImageButton emoji2 = (ImageButton) findViewById(R.id.start_page_emoji2);
-            emoji2.setBackgroundResource(0);
-            emoji2.setImageDrawable(emoji2DrawableResource);
+            editor.remove(getString(R.string.profile_emoji_two_key));
+            editor.putString(getString(R.string.profile_emoji_two_key),
+                             getResources().getResourceEntryName(emoji2ImageResource));
         }
         if (emoji3ImageResource != -1) {
-            Drawable emoji3DrawableResource = SvgUtils.getSvgDrawable(emoji3ImageResource,
-                                                                      mSizeOfEmojiIcon,
-                                                                      getPackageName());
-            ImageButton emoji3 = (ImageButton) findViewById(R.id.start_page_emoji3);
-            emoji3.setBackgroundResource(0);
-            emoji3.setImageDrawable(emoji3DrawableResource);
+            editor.remove(getString(R.string.profile_emoji_three_key));
+            editor.putString(getString(R.string.profile_emoji_three_key),
+                             getResources().getResourceEntryName(emoji3ImageResource));
+
         }
+        editor.apply();
+    }
+
+    private void updateImageById(String resourceName, int id) {
+        Drawable drawable = SvgUtils.getSvgDrawable(resourceName, mSizeOfEmojiIcon, getPackageName());
+        ImageButton imageButton = (ImageButton) findViewById(id);
+        imageButton.setBackgroundResource(0);
+        imageButton.setImageDrawable(drawable);
+        imageButton.setTag(resourceName);
     }
 
     private void initGender() {
@@ -161,16 +171,22 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
     public void submitStartPage(View view) {
         setProfileGender();
 
-        if (hasUserSelectedAllEmoji()) {
+        ImageButton emoji1 = (ImageButton) findViewById(R.id.start_page_emoji1);
+        ImageButton emoji2 = (ImageButton) findViewById(R.id.start_page_emoji2);
+        ImageButton emoji3 = (ImageButton) findViewById(R.id.start_page_emoji3);
+
+        if (hasUserSelectedAllEmoji(emoji1, emoji2, emoji3)) {
+            setProfileEmoji(emoji1, emoji2, emoji3);
             setProfileGeneratedName();
+
             if (getPrefs().getBoolean(getString(R.string.pref_has_seen_start_page_key), false)) {
                 uploadProfile(true);
             } else {
                 uploadProfile(false);
             }
             getPrefs().edit()
-                    .putBoolean(getString(R.string.pref_has_seen_start_page_key), true)
-                    .apply();
+                      .putBoolean(getString(R.string.pref_has_seen_start_page_key), true)
+                      .apply();
             Intent intent = new Intent(this, MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
@@ -203,16 +219,26 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
                   .apply();
     }
 
-    private boolean hasUserSelectedAllEmoji() {
-        SharedPreferences prefs = getPrefs();
-        return prefs.getInt(getString(R.string.profile_emoji_one_key), -1) != -1 &&
-               prefs.getInt(getString(R.string.profile_emoji_two_key), -1) != -1 &&
-               prefs.getInt(getString(R.string.profile_emoji_three_key), -1) != -1;
+    private boolean hasUserSelectedAllEmoji(ImageButton emoji1, ImageButton emoji2,
+                                            ImageButton emoji3) {
+        return emoji1.getBackground() == null &&
+               emoji2.getBackground() == null &&
+               emoji3.getBackground() == null;
+    }
+
+    private void setProfileEmoji(ImageButton emoji1, ImageButton emoji2, ImageButton emoji3) {
+        SharedPreferences.Editor editor = getPrefs().edit();
+        editor.putString(getString(R.string.profile_emoji_one_key), emoji1.getTag().toString());
+        editor.putString(getString(R.string.profile_emoji_two_key), emoji2.getTag().toString());
+        editor.putString(getString(R.string.profile_emoji_three_key), emoji3.getTag().toString());
+        editor.apply();
     }
 
     private void setProfileGeneratedName() {
-        String name = NameGenerator.getName();
-        getPrefs().edit().putString(getString(R.string.profile_generated_name_key), name).apply();
+        getPrefs().edit()
+                  .putString(getString(R.string.profile_generated_name_key),
+                             NameGenerator.getName())
+                  .apply();
     }
 
     private void uploadProfile(boolean update) {
@@ -220,20 +246,32 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
         String token = getPrefs().getString(getString(R.string.pref_token_key), "");
         try {
             Bundle data = new Bundle();
-            data.putString("action", update ? getString(R.string.backend_action_update_profile_key) : getString(R.string.backend_action_upload_profile_key));
-            data.putString(getString(R.string.backend_uid_key), getPrefs().getString(getString(R.string.profile_uid_key), ""));
-            data.putString(getString(R.string.backend_password_key), getPrefs().getString(getString(R.string.profile_password_key), ""));
+            data.putString("action", update ? getString(
+                    R.string.backend_action_update_profile_key) : getString(
+                    R.string.backend_action_upload_profile_key));
+            data.putString(getString(R.string.backend_uid_key),
+                           getPrefs().getString(getString(R.string.profile_uid_key), ""));
+            data.putString(getString(R.string.backend_password_key),
+                           getPrefs().getString(getString(R.string.profile_password_key), ""));
             data.putString(getString(R.string.backend_token_key), token);
-            data.putString(getString(R.string.backend_emoji_one_key), String.valueOf(getPrefs().getInt(getString(R.string.profile_emoji_one_key), -1)));
-            data.putString(getString(R.string.backend_emoji_two_key), String.valueOf(getPrefs().getInt(getString(R.string.profile_emoji_two_key), -1)));
-            data.putString(getString(R.string.backend_emoji_three_key), String.valueOf(getPrefs().getInt(getString(R.string.profile_emoji_three_key), -1)));
-            data.putString(getString(R.string.backend_generated_name_key), getPrefs().getString(getString(R.string.profile_generated_name_key), ""));
-            data.putString(getString(R.string.backend_gender_key), getPrefs().getString(getString(R.string.profile_gender_key), ""));
+            data.putString(getString(R.string.backend_emoji_one_key),
+                    getPrefs().getString(getString(R.string.profile_emoji_one_key), ""));
+            data.putString(getString(R.string.backend_emoji_two_key),
+                    getPrefs().getString(getString(R.string.profile_emoji_two_key), ""));
+            data.putString(getString(R.string.backend_emoji_three_key),
+                    getPrefs().getString(getString(R.string.profile_emoji_three_key), ""));
+            data.putString(getString(R.string.backend_generated_name_key),
+                           getPrefs().getString(getString(R.string.profile_generated_name_key),
+                                                ""));
+            data.putString(getString(R.string.backend_gender_key),
+                           getPrefs().getString(getString(R.string.profile_gender_key), ""));
             data.putString(getString(R.string.backend_location_key), "LOCATION");
-            data.putString(getString(R.string.backend_radius_key), getPrefs().getString(getString(R.string.pref_max_distance_key), getString(R.string.pref_max_distance_default)));
+            data.putString(getString(R.string.backend_radius_key),
+                           getPrefs().getString(getString(R.string.pref_max_distance_key),
+                                                getString(R.string.pref_max_distance_default)));
             String msgId = getNextMsgId(token);
             gcm.send(getString(R.string.gcm_project_num) + "@gcm.googleapis.com", msgId,
-                    timeToLive, data);
+                     timeToLive, data);
             Log.v(TAG, "profile uploaded");
         } catch (IOException e) {
             Log.e(TAG,

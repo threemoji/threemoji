@@ -168,19 +168,20 @@ public class MainActivity extends AppCompatActivity {
         ImageView userEmoji2 = (ImageView) findViewById(R.id.profile_emoji2);
         ImageView userEmoji3 = (ImageView) findViewById(R.id.profile_emoji3);
 
-        int emoji1ImageResource = prefs.getInt(getString(R.string.profile_emoji_one_key), -1);
-        int emoji2ImageResource = prefs.getInt(getString(R.string.profile_emoji_two_key), -1);
-        int emoji3ImageResource = prefs.getInt(getString(R.string.profile_emoji_three_key), -1);
+        String emoji1ResourceName = prefs.getString(getString(R.string.profile_emoji_one_key),
+                                                    null);
+        String emoji2ResourceName = prefs.getString(getString(R.string.profile_emoji_two_key),
+                                                    null);
+        String emoji3ResourceName = prefs.getString(getString(R.string.profile_emoji_three_key),
+                                                    null);
 
-        Drawable emoji1DrawableResource = SvgUtils.getSvgDrawable(emoji1ImageResource,
-                                                                  mSizeOfEmojiIcon,
-                                                                  getPackageName());
-        Drawable emoji2DrawableResource = SvgUtils.getSvgDrawable(emoji2ImageResource,
-                                                                  mSizeOfEmojiIcon,
-                                                                  getPackageName());
-        Drawable emoji3DrawableResource = SvgUtils.getSvgDrawable(emoji3ImageResource,
-                                                                  mSizeOfEmojiIcon,
-                                                                  getPackageName());
+        Drawable emoji1DrawableResource =
+                SvgUtils.getSvgDrawable(emoji1ResourceName, mSizeOfEmojiIcon, getPackageName());
+        Drawable emoji2DrawableResource =
+                SvgUtils.getSvgDrawable(emoji2ResourceName, mSizeOfEmojiIcon, getPackageName());
+        Drawable emoji3DrawableResource =
+                SvgUtils.getSvgDrawable(emoji3ResourceName, mSizeOfEmojiIcon,getPackageName());
+
         userEmoji1.setImageDrawable(emoji1DrawableResource);
         userEmoji2.setImageDrawable(emoji2DrawableResource);
         userEmoji3.setImageDrawable(emoji3DrawableResource);

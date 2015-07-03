@@ -47,10 +47,10 @@
         </service>
         <service
             android:name=".service.RegistrationIntentService"
-            android:exported="false"></service>
+            android:exported="false"/>
         <service
             android:name=".service.ChatIntentService"
-            android:exported="false"></service>
+            android:exported="false"/>
 
         <activity
             android:name=".MainActivity"
@@ -72,7 +72,21 @@
         <activity
             android:name=".StartPageActivity"
             android:label="@string/title_activity_start_page"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".ChatActivity"
+            
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.threemoji.threemoji.MainActivity" />
+        </activity>
+
+        <provider
+            android:authorities="@string/content_authority"
+            android:name=".data.ChatProvider"
+            android:exported="false"
+            android:syncable="true" />
     </application>
 
 </manifest>

@@ -41,6 +41,11 @@ public class SvgUtils {
     public static Drawable getSvgDrawable(int imageResource, int size, String packageName) {
         Resources resources = Threemoji.getContext().getResources();
         String resourceName = resources.getResourceEntryName(imageResource);
+        return getSvgDrawable(resourceName, size, packageName);
+    }
+
+    public static Drawable getSvgDrawable(String resourceName, int size, String packageName) {
+        Resources resources = Threemoji.getContext().getResources();
         int rawResourceId = resources.getIdentifier(resourceName, "raw", packageName);
         return SvgUtils.svgToBitmapDrawable(resources, rawResourceId, size);
     }

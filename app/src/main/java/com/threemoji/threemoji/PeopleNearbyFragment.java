@@ -99,8 +99,8 @@ public class PeopleNearbyFragment extends Fragment {
 //                @Override
 //                public void onClick(View v) {
 //                    Context context = v.getContext();
-//                    Intent intent = new Intent(context, ChatActivity.class);
-//                    intent.putExtra(ChatActivity.EXTRA_NAME, holder.mBoundString);
+//                    Intent intent = new Intent(context, com.threemoji.threemoji.ChatActivity.class);
+//                    intent.putExtra(com.threemoji.threemoji.ChatActivity.EXTRA_NAME, holder.mBoundString);
 //
 //                    context.startActivity(intent);
 //                }

@@ -50,7 +50,7 @@
                 android:layout_weight="1"
                 android:ems="10"
                 android:hint="Send message"
-                android:inputType="textMultiLine" />
+                android:inputType="textMultiLine|textCapSentences" />
 
             <ImageButton
                 android:id="@+id/submit_button"

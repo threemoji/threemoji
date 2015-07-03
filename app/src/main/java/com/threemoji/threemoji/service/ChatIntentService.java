@@ -1,7 +1,6 @@
 package com.threemoji.threemoji.service;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
-import com.google.android.gms.iid.InstanceID;
 
 import com.threemoji.threemoji.R;
 
@@ -26,7 +25,7 @@ public class ChatIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.v(TAG, "intent string: " + intent.toString());
-        sendMessage(getPrefs().getString(getString(R.string.profile_uid_key), ""), "hello");
+        sendMessage(getPrefs().getString(getString(R.string.profile_uid_key), ""), intent.getStringExtra("message"));
     }
 
     private void sendMessage(String to_uid, String message) {

@@ -1,6 +1,7 @@
 package com.threemoji.threemoji;
 
 import com.threemoji.threemoji.data.ChatContract;
+import com.threemoji.threemoji.service.ChatIntentService;
 import com.threemoji.threemoji.utility.SvgUtils;
 
 import android.content.ContentValues;
@@ -130,6 +131,9 @@ public class ChatActivity extends AppCompatActivity {
             mMessages.add(0, new Message("124", "sent", userMessage.trim()));
             mAdapter.notifyDataSetChanged();
             mAdapter.moveToEnd();
+            Intent intent = new Intent(this, ChatIntentService.class);
+            intent.putExtra("message", userMessage.trim());
+            this.startService(intent);
             Uri uri;
             ContentValues dummyValues = new ContentValues();
             dummyValues.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, "2");

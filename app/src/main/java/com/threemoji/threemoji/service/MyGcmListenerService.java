@@ -4,9 +4,11 @@ import com.google.android.gms.gcm.GcmListenerService;
 
 import com.threemoji.threemoji.MainActivity;
 import com.threemoji.threemoji.R;
+import com.threemoji.threemoji.data.ChatContract;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.media.RingtoneManager;
@@ -39,6 +41,7 @@ public class MyGcmListenerService extends GcmListenerService {
             String message = "Message: " + data.getString("body")
                              + " From: " + data.getString("from_uid")
                              + " Timestamp: " + data.getString("timestamp");
+            storeMessage(data.getString("from_uid"), data.getString("timestamp"), data.getString("body"));
             sendNotification(message);
             Log.d(TAG, "Message: " + message);
         }
@@ -52,6 +55,16 @@ public class MyGcmListenerService extends GcmListenerService {
 
     }
     // [END receive_message]
+
+    private void storeMessage(String uuid, String timestamp, String message) {
+        Uri uri;
+        ContentValues values = new ContentValues();
+        values.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, uuid);
+        values.put(ChatContract.MessageEntry.COLUMN_DATETIME, timestamp);
+        values.put(ChatContract.MessageEntry.COLUMN_SENT_OR_RECEIVED, "received");
+        values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, message);
+        uri = getContentResolver().insert(ChatContract.MessageEntry.buildMessagesWithPartnerUri(uuid), values);
+    }
 
     @Override
     public void onDeletedMessages() {
@@ -82,7 +95,7 @@ public class MyGcmListenerService extends GcmListenerService {
         Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle("GCM Message")
+                .setContentTitle("Threemoji")
                 .setContentText(message)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)

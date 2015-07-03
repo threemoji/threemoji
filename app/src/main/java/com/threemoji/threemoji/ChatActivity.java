@@ -11,6 +11,9 @@ import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -26,14 +29,18 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class ChatActivity extends AppCompatActivity {
+public class ChatActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = ChatActivity.class.getSimpleName();
-    ArrayList<Message> mMessages;
-    MessagesRecyclerViewAdapter mAdapter;
-    String uuid;
+
+    private MessagesRecyclerViewAdapter mAdapter;
+    private String mUuid;
+    private Uri mUri;
+    private static final String[] projection = new String[]{
+            ChatContract.MessageEntry.COLUMN_DATETIME,
+            ChatContract.MessageEntry.COLUMN_SENT_OR_RECEIVED,
+            ChatContract.MessageEntry.COLUMN_MESSAGE_DATA};
+    private static String mSortOrder =
+            ChatContract.MessageEntry.TABLE_NAME + "." + ChatContract.MessageEntry._ID + " DESC";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +48,7 @@ public class ChatActivity extends AppCompatActivity {
         setContentView(R.layout.activity_chat);
 
         Intent intent = getIntent();
-        uuid = intent.getStringExtra("uuid");
+        mUuid = intent.getStringExtra("uuid");
         String generatedName = intent.getStringExtra("generated_name");
 //        String generatedName = "aaaaaaaaa aaaaaaaaa";
         int emoji1 = intent.getIntExtra("emoji_1", 0);
@@ -50,7 +57,7 @@ public class ChatActivity extends AppCompatActivity {
 
         initActionBar(emoji1, emoji2, emoji3, generatedName);
 
-        initMessages(uuid);
+        initMessages(mUuid);
     }
 
 
@@ -69,54 +76,24 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void initMessages(String uuid) {
-        mMessages = new ArrayList<Message>();
-        String[] projection = new String[]{ChatContract.MessageEntry.COLUMN_DATETIME,
-                                           ChatContract.MessageEntry.COLUMN_SENT_OR_RECEIVED,
-                                           ChatContract.MessageEntry.COLUMN_MESSAGE_DATA};
+        mUri = ChatContract.MessageEntry.buildMessagesWithPartnerUri(uuid);
 
-        addDummyMessages();
-
-        Cursor cursor = getContentResolver().query(
-                ChatContract.MessageEntry.buildMessagesWithPartnerUri(uuid),
-                projection, null, null,
-                ChatContract.MessageEntry.TABLE_NAME + "." + ChatContract.MessageEntry._ID +
-                " DESC");
-
-        if (cursor != null) {
-            while (cursor.moveToNext()) {
-                mMessages.add(
-                        new Message(cursor.getString(0),
-                                    cursor.getString(1),
-                                    cursor.getString(2)));
-            }
-        }
-
+        Cursor cursor = getContentResolver().query(mUri, projection, null, null, mSortOrder);
         RecyclerView messagesView = (RecyclerView) findViewById(R.id.chat_messages);
-        setupRecyclerView(messagesView);
+        if (cursor != null) {
+            setupRecyclerView(messagesView, cursor);
+        }
+        getSupportLoaderManager().initLoader(0, null, this);
     }
 
-    private void addDummyMessages() {
-//        int rowsDeleted = getContentResolver().delete(ChatContract.MessageEntry.CONTENT_URI,
-//                                                      ChatContract.MessageEntry.COLUMN_PARTNER_KEY + " = 2", null);
-
-//        Uri uri;
-//        ContentValues dummyValues = new ContentValues();
-//        dummyValues.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, "2");
-//        dummyValues.put(ChatContract.MessageEntry.COLUMN_DATETIME, "124");
-//        dummyValues.put(ChatContract.MessageEntry.COLUMN_SENT_OR_RECEIVED, "received");
-//        dummyValues.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, "Hello Shiny Boubou");
-//        uri = getContentResolver().insert(ChatContract.MessageEntry.CONTENT_URI, dummyValues);
-//        Log.v(TAG, uri.toString());
-    }
-
-    private void setupRecyclerView(RecyclerView messagesView) {
+    private void setupRecyclerView(RecyclerView messagesView, Cursor cursor) {
         LinearLayoutManager layoutManager = new LinearLayoutManager(messagesView.getContext());
         layoutManager.setStackFromEnd(true);
         layoutManager.setReverseLayout(true);
         layoutManager.scrollToPosition(0);
 
         messagesView.setLayoutManager(layoutManager);
-        mAdapter = new MessagesRecyclerViewAdapter(this, mMessages);
+        mAdapter = new MessagesRecyclerViewAdapter(this, cursor);
         messagesView.setAdapter(mAdapter);
     }
 
@@ -126,43 +103,47 @@ public class ChatActivity extends AppCompatActivity {
         editText.setText("");
 
         if (userMessage.trim().length() > 0) {
-            mMessages.add(0, new Message("124", "sent", userMessage.trim()));
-            mAdapter.notifyDataSetChanged();
-            mAdapter.moveToEnd();
             Intent intent = new Intent(this, ChatIntentService.class);
+            intent.putExtra("uuid", mUuid);
             intent.putExtra("message", userMessage.trim());
             this.startService(intent);
+
             Uri uri;
             ContentValues dummyValues = new ContentValues();
-            dummyValues.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, uuid);
+            dummyValues.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, mUuid);
             dummyValues.put(ChatContract.MessageEntry.COLUMN_DATETIME, "124");
             dummyValues.put(ChatContract.MessageEntry.COLUMN_SENT_OR_RECEIVED, "sent");
             dummyValues.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, userMessage.trim());
-            uri = getContentResolver().insert(ChatContract.MessageEntry.buildMessagesWithPartnerUri(uuid), dummyValues);
+            uri = getContentResolver().insert(
+                    ChatContract.MessageEntry.buildMessagesWithPartnerUri(mUuid), dummyValues);
             Log.v(TAG, uri.toString());
         }
     }
 
-    public class Message {
-        public String dateTime;
-        public String sentOrReceived;
-        public String messageData;
-
-        public Message(String dateTime, String sentOrReceived, String messageData) {
-            this.dateTime = dateTime;
-            this.sentOrReceived = sentOrReceived;
-            this.messageData = messageData;
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        if (mUri != null) {
+            return new CursorLoader(this, mUri, projection, null, null, mSortOrder);
         }
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mAdapter.changeCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
     }
 
     public static class MessagesRecyclerViewAdapter
             extends RecyclerView.Adapter<MessagesRecyclerViewAdapter.ViewHolder> {
 
-        List<Message> mMessages;
-        RecyclerView rv;
+        private Cursor mCursor;
 
-        public MessagesRecyclerViewAdapter(Context context, List<Message> items) {
-            mMessages = items;
+        public MessagesRecyclerViewAdapter(Context context, Cursor cursor) {
+            mCursor = cursor;
         }
 
         @Override
@@ -170,32 +151,41 @@ public class ChatActivity extends AppCompatActivity {
                                              int viewType) {
             View view = LayoutInflater.from(parent.getContext())
                                       .inflate(R.layout.item_chat_message, parent, false);
-            rv = (RecyclerView) parent;
             return new ViewHolder(view);
         }
 
         @Override
         public void onBindViewHolder(ViewHolder holder,
                                      int position) {
-            Message currentMessage = mMessages.get(position);
-            holder.messageData.setText(currentMessage.messageData);
+            mCursor.moveToPosition(position);
+
+            String message = mCursor.getString(2);
+            holder.messageData.setText(message);
+
             LinearLayout parent = (LinearLayout) holder.messageData.getParent();
 
-            if (currentMessage.sentOrReceived.equals("sent")) {
+            String sentOrReceived = mCursor.getString(1);
+            if (sentOrReceived.equals("sent")) {
                 parent.setGravity(Gravity.RIGHT);
-            } else if (currentMessage.sentOrReceived.equals("received")) {
+            } else if (sentOrReceived.equals("received")) {
                 parent.setGravity(Gravity.LEFT);
             }
         }
 
         @Override
         public int getItemCount() {
-            return mMessages.size();
+            if (mCursor != null) {
+                return mCursor.getCount();
+            }
+            return 0;
         }
 
-        public void moveToEnd() {
-            if (rv != null) {
-                rv.scrollToPosition(0);
+        public void changeCursor(Cursor cursor) {
+            if (cursor != mCursor) {
+                Cursor oldCursor = mCursor;
+                mCursor = cursor;
+                notifyDataSetChanged();
+                oldCursor.close();
             }
         }
 

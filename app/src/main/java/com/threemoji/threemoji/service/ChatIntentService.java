@@ -25,7 +25,7 @@ public class ChatIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.v(TAG, "intent string: " + intent.toString());
-        sendMessage(getPrefs().getString(getString(R.string.profile_uid_key), ""), intent.getStringExtra("message"));
+        sendMessage(intent.getStringExtra("uuid"), intent.getStringExtra("message"));
     }
 
     private void sendMessage(String to_uid, String message) {

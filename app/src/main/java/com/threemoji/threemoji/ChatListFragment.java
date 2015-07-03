@@ -2,6 +2,10 @@ package com.threemoji.threemoji;
 
 import com.threemoji.threemoji.data.ChatContract;
 
+import com.threemoji.threemoji.data.ChatContract;
+import com.threemoji.threemoji.service.ChatIntentService;
+import com.threemoji.threemoji.utility.NameGenerator;
+
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -184,13 +188,16 @@ public class ChatListFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     Context context = v.getContext();
-                    Intent intent = new Intent(context, ChatActivity.class);
-                    intent.putExtra("uuid", currentItem.uuid);
-                    intent.putExtra("emoji_1", currentItem.emoji1);
-                    intent.putExtra("emoji_2", currentItem.emoji2);
-                    intent.putExtra("emoji_3", currentItem.emoji3);
-                    intent.putExtra("generated_name", holder.partnerName.getText());
-                    context.startActivity(intent);
+//                    Intent intent = new Intent(context, ChatActivity.class);
+//                    intent.putExtra("uuid", currentItem.uuid);
+//                    intent.putExtra("emoji_1", currentItem.emoji1);
+//                    intent.putExtra("emoji_2", currentItem.emoji2);
+//                    intent.putExtra("emoji_3", currentItem.emoji3);
+//                    intent.putExtra("generated_name", holder.partnerName.getText());
+//                    context.startActivity(intent);
+                    Intent intent = new Intent(context, ChatIntentService.class);
+                    context.startService(intent);
+
                     Log.d("onBindViewHolder", holder.partnerName.getText().toString());
                 }
             });

@@ -6,6 +6,7 @@ import com.google.android.gms.iid.InstanceID;
 import com.threemoji.threemoji.R;
 
 import android.app.IntentService;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -20,34 +21,51 @@ public class RegistrationIntentService extends IntentService {
     private static final String TAG = RegistrationIntentService.class.getSimpleName();
     private int timeToLive = 60 * 60; // one hour
 
+    public static enum Action {
+        CREATE_PROFILE, UPDATE_PROFILE, CREATE_TOKEN, UPDATE_TOKEN
+    }
+
     public RegistrationIntentService() {
         super(TAG);
+    }
+
+    public static Intent createIntent(Context context, Action action) {
+        Intent intent = new Intent(context, RegistrationIntentService.class);
+        intent.putExtra("action", action.name());
+        return intent;
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.v(TAG, "intent string: " + intent.toString());
+        Action action = Action.valueOf(intent.getStringExtra("action"));
+        String token;
         try {
-            unregisterFromServer();
-            String token = getGcmToken();
-            storeToken(token);
-            initUid();
-            initPassword();
+            switch (action) {
 
-            if (intent.getBooleanExtra("update", false)) {
-                uploadProfile(true);
-            } else {
-                uploadProfile(false);
+                case CREATE_PROFILE:
+                    initUid();
+                    initPassword();
+                    uploadProfile(false);
+                    break;
+
+                case UPDATE_PROFILE:
+                    uploadProfile(true);
+                    break;
+
+                case CREATE_TOKEN:
+                    token = getGcmToken();
+                    storeToken(token);
+                    sendTokenToServer(token);
+                    break;
+
+                case UPDATE_TOKEN:
+                    unregisterFromServer();
+                    token = getGcmToken();
+                    storeToken(token);
+                    updateTokenOnServer(token);
+                    break;
             }
-
-            if (getPrefs().getBoolean(getString(R.string.pref_has_seen_start_page_key), false)) {
-                updateTokenOnServer(token);
-            } else {
-                sendTokenToServer(token);
-            }
-
-
-
         } catch (Exception e) {
             Log.d(TAG, "Failed to complete token refresh", e);
         } finally {

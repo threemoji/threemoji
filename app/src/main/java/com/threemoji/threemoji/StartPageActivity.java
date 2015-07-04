@@ -62,6 +62,9 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
         setContentView(R.layout.activity_start_page);
         initEmojiButtons();
         initGender();
+
+        startService(RegistrationIntentService.createIntent(this,
+                                                            RegistrationIntentService.Action.CREATE_TOKEN));
     }
 
     private void initEmojiButtons() {
@@ -127,13 +130,13 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
             setProfileEmoji(emoji1, emoji2, emoji3);
             setProfileGeneratedName();
 
-            Intent regIntent = new Intent(this, RegistrationIntentService.class);
             if (getPrefs().getBoolean(getString(R.string.pref_has_seen_start_page_key), false)) {
-                regIntent.putExtra("update", true);
+                startService(RegistrationIntentService.createIntent(this,
+                                                                    RegistrationIntentService.Action.UPDATE_PROFILE));
             } else {
-                regIntent.putExtra("update", false);
+                startService(RegistrationIntentService.createIntent(this,
+                                                                    RegistrationIntentService.Action.CREATE_PROFILE));
             }
-            startService(regIntent);
 
             getPrefs().edit()
                       .putBoolean(getString(R.string.pref_has_seen_start_page_key), true)

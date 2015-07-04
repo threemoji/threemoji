@@ -2,8 +2,6 @@ package com.threemoji.threemoji.service;
 
 import com.google.android.gms.iid.InstanceIDListenerService;
 
-import android.content.Intent;
-
 // https://developers.google.com/instance-id/guides/android-implementation
 public class MyInstanceIDListenerService extends InstanceIDListenerService {
 
@@ -18,8 +16,8 @@ public class MyInstanceIDListenerService extends InstanceIDListenerService {
     @Override
     public void onTokenRefresh() {
         // Fetch updated Instance ID token and notify our app's server of any changes (if applicable).
-        Intent intent = new Intent(this, RegistrationIntentService.class);
-        startService(intent);
+        startService(RegistrationIntentService.createIntent(this,
+                                                            RegistrationIntentService.Action.UPDATE_TOKEN));
     }
     // [END refresh_token]
 

@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
         if (getPrefs().getBoolean(getString(R.string.pref_has_seen_start_page_key), false)) {
             startRegistrationIntentServiceIfNeeded();
         } else {
+            updateVersionInPrefs(BuildConfig.VERSION_CODE);
             startStartPage();
         }
 
@@ -75,9 +76,12 @@ public class MainActivity extends AppCompatActivity {
     private void startRegistrationIntentServiceIfNeeded() {
         if (hasGooglePlayServices()) {
             // hasVersionChanged is always checked first to ensure shared preferences is updated
-            if (hasVersionChanged() || !hasToken()) {
-                Intent intent = new Intent(this, RegistrationIntentService.class);
-                startService(intent);
+            if (hasVersionChanged()) {
+                startService(RegistrationIntentService.createIntent(this,
+                                                                    RegistrationIntentService.Action.UPDATE_TOKEN));
+            } else if (!hasToken()) {
+                startService(RegistrationIntentService.createIntent(this,
+                                                                    RegistrationIntentService.Action.CREATE_TOKEN));
             }
         }
     }
@@ -150,6 +154,7 @@ public class MainActivity extends AppCompatActivity {
             setupDrawerContent(navigationView);
         }
     }
+
     private void setupDrawerContent(NavigationView navigationView) {
         initProfile();
         initDrawerListeners(navigationView);
@@ -182,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
         Drawable emoji2DrawableResource =
                 SvgUtils.getSvgDrawable(emoji2ResourceName, mSizeOfEmojiIcon, getPackageName());
         Drawable emoji3DrawableResource =
-                SvgUtils.getSvgDrawable(emoji3ResourceName, mSizeOfEmojiIcon,getPackageName());
+                SvgUtils.getSvgDrawable(emoji3ResourceName, mSizeOfEmojiIcon, getPackageName());
 
         userEmoji1.setImageDrawable(emoji1DrawableResource);
         userEmoji2.setImageDrawable(emoji2DrawableResource);

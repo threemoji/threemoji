@@ -42,9 +42,10 @@ def message_callback(session, message):
                        data["generated_name"], data["gender"], data["location"], data["radius"])
             else:
               user = auth_user(uid, password, data["action"])
-              if user == 404 and data["action"] == "update_profile":
-                add_user(uid, password, data["token"], data["emoji_1"], data["emoji_2"], data["emoji_3"],
-                         data["generated_name"], data["gender"], data["location"], data["radius"])
+              if user == 404:
+                if data["action"] == "update_profile":
+                  add_user(uid, password, data["token"], data["emoji_1"], data["emoji_2"], data["emoji_3"],
+                           data["generated_name"], data["gender"], data["location"], data["radius"])
               elif user != 403:
                 if data["action"] == "update_profile":
                   data_dict = {"token": data["token"],

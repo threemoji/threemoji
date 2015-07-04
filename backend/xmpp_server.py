@@ -148,16 +148,17 @@ def auth_user(uid, password, action):
 
 def lookup_profile(uid, user, target_uid):
   target_user = auth_user(target_uid, "", "lookup")
+
+  for prop in user.property:
+    if prop.name == 'token':
+      token = prop.value.string_value
+      break
+
   if target_user != 404:
     data_dict = {}
     for prop in target_user.property:
       if prop.name in ['emoji_1', 'emoji_2', 'emoji_3', 'generated_name', 'gender']:
         data_dict[prop.name] = prop.value.string_value
-
-    for prop in user.property:
-      if prop.name == 'token':
-        token = prop.value.string_value
-        break
 
     send({"to": token,
           "message_id": next_message_id(token),
@@ -166,6 +167,14 @@ def lookup_profile(uid, user, target_uid):
             "body": str(data_dict),
             "icon": "@mipmap/ic_launcher"
           }})
+  else:
+    send({"to": token,
+              "message_id": next_message_id(token),
+              "notification": {
+                "title": "Lookup request failed",
+                "body": "User " + target_uid + " not found",
+                "icon": "@mipmap/ic_launcher"
+              }})
 
 def update_user(uid, user, data_dict, action):
   for prop in user.property:

@@ -12,6 +12,7 @@ public class Threemoji extends Application {
     public void onCreate() {
         super.onCreate();
         mContext = this;
+        registerActivityLifecycleCallbacks(new MyLifecycleHandler());
     }
 
     public static Context getContext(){

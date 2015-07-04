@@ -3,6 +3,7 @@ package com.threemoji.threemoji.service;
 import com.google.android.gms.gcm.GcmListenerService;
 
 import com.threemoji.threemoji.MainActivity;
+import com.threemoji.threemoji.MyLifecycleHandler;
 import com.threemoji.threemoji.R;
 import com.threemoji.threemoji.data.ChatContract;
 
@@ -46,7 +47,8 @@ public class MyGcmListenerService extends GcmListenerService {
 
             storeMessage(fromUuid, timestamp, message);
             String fromName = findNameFromUuid(fromUuid);
-            sendNotification(fromName, message);
+            if (!MyLifecycleHandler.isApplicationVisible())
+                sendNotification(fromName, message);
             Log.d(TAG, "Message: " + message);
         }
 

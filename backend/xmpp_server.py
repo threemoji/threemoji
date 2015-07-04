@@ -59,6 +59,8 @@ def message_callback(session, message):
                   update_user(uid, user, {"token": data["token"]}, data["action"])
                 elif data["action"] == "send_message":
                   send_message(uid, data["to"], data["message"], str(long(time.time() * 1e6)))
+                elif data["action"] == "delete_profile":
+                  del_user(uid)
 
           except datastore.RPCError as e:
             # RPCError is raised if any error happened during a RPC.
@@ -116,8 +118,20 @@ def add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, ge
   date_modified_property.name = 'date_modified'
   date_modified_property.value.timestamp_microseconds_value = current_time
 
-  resp = datastore.commit(req)
+  datastore.commit(req)
   logging.info('Added user: ' + generated_name + ' (' + uid + ')')
+
+def del_user(uid):
+  user_key = datastore.Key()
+  path = user_key.path_element.add()
+  path.name = uid
+  path.kind = 'User'
+
+  req = datastore.CommitRequest()
+  req.mode = datastore.CommitRequest.NON_TRANSACTIONAL
+  req.mutation.delete.extend([user_key])
+  datastore.commit(req)
+  logging.info('Deleted user: ' + uid)
 
 def auth_user(uid, password, action):
   user_key = datastore.Key()

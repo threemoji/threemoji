@@ -69,6 +69,7 @@
     <string name="backend_action_update_token_key">update_token</string>
     <string name="backend_action_send_message">send_message</string>
     <string name="backend_action_lookup_profile">lookup_profile</string>
+    <string name="backend_action_delete_profile">delete_profile</string>
 
     <string name="backend_uid_key">uid</string>
     <string name="backend_password_key">password</string>

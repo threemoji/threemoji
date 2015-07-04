@@ -169,7 +169,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             holder.messageData.setText(message);
 
             FrameLayout wrapper = (FrameLayout) holder.messageData.getParent();
-            LinearLayout parent = (LinearLayout) holder.messageData.getParent();
+            LinearLayout parent = (LinearLayout) wrapper.getParent();
 
             String sentOrReceived = mCursor.getString(1);
             if (sentOrReceived.equals("sent")) {

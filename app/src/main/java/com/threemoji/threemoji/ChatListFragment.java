@@ -4,8 +4,10 @@ import com.threemoji.threemoji.data.ChatContract;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -51,16 +53,26 @@ public class ChatListFragment extends Fragment {
     private void setupRecyclerView(RecyclerView recyclerView) {
         ArrayList<ChatItem> chats = new ArrayList<ChatItem>();
 
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+
 //        Uri uri;
 //        ContentValues testValues = new ContentValues();
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_UUID, "47778f91-6ece-4813-b200-a438a6cfdf46");
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_1, "emoji_1f601");
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_2, "emoji_1f601");
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_3, "emoji_1f601");
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_GENDER, "MALE");
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_GENERATED_NAME, "Several Finwhale");
-//
-//        uri = getActivity().getContentResolver().insert(ChatContract.PartnerEntry.CONTENT_URI, testValues);
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_UUID, "bc54eb07-03cb-48e8-8bf8-002eee94723b");
+//                       prefs.getString(getString(R.string.profile_uid_key), ""));
+
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_1, "emoji_1f62d");
+//                       getString(R.string.profile_emoji_one_key));
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_2, "emoji_1f62a");
+//                       getString(R.string.profile_emoji_two_key));
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_3, "emoji_1f630");
+//                       getString(R.string.profile_emoji_three_key));
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_GENDER, "FEMALE");
+//                       getString(R.string.profile_gender_key));
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_GENERATED_NAME, "Grim Squamata");
+//                       getString(R.string.profile_generated_name_key));
+
+//        uri = getActivity().getContentResolver()
+//                           .insert(ChatContract.PartnerEntry.CONTENT_URI, testValues);
 //        Log.v(TAG, uri.toString());
 
 //        int rowsDeleted = getActivity().getContentResolver().delete(ChatContract.PartnerEntry.CONTENT_URI,
@@ -130,12 +142,16 @@ public class ChatListFragment extends Fragment {
         public String partnerName;
         public String lastActivity;
 
-        public ChatItem(String uuid, String emoji1, String emoji2, String emoji3, String partnerName,
+        public ChatItem(String uuid, String emoji1, String emoji2, String emoji3,
+                        String partnerName,
                         String lastActivity) {
             this.uuid = uuid;
-            this.emoji1 = getResources().getIdentifier(emoji1, "drawable", getActivity().getPackageName());
-            this.emoji2 = getResources().getIdentifier(emoji2, "drawable", getActivity().getPackageName());
-            this.emoji3 = getResources().getIdentifier(emoji3, "drawable", getActivity().getPackageName());
+            this.emoji1 = getResources().getIdentifier(emoji1, "drawable",
+                                                       getActivity().getPackageName());
+            this.emoji2 = getResources().getIdentifier(emoji2, "drawable",
+                                                       getActivity().getPackageName());
+            this.emoji3 = getResources().getIdentifier(emoji3, "drawable",
+                                                       getActivity().getPackageName());
             this.partnerName = partnerName;
             this.lastActivity = lastActivity;
         }

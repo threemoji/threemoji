@@ -13,24 +13,24 @@
         android:layout_width="@dimen/list_item_avatar_size"
         android:layout_height="@dimen/list_item_avatar_size"
         android:src="@mipmap/ic_launcher"
-        android:paddingEnd="6dp"
-        android:paddingStart="6dp" />
+        android:paddingEnd="4dp"
+        android:paddingStart="4dp" />
 
     <ImageView
         android:id="@+id/emoji2"
         android:layout_width="@dimen/list_item_avatar_size"
         android:layout_height="@dimen/list_item_avatar_size"
         android:src="@mipmap/ic_launcher"
-        android:paddingEnd="6dp"
-        android:paddingStart="6dp" />
+        android:paddingEnd="4dp"
+        android:paddingStart="4dp" />
 
     <ImageView
         android:id="@+id/emoji3"
         android:layout_width="@dimen/list_item_avatar_size"
         android:layout_height="@dimen/list_item_avatar_size"
         android:src="@mipmap/ic_launcher"
-        android:paddingEnd="6dp"
-        android:paddingStart="6dp" />
+        android:paddingEnd="4dp"
+        android:paddingStart="4dp" />
 
     <LinearLayout
         android:orientation="vertical"
@@ -65,7 +65,7 @@
         android:text="99+"
         android:id="@+id/textView"
         android:gravity="center|right"
-        android:background="@drawable/rounded_corners"
+        android:background="@drawable/notifications_alert"
         android:padding="4dp"
         android:layout_marginLeft="4dp"
         android:textColor="@color/white" />

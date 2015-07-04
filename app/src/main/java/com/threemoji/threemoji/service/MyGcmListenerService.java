@@ -11,6 +11,8 @@ import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.CursorIndexOutOfBoundsException;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -38,11 +40,13 @@ public class MyGcmListenerService extends GcmListenerService {
         if (messageType != null && messageType.equals("ack")) {
             Log.d(TAG, "ACK");
         } else {
-            String message = "Message: " + data.getString("body")
-                             + " From: " + data.getString("from_uid")
-                             + " Timestamp: " + data.getString("timestamp");
-            storeMessage(data.getString("from_uid"), data.getString("timestamp"), data.getString("body"));
-            sendNotification(message);
+            String message = data.getString("body");
+            String fromUuid = data.getString("from_uid");
+            String timestamp = data.getString("timestamp");
+
+            storeMessage(fromUuid, timestamp, message);
+            String fromName = findNameFromUuid(fromUuid);
+            sendNotification(fromName, message);
             Log.d(TAG, "Message: " + message);
         }
 
@@ -56,6 +60,24 @@ public class MyGcmListenerService extends GcmListenerService {
     }
     // [END receive_message]
 
+    private String findNameFromUuid(String fromUuid) {
+        Cursor cursor =
+                getContentResolver().query(ChatContract.PartnerEntry.CONTENT_URI,
+                                           new String[]{
+                                                   ChatContract.PartnerEntry.COLUMN_GENERATED_NAME},
+                                           ChatContract.PartnerEntry.COLUMN_UUID + " = ?",
+                                           new String[]{fromUuid}, null);
+
+        try {
+            String uuid = cursor.getString(0);
+            cursor.close();
+            return uuid;
+        } catch (NullPointerException | CursorIndexOutOfBoundsException e) {
+            return "";
+        }
+
+    }
+
     private void storeMessage(String uuid, String timestamp, String message) {
         Uri uri;
         ContentValues values = new ContentValues();
@@ -63,12 +85,13 @@ public class MyGcmListenerService extends GcmListenerService {
         values.put(ChatContract.MessageEntry.COLUMN_DATETIME, timestamp);
         values.put(ChatContract.MessageEntry.COLUMN_SENT_OR_RECEIVED, "received");
         values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, message);
-        uri = getContentResolver().insert(ChatContract.MessageEntry.buildMessagesWithPartnerUri(uuid), values);
+        uri = getContentResolver().insert(
+                ChatContract.MessageEntry.buildMessagesWithPartnerUri(uuid), values);
     }
 
     @Override
     public void onDeletedMessages() {
-        sendNotification("Deleted messages on server");
+//        sendNotification("Deleted messages on server");
     }
 
     @Override
@@ -78,7 +101,7 @@ public class MyGcmListenerService extends GcmListenerService {
 
     @Override
     public void onSendError(String msgId, String error) {
-        sendNotification("Upstream message send error. Id=" + msgId + ", error" + error);
+//        sendNotification("Upstream message send error. Id=" + msgId + ", error" + error);
     }
 
     /**
@@ -86,16 +109,16 @@ public class MyGcmListenerService extends GcmListenerService {
      *
      * @param message GCM message received.
      */
-    private void sendNotification(String message) {
+    private void sendNotification(String from, String message) {
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                                                                 PendingIntent.FLAG_ONE_SHOT);
 
-        Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle("Threemoji")
+                .setContentTitle(from)
                 .setContentText(message)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
@@ -105,6 +128,7 @@ public class MyGcmListenerService extends GcmListenerService {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         Random rand = new Random();
-        notificationManager.notify(rand.nextInt() /* ID of notification */, notificationBuilder.build());
+        notificationManager.notify(rand.nextInt() /* ID of notification */,
+                                   notificationBuilder.build());
     }
 }

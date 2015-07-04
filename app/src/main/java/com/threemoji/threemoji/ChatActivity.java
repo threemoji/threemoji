@@ -25,6 +25,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -79,8 +80,10 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         mUri = ChatContract.MessageEntry.buildMessagesWithPartnerUri(uuid);
 
         Cursor cursor = getContentResolver().query(mUri, projection, null, null, mSortOrder);
+
         RecyclerView messagesView = (RecyclerView) findViewById(R.id.chat_messages);
         if (cursor != null) {
+//            getContentResolver().delete(mUri, null, null);
             setupRecyclerView(messagesView, cursor);
         }
         getSupportLoaderManager().initLoader(0, null, this);
@@ -88,7 +91,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private void setupRecyclerView(RecyclerView messagesView, Cursor cursor) {
         LinearLayoutManager layoutManager = new LinearLayoutManager(messagesView.getContext());
-        layoutManager.setStackFromEnd(true);
+//        layoutManager.setStackFromEnd(true);
         layoutManager.setReverseLayout(true);
         layoutManager.scrollToPosition(0);
 
@@ -131,6 +134,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mAdapter.changeCursor(data);
+        mAdapter.moveToEnd();
     }
 
     @Override
@@ -141,6 +145,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             extends RecyclerView.Adapter<MessagesRecyclerViewAdapter.ViewHolder> {
 
         private Cursor mCursor;
+        private RecyclerView rv;
 
         public MessagesRecyclerViewAdapter(Context context, Cursor cursor) {
             mCursor = cursor;
@@ -151,6 +156,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
                                              int viewType) {
             View view = LayoutInflater.from(parent.getContext())
                                       .inflate(R.layout.item_chat_message, parent, false);
+            rv = (RecyclerView) parent;
             return new ViewHolder(view);
         }
 
@@ -162,13 +168,16 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             String message = mCursor.getString(2);
             holder.messageData.setText(message);
 
-            LinearLayout parent = (LinearLayout) holder.messageData.getParent();
+            FrameLayout wrapper = (FrameLayout) holder.messageData.getParent();
+            LinearLayout parent = (LinearLayout) wrapper.getParent();
 
             String sentOrReceived = mCursor.getString(1);
             if (sentOrReceived.equals("sent")) {
                 parent.setGravity(Gravity.RIGHT);
+                wrapper.setBackgroundResource(R.drawable.chat_box_sent);
             } else if (sentOrReceived.equals("received")) {
                 parent.setGravity(Gravity.LEFT);
+                wrapper.setBackgroundResource(R.drawable.chat_box_received);
             }
         }
 
@@ -178,6 +187,12 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
                 return mCursor.getCount();
             }
             return 0;
+        }
+
+        public void moveToEnd() {
+            if (rv != null) {
+                rv.scrollToPosition(0);
+            }
         }
 
         public void changeCursor(Cursor cursor) {

@@ -38,6 +38,7 @@ public class ChatContract {
         public static Uri buildPartnerUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
+
     }
 
     public static final class MessageEntry implements BaseColumns {
@@ -65,8 +66,7 @@ public class ChatContract {
         }
 
         public static Uri buildMessagesWithPartnerUri(String uuid) {
-            return CONTENT_URI.buildUpon()
-                              .appendPath(uuid).build();
+            return CONTENT_URI.buildUpon().appendPath(uuid).build();
         }
     }
 }

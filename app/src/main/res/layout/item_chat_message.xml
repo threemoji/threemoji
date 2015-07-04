@@ -8,16 +8,22 @@
     android:paddingRight="16dp"
     android:paddingTop="2dp">
 
-    <TextView
-        android:id="@+id/chat_message"
+    <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/rounded_corners"
-        android:maxWidth="300dp"
-        android:paddingBottom="6dp"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:paddingTop="6dp"
-        android:textColor="@color/white"
-        android:textSize="17sp" />
+        android:background="@drawable/chat_box_sent">
+
+
+        <TextView
+            android:id="@+id/chat_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxWidth="300dp"
+            android:paddingBottom="6dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="6dp"
+            android:textColor="@color/white"
+            android:textSize="17sp" />
+    </FrameLayout>
 </LinearLayout>

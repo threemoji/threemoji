@@ -2,10 +2,12 @@ package com.threemoji.threemoji;
 
 import com.threemoji.threemoji.data.ChatContract;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
@@ -53,26 +55,25 @@ public class ChatListFragment extends Fragment {
     private void setupRecyclerView(RecyclerView recyclerView) {
         ArrayList<ChatItem> chats = new ArrayList<ChatItem>();
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-
-//        Uri uri;
 //        ContentValues testValues = new ContentValues();
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_UUID, "bc54eb07-03cb-48e8-8bf8-002eee94723b");
-//                       prefs.getString(getString(R.string.profile_uid_key), ""));
 
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_1, "emoji_1f62d");
-//                       getString(R.string.profile_emoji_one_key));
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_2, "emoji_1f62a");
-//                       getString(R.string.profile_emoji_two_key));
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_3, "emoji_1f630");
-//                       getString(R.string.profile_emoji_three_key));
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_UUID, "1d0982b4-4a73-41b1-b220-052667e223c2");
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_1, "emoji_1f604");
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_2, "emoji_1f603");
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_3, "emoji_1f600");
 //        testValues.put(ChatContract.PartnerEntry.COLUMN_GENDER, "FEMALE");
-//                       getString(R.string.profile_gender_key));
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_GENERATED_NAME, "Grim Squamata");
-//                       getString(R.string.profile_generated_name_key));
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_GENERATED_NAME, "Weepy Xoni");
 
-//        uri = getActivity().getContentResolver()
-//                           .insert(ChatContract.PartnerEntry.CONTENT_URI, testValues);
+//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_UUID, prefs.getString(getString(R.string.profile_uid_key), ""));
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_1, prefs.getString(getString(R.string.profile_emoji_one_key), ""));
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_2, prefs.getString(getString(R.string.profile_emoji_two_key), ""));
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_3, prefs.getString(getString(R.string.profile_emoji_three_key), ""));
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_GENDER, prefs.getString(getString(R.string.profile_gender_key), ""));
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_GENERATED_NAME, prefs.getString(getString(R.string.profile_generated_name_key), ""));
+//
+//        Uri uri = getActivity().getContentResolver()
+//                  .insert(ChatContract.PartnerEntry.CONTENT_URI, testValues);
 //        Log.v(TAG, uri.toString());
 
 //        int rowsDeleted = getActivity().getContentResolver().delete(ChatContract.PartnerEntry.CONTENT_URI,

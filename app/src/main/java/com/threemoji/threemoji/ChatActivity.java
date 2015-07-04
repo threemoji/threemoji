@@ -38,7 +38,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     private Uri mUri;
     private static final String[] projection = new String[]{
             ChatContract.MessageEntry.COLUMN_DATETIME,
-            ChatContract.MessageEntry.COLUMN_SENT_OR_RECEIVED,
+            ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
             ChatContract.MessageEntry.COLUMN_MESSAGE_DATA};
     private static String mSortOrder =
             ChatContract.MessageEntry.TABLE_NAME + "." + ChatContract.MessageEntry._ID + " DESC";
@@ -115,7 +115,8 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             ContentValues dummyValues = new ContentValues();
             dummyValues.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, mUuid);
             dummyValues.put(ChatContract.MessageEntry.COLUMN_DATETIME, "124");
-            dummyValues.put(ChatContract.MessageEntry.COLUMN_SENT_OR_RECEIVED, "sent");
+            dummyValues.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
+                            ChatContract.MessageEntry.MessageType.SENT.name());
             dummyValues.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, userMessage.trim());
             uri = getContentResolver().insert(
                     ChatContract.MessageEntry.buildMessagesWithPartnerUri(mUuid), dummyValues);
@@ -171,13 +172,16 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             FrameLayout wrapper = (FrameLayout) holder.messageData.getParent();
             LinearLayout parent = (LinearLayout) wrapper.getParent();
 
-            String sentOrReceived = mCursor.getString(1);
-            if (sentOrReceived.equals("sent")) {
+            String messageType = mCursor.getString(1);
+            if (messageType.equals(ChatContract.MessageEntry.MessageType.SENT.name())) {
                 parent.setGravity(Gravity.RIGHT);
                 wrapper.setBackgroundResource(R.drawable.chat_box_sent);
-            } else if (sentOrReceived.equals("received")) {
+            } else if (messageType.equals(ChatContract.MessageEntry.MessageType.RECEIVED.name())) {
                 parent.setGravity(Gravity.LEFT);
                 wrapper.setBackgroundResource(R.drawable.chat_box_received);
+            } else if (messageType.equals(ChatContract.MessageEntry.MessageType.ALERT.name())) {
+                parent.setGravity(Gravity.CENTER);
+                wrapper.setBackgroundResource(R.drawable.chat_box_alert);
             }
         }
 

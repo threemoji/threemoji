@@ -47,8 +47,9 @@ public class MyGcmListenerService extends GcmListenerService {
 
             storeMessage(fromUuid, timestamp, message);
             String fromName = findNameFromUuid(fromUuid);
-            if (!MyLifecycleHandler.isApplicationVisible())
+            if (!MyLifecycleHandler.isApplicationVisible()) {
                 sendNotification(fromName, message);
+            }
             Log.d(TAG, "Message: " + message);
         }
 
@@ -85,7 +86,8 @@ public class MyGcmListenerService extends GcmListenerService {
         ContentValues values = new ContentValues();
         values.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, uuid);
         values.put(ChatContract.MessageEntry.COLUMN_DATETIME, timestamp);
-        values.put(ChatContract.MessageEntry.COLUMN_SENT_OR_RECEIVED, "received");
+        values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
+                   ChatContract.MessageEntry.MessageType.RECEIVED.name());
         values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, message);
         uri = getContentResolver().insert(
                 ChatContract.MessageEntry.buildMessagesWithPartnerUri(uuid), values);

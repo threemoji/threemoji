@@ -58,8 +58,12 @@ public class ChatContract {
 
         public static final String COLUMN_PARTNER_KEY = "partner_id";
         public static final String COLUMN_DATETIME = "date_time";
-        public static final String COLUMN_SENT_OR_RECEIVED = "sent_or_received";
+        public static final String COLUMN_MESSAGE_TYPE = "message_type";
         public static final String COLUMN_MESSAGE_DATA = "message_data";
+
+        public static enum MessageType {
+            SENT, RECEIVED, ALERT
+        }
 
         public static Uri buildMessageUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);

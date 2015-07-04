@@ -35,7 +35,7 @@ public class ChatDbHelper extends SQLiteOpenHelper {
                 MessageEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 MessageEntry.COLUMN_PARTNER_KEY + " INTEGER NOT NULL, " +
                 MessageEntry.COLUMN_DATETIME + " BIGINT NOT NULL, " +
-                MessageEntry.COLUMN_SENT_OR_RECEIVED + " TEXT NOT NULL, " +
+                MessageEntry.COLUMN_MESSAGE_TYPE + " TEXT NOT NULL, " +
                 MessageEntry.COLUMN_MESSAGE_DATA + " TEXT NOT NULL, " +
 
                 " FOREIGN KEY (" + MessageEntry.COLUMN_PARTNER_KEY + ") REFERENCES " +

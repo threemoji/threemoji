@@ -45,8 +45,10 @@ public class MyGcmListenerService extends GcmListenerService {
             String fromUuid = data.getString("from_uid");
             String timestamp = data.getString("timestamp");
 
+            Log.v(TAG, "From uuid: " + fromUuid);
             storeMessage(fromUuid, timestamp, message);
             String fromName = findNameFromUuid(fromUuid);
+            Log.v(TAG, "From name: " + fromName);
             if (!MyLifecycleHandler.isApplicationVisible()) {
                 sendNotification(fromName, message);
             }
@@ -69,13 +71,16 @@ public class MyGcmListenerService extends GcmListenerService {
                                            new String[]{
                                                    ChatContract.PartnerEntry.COLUMN_GENERATED_NAME},
                                            ChatContract.PartnerEntry.COLUMN_UUID + " = ?",
-                                           new String[]{fromUuid}, null);
+                                           new String[]{fromUuid},
+                                           null);
 
         try {
+            cursor.moveToNext();
             String uuid = cursor.getString(0);
             cursor.close();
             return uuid;
         } catch (NullPointerException | CursorIndexOutOfBoundsException e) {
+            Log.e(TAG, e.getMessage());
             return "";
         }
 

@@ -2,8 +2,9 @@
 <GridView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:padding="20dp"
-    android:columnWidth="40dp"
+    android:columnWidth="48dp"
+    android:gravity="center"
+    android:horizontalSpacing="4dp"
     android:numColumns="auto_fit"
-    android:verticalSpacing="8dp"
-    android:horizontalSpacing="4dp" />
+    android:padding="12dp"
+    android:verticalSpacing="8dp" />

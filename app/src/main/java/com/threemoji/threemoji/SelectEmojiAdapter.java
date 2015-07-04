@@ -12,9 +12,11 @@ import android.widget.ImageView;
 
 public class SelectEmojiAdapter extends BaseAdapter {
     private Context mContext;
+    private int emoji_size;
 
     public SelectEmojiAdapter(Context c) {
         mContext = c;
+        emoji_size = (int) mContext.getResources().getDimension(R.dimen.emoji_selection_size);
     }
 
     @Override
@@ -37,7 +39,7 @@ public class SelectEmojiAdapter extends BaseAdapter {
         ImageView imageView;
         if (convertView == null) {
             imageView = new ImageView(mContext);
-            imageView.setLayoutParams(new GridView.LayoutParams(72, 72));
+            imageView.setLayoutParams(new GridView.LayoutParams(emoji_size, emoji_size));
             imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
         } else {
             imageView = (ImageView) convertView;

@@ -59,6 +59,7 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
     // ================================================================
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.v(TAG, "Activity started");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_page);
         initEmojiButtons();

@@ -38,7 +38,6 @@ public class MainActivity extends AppCompatActivity {
 
     private DrawerLayout mDrawerLayout;
     private ViewPager mViewPager;
-    private int mSizeOfEmojiIcon = 72;
 
     // ================================================================
     // Initialisation methods
@@ -47,8 +46,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        startStartPageIfNeeded();
-        startRegistrationIntentServiceIfNeeded();
+        if (getPrefs().getBoolean(getString(R.string.pref_has_seen_start_page_key), false)) {
+            startRegistrationIntentServiceIfNeeded();
+        } else {
+            startStartPage();
+        }
 
         setContentView(R.layout.activity_main);
         initActionBar();
@@ -60,12 +62,10 @@ public class MainActivity extends AppCompatActivity {
         initViewPagerAndTabs();
     }
 
-    private void startStartPageIfNeeded() {
-        if (!getPrefs().getBoolean(getString(R.string.pref_has_seen_start_page_key), false)) {
-            Intent intent = new Intent(this, StartPageActivity.class);
-            startActivity(intent);
-            finish();
-        }
+    private void startStartPage() {
+        Intent intent = new Intent(this, StartPageActivity.class);
+        startActivity(intent);
+        finish();
     }
 
 
@@ -164,6 +164,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void initProfileEmoji() {
         SharedPreferences prefs = getPrefs();
+        int mSizeOfEmojiIcon = 72;
+
         ImageView userEmoji1 = (ImageView) findViewById(R.id.profile_emoji1);
         ImageView userEmoji2 = (ImageView) findViewById(R.id.profile_emoji2);
         ImageView userEmoji3 = (ImageView) findViewById(R.id.profile_emoji3);

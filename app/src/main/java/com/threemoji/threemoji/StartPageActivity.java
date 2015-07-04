@@ -1,8 +1,8 @@
 package com.threemoji.threemoji;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
-import com.google.android.gms.iid.InstanceID;
 
+import com.threemoji.threemoji.service.RegistrationIntentService;
 import com.threemoji.threemoji.utility.EmojiList;
 import com.threemoji.threemoji.utility.NameGenerator;
 import com.threemoji.threemoji.utility.SvgUtils;
@@ -21,7 +21,6 @@ import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import java.io.IOException;
-import java.util.UUID;
 
 
 public class StartPageActivity extends AppCompatActivity implements SelectEmojiDialogFragment.SelectEmojiDialogListener {
@@ -29,7 +28,6 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
     private enum Gender {FEMALE, MALE}
 
     private static final String TAG = StartPageActivity.class.getSimpleName();
-    private int timeToLive = 60 * 60; // one hour
 
     private ImageButton mCurrentEmojiButton;
     private int mSizeOfEmojiIcon = 72;
@@ -64,18 +62,11 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
         setContentView(R.layout.activity_start_page);
         initEmojiButtons();
         initGender();
-        initUid();
-        initPassword();
     }
 
     private void initEmojiButtons() {
+        Log.v(TAG, "Initalising emoji buttons");
         SharedPreferences prefs = getPrefs();
-
-        try {
-            updateOldData(prefs);
-        } catch (ClassCastException e) {
-            Log.v(TAG, "Data already up to date");
-        }
 
         String emoji1ResourceName = prefs.getString(getString(R.string.profile_emoji_one_key),
                                                     null);
@@ -95,32 +86,6 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
         }
     }
 
-    private void updateOldData(SharedPreferences prefs) throws ClassCastException {
-        int emoji1ImageResource = prefs.getInt(getString(R.string.profile_emoji_one_key), -1);
-        int emoji2ImageResource = prefs.getInt(getString(R.string.profile_emoji_two_key), -1);
-        int emoji3ImageResource = prefs.getInt(getString(R.string.profile_emoji_three_key), -1);
-
-        SharedPreferences.Editor editor = prefs.edit();
-
-        if (emoji1ImageResource != -1) {
-            editor.remove(getString(R.string.profile_emoji_one_key));
-            editor.putString(getString(R.string.profile_emoji_one_key),
-                             getResources().getResourceEntryName(emoji1ImageResource));
-        }
-        if (emoji2ImageResource != -1) {
-            editor.remove(getString(R.string.profile_emoji_two_key));
-            editor.putString(getString(R.string.profile_emoji_two_key),
-                             getResources().getResourceEntryName(emoji2ImageResource));
-        }
-        if (emoji3ImageResource != -1) {
-            editor.remove(getString(R.string.profile_emoji_three_key));
-            editor.putString(getString(R.string.profile_emoji_three_key),
-                             getResources().getResourceEntryName(emoji3ImageResource));
-
-        }
-        editor.apply();
-    }
-
     private void updateImageById(String resourceName, int id) {
         Drawable drawable = SvgUtils.getSvgDrawable(resourceName, mSizeOfEmojiIcon, getPackageName());
         ImageButton imageButton = (ImageButton) findViewById(id);
@@ -130,6 +95,7 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
     }
 
     private void initGender() {
+        Log.v(TAG, "Initialising gender");
         String genderPref = getPrefs().getString(getString(R.string.profile_gender_key), null);
         if (genderPref != null) {
             Gender gender = Gender.valueOf(genderPref);
@@ -143,25 +109,6 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
                             R.id.radio_button_male);
                     break;
             }
-        }
-    }
-
-    private void initUid() {
-        String uid = getPrefs().getString(getString(R.string.profile_uid_key), null);
-        if (uid == null) {
-            getPrefs().edit()
-                      .putString(getString(R.string.profile_uid_key), UUID.randomUUID().toString())
-                      .apply();
-        }
-    }
-
-    private void initPassword() {
-        String password = getPrefs().getString(getString(R.string.profile_password_key), null);
-        if (password == null) {
-            getPrefs().edit()
-                      .putString(getString(R.string.profile_password_key),
-                                 InstanceID.getInstance(this).getId())
-                      .apply();
         }
     }
 
@@ -180,11 +127,14 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
             setProfileEmoji(emoji1, emoji2, emoji3);
             setProfileGeneratedName();
 
+            Intent regIntent = new Intent(this, RegistrationIntentService.class);
             if (getPrefs().getBoolean(getString(R.string.pref_has_seen_start_page_key), false)) {
-                uploadProfile(true);
+                regIntent.putExtra("update", true);
             } else {
-                uploadProfile(false);
+                regIntent.putExtra("update", false);
             }
+            startService(regIntent);
+
             getPrefs().edit()
                       .putBoolean(getString(R.string.pref_has_seen_start_page_key), true)
                       .apply();
@@ -243,6 +193,7 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
     }
 
     private void uploadProfile(boolean update) {
+        int timeToLive = 60 * 60; // one hour
         GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
         String token = getPrefs().getString(getString(R.string.pref_token_key), "");
         try {

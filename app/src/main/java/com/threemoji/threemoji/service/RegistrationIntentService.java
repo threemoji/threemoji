@@ -13,6 +13,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.io.IOException;
+import java.util.UUID;
 
 public class RegistrationIntentService extends IntentService {
 
@@ -27,18 +28,26 @@ public class RegistrationIntentService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         Log.v(TAG, "intent string: " + intent.toString());
         try {
-//            // In the (unlikely) event that multiple refresh operations occur simultaneously,
-//            // ensure that they are processed sequentially.
-//            synchronized (TAG) {
             unregisterFromServer();
             String token = getGcmToken();
-            if (!getPrefs().getBoolean(getString(R.string.pref_has_seen_start_page_key), false)) {
-                sendTokenToServer(token);
-            } else {
-                updateTokenOnServer(token);
-            }
             storeToken(token);
-//            }
+            initUid();
+            initPassword();
+
+            if (intent.getBooleanExtra("update", false)) {
+                uploadProfile(true);
+            } else {
+                uploadProfile(false);
+            }
+
+            if (getPrefs().getBoolean(getString(R.string.pref_has_seen_start_page_key), false)) {
+                updateTokenOnServer(token);
+            } else {
+                sendTokenToServer(token);
+            }
+
+
+
         } catch (Exception e) {
             Log.d(TAG, "Failed to complete token refresh", e);
         } finally {
@@ -55,6 +64,7 @@ public class RegistrationIntentService extends IntentService {
     }
 
     private void unregisterFromServer() throws IOException {
+        Log.v(TAG, "Unregistering from server");
         InstanceID instanceID = InstanceID.getInstance(this);
         instanceID.deleteToken(getString(R.string.gcm_project_num),
                                GoogleCloudMessaging.INSTANCE_ID_SCOPE);
@@ -64,7 +74,69 @@ public class RegistrationIntentService extends IntentService {
 
     }
 
+    private void initUid() {
+        Log.v(TAG, "Initialising uuid");
+        String uid = getPrefs().getString(getString(R.string.profile_uid_key), null);
+        if (uid == null) {
+            getPrefs().edit()
+                      .putString(getString(R.string.profile_uid_key), UUID.randomUUID().toString())
+                      .apply();
+        }
+    }
+
+    private void initPassword() {
+        Log.v(TAG, "Initialising password");
+        String password = getPrefs().getString(getString(R.string.profile_password_key), null);
+        if (password == null) {
+            getPrefs().edit()
+                      .putString(getString(R.string.profile_password_key),
+                                 InstanceID.getInstance(this).getId())
+                      .apply();
+        }
+    }
+
+    private void uploadProfile(boolean update) {
+        Log.v(TAG, "Uploading profile");
+        int timeToLive = 60 * 60; // one hour
+        GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
+        String token = getPrefs().getString(getString(R.string.pref_token_key), "");
+        try {
+            Bundle data = new Bundle();
+            data.putString("action", update ? getString(
+                    R.string.backend_action_update_profile_key) : getString(
+                    R.string.backend_action_upload_profile_key));
+            data.putString(getString(R.string.backend_uid_key),
+                           getPrefs().getString(getString(R.string.profile_uid_key), ""));
+            data.putString(getString(R.string.backend_password_key),
+                           getPrefs().getString(getString(R.string.profile_password_key), ""));
+            data.putString(getString(R.string.backend_token_key), token);
+            data.putString(getString(R.string.backend_emoji_one_key),
+                           getPrefs().getString(getString(R.string.profile_emoji_one_key), ""));
+            data.putString(getString(R.string.backend_emoji_two_key),
+                           getPrefs().getString(getString(R.string.profile_emoji_two_key), ""));
+            data.putString(getString(R.string.backend_emoji_three_key),
+                           getPrefs().getString(getString(R.string.profile_emoji_three_key), ""));
+            data.putString(getString(R.string.backend_generated_name_key),
+                           getPrefs().getString(getString(R.string.profile_generated_name_key),
+                                                ""));
+            data.putString(getString(R.string.backend_gender_key),
+                           getPrefs().getString(getString(R.string.profile_gender_key), ""));
+            data.putString(getString(R.string.backend_location_key), "LOCATION");
+            data.putString(getString(R.string.backend_radius_key),
+                           getPrefs().getString(getString(R.string.pref_max_distance_key),
+                                                getString(R.string.pref_max_distance_default)));
+            String msgId = getNextMsgId(token);
+            gcm.send(getString(R.string.gcm_project_num) + "@gcm.googleapis.com", msgId,
+                     timeToLive, data);
+            Log.v(TAG, "profile uploaded");
+        } catch (IOException e) {
+            Log.e(TAG,
+                  "IOException while uploading profile to backend...", e);
+        }
+    }
+
     private void sendTokenToServer(String token) {
+        Log.v(TAG, "Sending token to server");
         GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
         try {
             Bundle data = new Bundle();
@@ -80,6 +152,7 @@ public class RegistrationIntentService extends IntentService {
     }
 
     private void updateTokenOnServer(String token) {
+        Log.v(TAG, "Updating token on server");
         GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
         try {
             Bundle data = new Bundle();

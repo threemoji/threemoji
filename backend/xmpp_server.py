@@ -47,7 +47,9 @@ def message_callback(session, message):
                   add_user(uid, password, data["token"], data["emoji_1"], data["emoji_2"], data["emoji_3"],
                            data["generated_name"], data["gender"], data["location"], data["radius"])
               elif user != 403:
-                if data["action"] == "update_profile":
+                if data["action"] == "lookup_profile":
+                  lookup_profile(uid, user, data["profile"])
+                elif data["action"] == "update_profile":
                   data_dict = {"token": data["token"],
                                "emoji_1": data["emoji_1"], "emoji_2": data["emoji_2"], "emoji_3": data["emoji_3"],
                                "generated_name": data["generated_name"], "gender": data["gender"],
@@ -126,11 +128,14 @@ def auth_user(uid, password, action):
   req = datastore.LookupRequest()
   req.key.extend([user_key])
   resp = datastore.lookup(req)
+
   if len(resp.missing) is 1:
     logging.error('Entity not found for user: ' + uid + ' action: ' + action)
     return 404
-
   user = resp.found[0].entity
+  if action == "lookup":
+    return user
+
   for prop in user.property:
     if prop.name == 'password':
       if password != prop.value.string_value:
@@ -140,6 +145,27 @@ def auth_user(uid, password, action):
         return 403
 
   return user
+
+def lookup_profile(uid, user, target_uid):
+  target_user = auth_user(target_uid, "", "lookup")
+  if target_user != 404:
+    data_dict = {}
+    for prop in target_user.property:
+      if prop.name in ['emoji_1', 'emoji_2', 'emoji_3', 'generated_name', 'gender']:
+        data_dict[prop.name] = prop.value.string_value
+
+    for prop in user.property:
+      if prop.name == 'token':
+        token = prop.value.string_value
+        break
+
+    send({"to": token,
+          "message_id": next_message_id(token),
+          "notification": {
+            "title": "Lookup request succeeded",
+            "body": str(data_dict),
+            "icon": "@mipmap/ic_launcher"
+          }})
 
 def update_user(uid, user, data_dict, action):
   for prop in user.property:

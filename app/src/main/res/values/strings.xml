@@ -68,6 +68,7 @@
     <string name="backend_action_update_profile_key">update_profile</string>
     <string name="backend_action_update_token_key">update_token</string>
     <string name="backend_action_send_message">send_message</string>
+    <string name="backend_action_lookup_profile">lookup_profile</string>
 
     <string name="backend_uid_key">uid</string>
     <string name="backend_password_key">password</string>
@@ -82,7 +83,9 @@
 
     <string name="backend_to_key">to</string>
     <string name="backend_message_key">message</string>
-    
+
+    <string name="backend_profile_key">profile</string>
+
     <string name="title_activity_clear_data">ClearDataActivity</string>
 
 </resources>

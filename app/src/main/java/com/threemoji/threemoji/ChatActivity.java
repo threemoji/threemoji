@@ -42,6 +42,11 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             ChatContract.MessageEntry.COLUMN_MESSAGE_DATA};
     private static String mSortOrder =
             ChatContract.MessageEntry.TABLE_NAME + "." + ChatContract.MessageEntry._ID + " DESC";
+    private String mEmoji1;
+    private String mEmoji2;
+    private String mEmoji3;
+    private String mGender;
+    private String mGeneratedName;
 
     public static enum Action {
         NEW, DISPLAY
@@ -55,17 +60,18 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         Intent intent = getIntent();
         Action action = Action.valueOf(intent.getStringExtra("action"));
         mUuid = intent.getStringExtra("uuid");
-        String emoji1 = intent.getStringExtra("emoji_1");
-        String emoji2 = intent.getStringExtra("emoji_2");
-        String emoji3 = intent.getStringExtra("emoji_3");
-        String gender = intent.getStringExtra("gender");
-        String generatedName = intent.getStringExtra("generated_name");
-//        String generatedName = "aaaaaaaaa aaaaaaaaa";
+        mEmoji1 = intent.getStringExtra("emoji_1");
+        mEmoji2 = intent.getStringExtra("emoji_2");
+        mEmoji3 = intent.getStringExtra("emoji_3");
+        mGender = intent.getStringExtra("gender");
+        mGeneratedName = intent.getStringExtra("generated_name");
+//        mGeneratedName = "aaaaaaaaa aaaaaaaaa";
 
         if (action == Action.NEW && !personIsAlreadyPartner(mUuid)) {
-            addNewPartnerToDb(mUuid, emoji1, emoji2, emoji3, gender, generatedName);
+            addNewPartnerToDb(mUuid, mEmoji1, mEmoji2, mEmoji3, mGender, mGeneratedName);
         }
-        initActionBar(emoji1, emoji2, emoji3, generatedName);
+//        boolean hasPartnerChangedProfile = hasPartnerChangedProfile();
+        initActionBar(mEmoji1, mEmoji2, mEmoji3, mGeneratedName);
         initMessages(mUuid);
     }
 
@@ -97,6 +103,11 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         Log.v(TAG, uri.toString());
     }
 
+//    private boolean hasPartnerChangedProfile() {
+//        Intent intent = new Intent(this, ChatIntentService.class);
+//        intent.putExtra("action", ChatIntentService.Action.LOOKUP_UUID.name());
+//        return false;
+//    }
 
     private void initActionBar(String emoji1, String emoji2, String emoji3, String title) {
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));

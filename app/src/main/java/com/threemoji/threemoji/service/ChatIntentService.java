@@ -18,6 +18,10 @@ public class ChatIntentService extends IntentService {
     private static final String TAG = ChatIntentService.class.getSimpleName();
     private int timeToLive = 60 * 60; // one hour
 
+    public static enum Action {
+        LOOKUP_UUID
+    }
+
     public ChatIntentService() {
         super(TAG);
     }

@@ -51,6 +51,6 @@
         android:gravity="center|end"
         android:padding="4dp"
         android:text="10km"
-        android:textSize="11dp" />
+        android:textSize="11sp" />
 
 </LinearLayout>

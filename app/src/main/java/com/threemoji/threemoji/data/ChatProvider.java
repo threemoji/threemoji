@@ -117,7 +117,7 @@ public class ChatProvider extends ContentProvider {
             case PARTNERS:
                 return PartnerEntry.CONTENT_TYPE;
             case PEOPLE_NEARBY:
-                return PartnerEntry.CONTENT_TYPE;
+                return PeopleNearbyEntry.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }

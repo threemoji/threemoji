@@ -20,7 +20,13 @@ public class ChatDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        final String SQL_CREATE_PARTNER_TABLE =
+        createPartnersTable(db);
+        createMessagesTable(db);
+        createPeopleNearbyTable(db);
+    }
+
+    private void createPartnersTable(SQLiteDatabase db) {
+        final String SQL_CREATE_PARTNERS_TABLE =
                 "CREATE TABLE " + PartnerEntry.TABLE_NAME + " (" +
                 PartnerEntry._ID + " INTEGER, " +
                 PartnerEntry.COLUMN_UUID + " TEXT PRIMARY KEY NOT NULL, " +
@@ -30,8 +36,11 @@ public class ChatDbHelper extends SQLiteOpenHelper {
                 PartnerEntry.COLUMN_GENDER + " TEXT NOT NULL, " +
                 PartnerEntry.COLUMN_GENERATED_NAME + " TEXT NOT NULL " +
                 " );";
+        db.execSQL(SQL_CREATE_PARTNERS_TABLE);
+    }
 
-        final String SQL_CREATE_MESSAGE_TABLE =
+    private void createMessagesTable(SQLiteDatabase db) {
+        final String SQL_CREATE_MESSAGES_TABLE =
                 "CREATE TABLE " + MessageEntry.TABLE_NAME + " (" +
                 MessageEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 MessageEntry.COLUMN_PARTNER_KEY + " INTEGER NOT NULL, " +
@@ -42,7 +51,10 @@ public class ChatDbHelper extends SQLiteOpenHelper {
                 " FOREIGN KEY (" + MessageEntry.COLUMN_PARTNER_KEY + ") REFERENCES " +
                 PartnerEntry.TABLE_NAME + " (" + PartnerEntry.COLUMN_UUID + ") " +
                 " );";
+        db.execSQL(SQL_CREATE_MESSAGES_TABLE);
+    }
 
+    private void createPeopleNearbyTable(SQLiteDatabase db) {
         final String SQL_CREATE_PEOPLE_NEARBY_TABLE =
                 "CREATE TABLE " +
                 PeopleNearbyEntry.TABLE_NAME + " (" +
@@ -52,19 +64,22 @@ public class ChatDbHelper extends SQLiteOpenHelper {
                 PeopleNearbyEntry.COLUMN_EMOJI_2 + " TEXT NOT NULL, " +
                 PeopleNearbyEntry.COLUMN_EMOJI_3 + " TEXT NOT NULL, " +
                 PeopleNearbyEntry.COLUMN_GENDER + " TEXT NOT NULL, " +
-                PeopleNearbyEntry.COLUMN_GENERATED_NAME + " TEXT NOT NULL " +
+                PeopleNearbyEntry.COLUMN_GENERATED_NAME + " TEXT NOT NULL, " +
+                PeopleNearbyEntry.COLUMN_DISTANCE + " TEXT NOT NULL " +
                 " );";
-
-        db.execSQL(SQL_CREATE_PARTNER_TABLE);
-        db.execSQL(SQL_CREATE_MESSAGE_TABLE);
         db.execSQL(SQL_CREATE_PEOPLE_NEARBY_TABLE);
     }
 
+
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + PartnerEntry.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + MessageEntry.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + PeopleNearbyEntry.TABLE_NAME);
-        onCreate(db);
+//        db.execSQL("DROP TABLE IF EXISTS " + PartnerEntry.TABLE_NAME);
+//        db.execSQL("DROP TABLE IF EXISTS " + MessageEntry.TABLE_NAME);
+//        db.execSQL("DROP TABLE IF EXISTS " + PeopleNearbyEntry.TABLE_NAME);
+//        onCreate(db);
+
+        if (oldVersion == 3 && newVersion == 4) {
+            createPeopleNearbyTable(db);
+        }
     }
 }

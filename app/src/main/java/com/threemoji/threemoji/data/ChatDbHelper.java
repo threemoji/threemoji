@@ -1,7 +1,8 @@
 package com.threemoji.threemoji.data;
 
-import com.threemoji.threemoji.data.ChatContract.PartnerEntry;
 import com.threemoji.threemoji.data.ChatContract.MessageEntry;
+import com.threemoji.threemoji.data.ChatContract.PartnerEntry;
+import com.threemoji.threemoji.data.ChatContract.PeopleNearbyEntry;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -42,14 +43,28 @@ public class ChatDbHelper extends SQLiteOpenHelper {
                 PartnerEntry.TABLE_NAME + " (" + PartnerEntry.COLUMN_UUID + ") " +
                 " );";
 
+        final String SQL_CREATE_PEOPLE_NEARBY_TABLE =
+                "CREATE TABLE " +
+                PeopleNearbyEntry.TABLE_NAME + " (" +
+                PeopleNearbyEntry._ID + " INTEGER, " +
+                PeopleNearbyEntry.COLUMN_UUID + " TEXT PRIMARY KEY NOT NULL, " +
+                PeopleNearbyEntry.COLUMN_EMOJI_1 + " TEXT NOT NULL, " +
+                PeopleNearbyEntry.COLUMN_EMOJI_2 + " TEXT NOT NULL, " +
+                PeopleNearbyEntry.COLUMN_EMOJI_3 + " TEXT NOT NULL, " +
+                PeopleNearbyEntry.COLUMN_GENDER + " TEXT NOT NULL, " +
+                PeopleNearbyEntry.COLUMN_GENERATED_NAME + " TEXT NOT NULL " +
+                " );";
+
         db.execSQL(SQL_CREATE_PARTNER_TABLE);
         db.execSQL(SQL_CREATE_MESSAGE_TABLE);
+        db.execSQL(SQL_CREATE_PEOPLE_NEARBY_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + PartnerEntry.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + MessageEntry.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + PeopleNearbyEntry.TABLE_NAME);
         onCreate(db);
     }
 }

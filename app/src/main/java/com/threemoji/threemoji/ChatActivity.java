@@ -43,26 +43,62 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     private static String mSortOrder =
             ChatContract.MessageEntry.TABLE_NAME + "." + ChatContract.MessageEntry._ID + " DESC";
 
+    public static enum Action {
+        NEW, DISPLAY
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
         Intent intent = getIntent();
+        Action action = Action.valueOf(intent.getStringExtra("action"));
         mUuid = intent.getStringExtra("uuid");
+        String emoji1 = intent.getStringExtra("emoji_1");
+        String emoji2 = intent.getStringExtra("emoji_2");
+        String emoji3 = intent.getStringExtra("emoji_3");
+        String gender = intent.getStringExtra("gender");
         String generatedName = intent.getStringExtra("generated_name");
 //        String generatedName = "aaaaaaaaa aaaaaaaaa";
-        int emoji1 = intent.getIntExtra("emoji_1", 0);
-        int emoji2 = intent.getIntExtra("emoji_2", 0);
-        int emoji3 = intent.getIntExtra("emoji_3", 0);
 
+        if (action == Action.NEW && !personIsAlreadyPartner(mUuid)) {
+            addNewPartnerToDb(mUuid, emoji1, emoji2, emoji3, gender, generatedName);
+        }
         initActionBar(emoji1, emoji2, emoji3, generatedName);
-
         initMessages(mUuid);
     }
 
+    private boolean personIsAlreadyPartner(String uuid) {
+        Cursor cursor =
+                getContentResolver().query(ChatContract.PartnerEntry.CONTENT_URI,
+                                           new String[]{
+                                                   ChatContract.PartnerEntry.COLUMN_GENERATED_NAME},
+                                           ChatContract.PartnerEntry.COLUMN_UUID + " = ?",
+                                           new String[]{uuid},
+                                           null);
+        if (cursor.getCount() > 0) {
+            return true;
+        }
+        return false;
+    }
 
-    private void initActionBar(int emoji1, int emoji2, int emoji3, String title) {
+    private void addNewPartnerToDb(String uuid, String emoji1, String emoji2, String emoji3,
+                                   String gender, String generatedName) {
+        ContentValues newValues = new ContentValues();
+        newValues.put(ChatContract.PartnerEntry.COLUMN_UUID, uuid);
+        newValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_1, emoji1);
+        newValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_2, emoji2);
+        newValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_3, emoji3);
+        newValues.put(ChatContract.PartnerEntry.COLUMN_GENDER, gender);
+        newValues.put(ChatContract.PartnerEntry.COLUMN_GENERATED_NAME, generatedName);
+
+        Uri uri = getContentResolver().insert(ChatContract.PartnerEntry.CONTENT_URI, newValues);
+        Log.v(TAG, uri.toString());
+    }
+
+
+    private void initActionBar(String emoji1, String emoji2, String emoji3, String title) {
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
         getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME |
                                                 ActionBar.DISPLAY_HOME_AS_UP |

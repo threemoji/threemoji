@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:paddingBottom="8dp"
+    android:paddingLeft="12dp"
+    android:paddingRight="12dp"
+    android:paddingTop="8dp">
+
+    <ImageView
+        android:id="@+id/emoji1"
+        android:layout_width="@dimen/list_item_avatar_size"
+        android:layout_height="@dimen/list_item_avatar_size"
+        android:paddingEnd="4dp"
+        android:paddingStart="4dp"
+        android:src="@mipmap/ic_launcher" />
+
+    <ImageView
+        android:id="@+id/emoji2"
+        android:layout_width="@dimen/list_item_avatar_size"
+        android:layout_height="@dimen/list_item_avatar_size"
+        android:paddingEnd="4dp"
+        android:paddingStart="4dp"
+        android:src="@mipmap/ic_launcher" />
+
+    <ImageView
+        android:id="@+id/emoji3"
+        android:layout_width="@dimen/list_item_avatar_size"
+        android:layout_height="@dimen/list_item_avatar_size"
+        android:paddingEnd="4dp"
+        android:paddingStart="4dp"
+        android:src="@mipmap/ic_launcher" />
+
+    <TextView
+        android:id="@+id/personName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_weight="1"
+        android:maxLines="1"
+        android:text="Violetred Zebrafish"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/distance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="4dp"
+        android:gravity="center|end"
+        android:padding="4dp"
+        android:text="10km"
+        android:textSize="11dp" />
+
+</LinearLayout>

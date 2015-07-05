@@ -20,6 +20,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -168,6 +169,18 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             uri = getContentResolver().insert(
                     ChatContract.MessageEntry.buildMessagesWithPartnerUri(mUuid), dummyValues);
             Log.v(TAG, uri.toString());
+
+//            //Testing the alerts
+//            dummyValues = new ContentValues();
+//            dummyValues.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, mUuid);
+//            dummyValues.put(ChatContract.MessageEntry.COLUMN_DATETIME, "124");
+//            dummyValues.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
+//                            ChatContract.MessageEntry.MessageType.ALERT.name());
+//            dummyValues.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA,
+//                            mGeneratedName + " updated his profile");
+//            uri = getContentResolver().insert(
+//                    ChatContract.MessageEntry.buildMessagesWithPartnerUri(mUuid), dummyValues);
+//            Log.v(TAG, uri.toString());
         }
     }
 
@@ -193,10 +206,12 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             extends RecyclerView.Adapter<MessagesRecyclerViewAdapter.ViewHolder> {
 
         private Cursor mCursor;
+        private Context mContext;
         private RecyclerView rv;
 
         public MessagesRecyclerViewAdapter(Context context, Cursor cursor) {
             mCursor = cursor;
+            mContext = context;
         }
 
         @Override
@@ -220,16 +235,49 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             LinearLayout parent = (LinearLayout) wrapper.getParent();
 
             String messageType = mCursor.getString(1);
+
             if (messageType.equals(ChatContract.MessageEntry.MessageType.SENT.name())) {
                 parent.setGravity(Gravity.RIGHT);
                 wrapper.setBackgroundResource(R.drawable.chat_box_sent);
+                modifyParamsForMessages(holder, parent);
+
             } else if (messageType.equals(ChatContract.MessageEntry.MessageType.RECEIVED.name())) {
                 parent.setGravity(Gravity.LEFT);
                 wrapper.setBackgroundResource(R.drawable.chat_box_received);
+                modifyParamsForMessages(holder, parent);
+
             } else if (messageType.equals(ChatContract.MessageEntry.MessageType.ALERT.name())) {
                 parent.setGravity(Gravity.CENTER);
                 wrapper.setBackgroundResource(R.drawable.chat_box_alert);
+                modifyParamsForAlerts(holder, parent);
             }
+        }
+
+        private void modifyParamsForMessages(ViewHolder holder, LinearLayout parent) {
+            holder.messageData.setTextSize(
+                    TypedValue.COMPLEX_UNIT_PX,
+                    mContext.getResources().getDimension(R.dimen.chat_box_message_text_size));
+            int leftRight = mContext.getResources()
+                                    .getDimensionPixelSize(
+                                            R.dimen.chat_box_message_wrapper_padding_left_right);
+            int topBottom = mContext.getResources()
+                                    .getDimensionPixelSize(
+                                            R.dimen.chat_box_message_wrapper_padding_top_bottom);
+            parent.setPadding(leftRight, topBottom, leftRight, topBottom);
+        }
+
+        private void modifyParamsForAlerts(ViewHolder holder,
+                                           LinearLayout parent) {
+            holder.messageData.setTextSize(
+                    TypedValue.COMPLEX_UNIT_PX,
+                    mContext.getResources().getDimension(R.dimen.chat_box_alert_text_size));
+            int leftRight = mContext.getResources()
+                                    .getDimensionPixelSize(
+                                            R.dimen.chat_box_alert_wrapper_padding_left_right);
+            int topBottom = mContext.getResources()
+                                    .getDimensionPixelSize(
+                                            R.dimen.chat_box_alert_wrapper_padding_top_bottom);
+            parent.setPadding(leftRight, topBottom, leftRight, topBottom);
         }
 
         @Override

@@ -7,4 +7,12 @@
     <dimen name="user_profile_emoji_size">72dp</dimen>
 
     <dimen name="emoji_selection_size">48dp</dimen>
+
+    <dimen name="chat_box_alert_text_size">12sp</dimen>
+    <dimen name="chat_box_alert_wrapper_padding_left_right">16dp</dimen>
+    <dimen name="chat_box_alert_wrapper_padding_top_bottom">8dp</dimen>
+
+    <dimen name="chat_box_message_text_size">16sp</dimen>
+    <dimen name="chat_box_message_wrapper_padding_left_right">16dp</dimen>
+    <dimen name="chat_box_message_wrapper_padding_top_bottom">2dp</dimen>
 </resources>

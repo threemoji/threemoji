@@ -3,16 +3,15 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:paddingBottom="2dp"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    android:paddingTop="2dp">
+    android:paddingBottom="@dimen/chat_box_message_wrapper_padding_top_bottom"
+    android:paddingLeft="@dimen/chat_box_message_wrapper_padding_left_right"
+    android:paddingRight="@dimen/chat_box_message_wrapper_padding_left_right"
+    android:paddingTop="@dimen/chat_box_message_wrapper_padding_top_bottom">
 
     <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/chat_box_sent">
-
 
         <TextView
             android:id="@+id/chat_message"
@@ -24,6 +23,6 @@
             android:paddingRight="10dp"
             android:paddingTop="6dp"
             android:textColor="@color/white"
-            android:textSize="17sp" />
+            android:textSize="@dimen/chat_box_message_text_size" />
     </FrameLayout>
 </LinearLayout>

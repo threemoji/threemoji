@@ -95,6 +95,7 @@ public class ChatContract {
         public static final String COLUMN_EMOJI_3 = "emoji_3";
         public static final String COLUMN_GENDER = "gender";
         public static final String COLUMN_GENERATED_NAME = "generated_name";
+        public static final String COLUMN_DISTANCE = "distance";
 
         public static Uri buildPeopleNearbyUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);

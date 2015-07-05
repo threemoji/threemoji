@@ -2,6 +2,7 @@ package com.threemoji.threemoji.data;
 
 import com.threemoji.threemoji.data.ChatContract.MessageEntry;
 import com.threemoji.threemoji.data.ChatContract.PartnerEntry;
+import com.threemoji.threemoji.data.ChatContract.PeopleNearbyEntry;
 
 import android.annotation.TargetApi;
 import android.content.ContentProvider;
@@ -20,6 +21,7 @@ public class ChatProvider extends ContentProvider {
 
     static final int MESSAGES_WITH_PARTNER = 101;
     static final int PARTNERS = 200;
+    static final int PEOPLE_NEARBY = 300;
 
     private static final SQLiteQueryBuilder sMessagesWithPartnerQueryBuilder;
 
@@ -43,6 +45,7 @@ public class ChatProvider extends ContentProvider {
 
         matcher.addURI(authority, ChatContract.PATH_MESSAGES + "/*", MESSAGES_WITH_PARTNER);
         matcher.addURI(authority, ChatContract.PATH_PARTNERS, PARTNERS);
+        matcher.addURI(authority, ChatContract.PATH_PEOPLE_NEARBY, PEOPLE_NEARBY);
 
         return matcher;
     }
@@ -87,6 +90,17 @@ public class ChatProvider extends ContentProvider {
                         sortOrder
                 );
                 break;
+            case PEOPLE_NEARBY:
+                returnCursor = mChatDbHelper.getReadableDatabase().query(
+                        PeopleNearbyEntry.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -101,6 +115,8 @@ public class ChatProvider extends ContentProvider {
             case MESSAGES_WITH_PARTNER:
                 return MessageEntry.CONTENT_TYPE;
             case PARTNERS:
+                return PartnerEntry.CONTENT_TYPE;
+            case PEOPLE_NEARBY:
                 return PartnerEntry.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -132,6 +148,15 @@ public class ChatProvider extends ContentProvider {
                 }
                 break;
             }
+            case PEOPLE_NEARBY: {
+                long _id = db.insert(PeopleNearbyEntry.TABLE_NAME, null, values);
+                if (_id > 0) {
+                    returnUri = PeopleNearbyEntry.buildPeopleNearbyUri(_id);
+                } else {
+                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                }
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -153,6 +178,9 @@ public class ChatProvider extends ContentProvider {
                 break;
             case PARTNERS:
                 rowsDeleted = db.delete(PartnerEntry.TABLE_NAME, selection, selectionArgs);
+                break;
+            case PEOPLE_NEARBY:
+                rowsDeleted = db.delete(PeopleNearbyEntry.TABLE_NAME, selection, selectionArgs);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -177,6 +205,9 @@ public class ChatProvider extends ContentProvider {
                 break;
             case PARTNERS:
                 rowsUpdated = db.update(PartnerEntry.TABLE_NAME, values, selection, selectionArgs);
+                break;
+            case PEOPLE_NEARBY:
+                rowsUpdated = db.update(PeopleNearbyEntry.TABLE_NAME, values, selection, selectionArgs);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);

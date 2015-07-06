@@ -113,9 +113,8 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     private void initActionBar(String emoji1, String emoji2, String emoji3, String title) {
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
         getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME |
-                                                ActionBar.DISPLAY_HOME_AS_UP |
-                                                ActionBar.DISPLAY_SHOW_TITLE);
-        getSupportActionBar().setTitle(title);
+                                                ActionBar.DISPLAY_HOME_AS_UP );
+        ((TextView) findViewById(R.id.title_name)).setText(title);
         Drawable emoji1Drawable = SvgUtils.getSvgDrawable(emoji1, 24, getPackageName());
         Drawable emoji2Drawable = SvgUtils.getSvgDrawable(emoji2, 24, getPackageName());
         Drawable emoji3Drawable = SvgUtils.getSvgDrawable(emoji3, 24, getPackageName());

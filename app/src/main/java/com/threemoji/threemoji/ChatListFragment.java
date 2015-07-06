@@ -82,7 +82,11 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
                                      .query(ChatContract.PartnerEntry.CONTENT_URI,
                                             CHAT_ITEM_PROJECTION, null, null, null);
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(recyclerView.getContext());
+        layoutManager.setStackFromEnd(true);
+        layoutManager.setReverseLayout(true);
+        recyclerView.setLayoutManager(layoutManager);
+
         mAdapter = new ChatsRecyclerViewAdapter(getActivity(), cursor);
         recyclerView.setAdapter(mAdapter);
 

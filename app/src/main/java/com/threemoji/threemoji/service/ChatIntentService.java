@@ -19,7 +19,7 @@ public class ChatIntentService extends IntentService {
     private int timeToLive = 60 * 60; // one hour
 
     public static enum Action {
-        LOOKUP_UUID
+        LOOKUP_ALL, LOOKUP_UUID
     }
 
     public ChatIntentService() {
@@ -29,7 +29,8 @@ public class ChatIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.v(TAG, "intent string: " + intent.toString());
-        if (intent.getStringExtra("action") != null && Action.valueOf(intent.getStringExtra("action")) == Action.LOOKUP_UUID) {
+        String action = intent.getStringExtra("action");
+        if (action != null && Action.valueOf(action) == Action.LOOKUP_ALL) {
             GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
             try {
                 Bundle data = new Bundle();
@@ -44,8 +45,10 @@ public class ChatIntentService extends IntentService {
             } catch (IOException e) {
                 Log.e(TAG, "IOException while sending request...", e);
             }
-        } else if (intent.getStringExtra("message").startsWith("/lookup ")) {
-            String targetUid = intent.getStringExtra("message").substring(8);
+        } else if (action != null && Action.valueOf(action) == Action.LOOKUP_UUID) {
+            // intent.getStringExtra("message").startsWith("/lookup ")
+//            String targetUid = intent.getStringExtra("message").substring(8);
+            String targetUid = intent.getStringExtra("uuid");
             GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
             try {
                 Bundle data = new Bundle();

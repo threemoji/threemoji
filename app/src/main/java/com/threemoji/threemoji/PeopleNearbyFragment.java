@@ -51,7 +51,7 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
 
     private void getPeopleNearbyData() {
         Intent intent = new Intent(getActivity(), ChatIntentService.class);
-        intent.putExtra("action", ChatIntentService.Action.LOOKUP_UUID.name());
+        intent.putExtra("action", ChatIntentService.Action.LOOKUP_ALL.name());
         getActivity().startService(intent);
     }
 

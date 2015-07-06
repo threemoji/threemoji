@@ -60,7 +60,8 @@ public class MyGcmListenerService extends GcmListenerService {
             String timestamp = data.getString("timestamp");
 
             Log.v(TAG, "From uuid: " + fromUuid);
-//            addPartnerIfNeeded()
+//            addPartnerIfNeeded(fromUuid);
+
             storeMessage(fromUuid, timestamp, message);
             String fromName = findNameFromUuid(fromUuid);
             Log.v(TAG, "From name: " + fromName);
@@ -79,6 +80,17 @@ public class MyGcmListenerService extends GcmListenerService {
 
     }
     // [END receive_message]
+
+    private void addPartnerIfNeeded(String fromUuid) {
+        if (findNameFromUuid(fromUuid).equals("")) {
+            Intent intent = new Intent(this, ChatIntentService.class);
+            intent.putExtra("action", ChatIntentService.Action.LOOKUP_UUID.name());
+            intent.putExtra("uuid", fromUuid);
+            this.startService(intent);
+
+            //
+        }
+    }
 
     private String findNameFromUuid(String fromUuid) {
         Cursor cursor =

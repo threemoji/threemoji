@@ -84,10 +84,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
                                            ChatContract.PartnerEntry.COLUMN_UUID + " = ?",
                                            new String[]{uuid},
                                            null);
-        if (cursor.getCount() > 0) {
-            return true;
-        }
-        return false;
+        return cursor.getCount() > 0;
     }
 
     private void addNewPartnerToDb(String uuid, String emoji1, String emoji2, String emoji3,

@@ -29,7 +29,22 @@ public class ChatIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.v(TAG, "intent string: " + intent.toString());
-        if (intent.getStringExtra("message").startsWith("/lookup ")) {
+        if (intent.getStringExtra("action") != null && Action.valueOf(intent.getStringExtra("action")) == Action.LOOKUP_UUID) {
+            GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
+            try {
+                Bundle data = new Bundle();
+                data.putString("action", getString(R.string.backend_action_lookup_nearby));
+                data.putString(getString(R.string.backend_uid_key), getPrefs().getString(getString(R.string.profile_uid_key), ""));
+                data.putString(getString(R.string.backend_password_key), getPrefs().getString(getString(R.string.profile_password_key), ""));
+                data.putString(getString(R.string.backend_radius_key), "123");
+                String msgId = getNextMsgId(getPrefs().getString(getString(R.string.pref_token_key), ""));
+                gcm.send(getString(R.string.gcm_project_num) + "@gcm.googleapis.com", msgId,
+                         timeToLive, data);
+                Log.v(TAG, "nearby lookup request sent");
+            } catch (IOException e) {
+                Log.e(TAG, "IOException while sending request...", e);
+            }
+        } else if (intent.getStringExtra("message").startsWith("/lookup ")) {
             String targetUid = intent.getStringExtra("message").substring(8);
             GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
             try {
@@ -42,16 +57,6 @@ public class ChatIntentService extends IntentService {
                 gcm.send(getString(R.string.gcm_project_num) + "@gcm.googleapis.com", msgId,
                         timeToLive, data);
                 Log.v(TAG, "profile lookup request sent for target user: " + targetUid);
-
-                data = new Bundle();
-                data.putString("action", getString(R.string.backend_action_lookup_nearby));
-                data.putString(getString(R.string.backend_uid_key), getPrefs().getString(getString(R.string.profile_uid_key), ""));
-                data.putString(getString(R.string.backend_password_key), getPrefs().getString(getString(R.string.profile_password_key), ""));
-                data.putString(getString(R.string.backend_radius_key), "123");
-                msgId = getNextMsgId(getPrefs().getString(getString(R.string.pref_token_key), ""));
-                gcm.send(getString(R.string.gcm_project_num) + "@gcm.googleapis.com", msgId,
-                        timeToLive, data);
-                Log.v(TAG, "nearby lookup request sent");
             } catch (IOException e) {
                 Log.e(TAG, "IOException while sending request...", e);
             }

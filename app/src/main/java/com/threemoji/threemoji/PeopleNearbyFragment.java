@@ -1,6 +1,7 @@
 package com.threemoji.threemoji;
 
 import com.threemoji.threemoji.data.ChatContract;
+import com.threemoji.threemoji.service.ChatIntentService;
 
 import android.content.Context;
 import android.content.Intent;
@@ -8,6 +9,9 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -18,12 +22,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class PeopleNearbyFragment extends Fragment {
+public class PeopleNearbyFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String TAG = PeopleNearbyFragment.class.getSimpleName();
+
+    private PeopleRecyclerViewAdapter mAdapter;
 
     private final String[] PEOPLE_NEARBY_ITEM_PROJECTION = new String[]{
             ChatContract.PeopleNearbyEntry.COLUMN_UUID,
@@ -41,76 +44,62 @@ public class PeopleNearbyFragment extends Fragment {
                              Bundle savedInstanceState) {
         RecyclerView rv = (RecyclerView) inflater.inflate(
                 R.layout.fragment_chat_list, container, false);
+        getPeopleNearbyData();
         setupRecyclerView(rv);
         return rv;
     }
 
+    private void getPeopleNearbyData() {
+        Intent intent = new Intent(getActivity(), ChatIntentService.class);
+        intent.putExtra("action", ChatIntentService.Action.LOOKUP_UUID.name());
+        getActivity().startService(intent);
+    }
+
     private void setupRecyclerView(RecyclerView recyclerView) {
-        ArrayList<PeopleNearbyItem> chats = new ArrayList<PeopleNearbyItem>();
         Cursor cursor = getActivity().getContentResolver()
                                      .query(ChatContract.PeopleNearbyEntry.CONTENT_URI,
                                             PEOPLE_NEARBY_ITEM_PROJECTION, null, null, null);
-        if (cursor != null) {
-            while (cursor.moveToNext()) {
-                chats.add(
-                        new PeopleNearbyItem(
-                                cursor.getString(0),
-                                cursor.getString(1),
-                                cursor.getString(2),
-                                cursor.getString(3),
-                                cursor.getString(4),
-                                cursor.getString(5),
-                                cursor.getString(6)));
-            }
-        }
 
         recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
-        recyclerView.setAdapter(new RecyclerViewAdapter(getActivity(), chats));
+        mAdapter = new PeopleRecyclerViewAdapter(getActivity(), cursor);
+        recyclerView.setAdapter(mAdapter);
+
+        getActivity().getSupportLoaderManager().initLoader(1, null, this);
     }
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(getActivity(), ChatContract.PeopleNearbyEntry.CONTENT_URI,
+                                PEOPLE_NEARBY_ITEM_PROJECTION, null, null, null);
+    }
 
-    // ================================================================
-    // Inner class to represent each row of the people nearby list
-    // ================================================================
-    public class PeopleNearbyItem {
-        public String uuid;
-        public String emoji1;
-        public String emoji2;
-        public String emoji3;
-        public String gender;
-        public String personName;
-        public String distance;
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mAdapter.changeCursor(data);
+    }
 
-        public PeopleNearbyItem(String uuid, String emoji1, String emoji2, String emoji3,
-                                String gender, String partnerName, String distance) {
-            this.uuid = uuid;
-            this.emoji1 = emoji1;
-            this.emoji2 = emoji2;
-            this.emoji3 = emoji3;
-            this.gender = gender;
-            this.personName = partnerName;
-            this.distance = distance;
-        }
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
     }
 
 
     // ================================================================
     // Inner class to handle the population of items in the list
     // ================================================================
-    public static class RecyclerViewAdapter
-            extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
+    public static class PeopleRecyclerViewAdapter
+            extends RecyclerView.Adapter<PeopleRecyclerViewAdapter.ViewHolder> {
 
-        private List<PeopleNearbyItem> mItems;
+        private Cursor mCursor;
         private final TypedValue mTypedValue = new TypedValue();
         private int mBackground;
         private Context mContext;
 
-        public RecyclerViewAdapter(Context context, List<PeopleNearbyItem> items) {
+        public PeopleRecyclerViewAdapter(Context context, Cursor cursor) {
             // Initialises the animated background of the each list item.
             context.getTheme().resolveAttribute(R.attr.selectableItemBackground, mTypedValue, true);
             mBackground = mTypedValue.resourceId;
             mContext = context;
-            mItems = items;
+            mCursor = cursor;
         }
 
         @Override
@@ -120,18 +109,31 @@ public class PeopleNearbyFragment extends Fragment {
 
             // Sets the animated background of each list item to show when item is touched.
             view.setBackgroundResource(mBackground);
-
             return new ViewHolder(view);
         }
 
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
-            final PeopleNearbyItem currentItem = mItems.get(position);
-            holder.emoji1.setImageResource(mContext.getResources().getIdentifier(currentItem.emoji1, "drawable", mContext.getPackageName()));
-            holder.emoji2.setImageResource(mContext.getResources().getIdentifier(currentItem.emoji2, "drawable", mContext.getPackageName()));
-            holder.emoji3.setImageResource(mContext.getResources().getIdentifier(currentItem.emoji3, "drawable", mContext.getPackageName()));
-            holder.personName.setText(currentItem.personName);
-            holder.distance.setText(currentItem.distance);
+            mCursor.moveToPosition(position);
+            final String uuid = mCursor.getString(0);
+            final String emoji1 = mCursor.getString(1);
+            final String emoji2 = mCursor.getString(2);
+            final String emoji3 = mCursor.getString(3);
+            final String gender = mCursor.getString(4);
+            final String personName = mCursor.getString(5);
+            final String distance = mCursor.getString(6);
+
+            holder.emoji1.setImageResource(mContext.getResources()
+                                                   .getIdentifier(emoji1, "drawable",
+                                                                  mContext.getPackageName()));
+            holder.emoji2.setImageResource(mContext.getResources()
+                                                   .getIdentifier(emoji2, "drawable",
+                                                                  mContext.getPackageName()));
+            holder.emoji3.setImageResource(mContext.getResources()
+                                                   .getIdentifier(emoji3, "drawable",
+                                                                  mContext.getPackageName()));
+            holder.personName.setText(personName);
+            holder.distance.setText(distance);
 
             holder.view.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -139,22 +141,34 @@ public class PeopleNearbyFragment extends Fragment {
                     Context context = v.getContext();
                     Intent intent = new Intent(context, ChatActivity.class);
                     intent.putExtra("action", ChatActivity.Action.NEW.name());
-                    intent.putExtra("uuid", currentItem.uuid);
-                    intent.putExtra("emoji_1", currentItem.emoji1);
-                    intent.putExtra("emoji_2", currentItem.emoji2);
-                    intent.putExtra("emoji_3", currentItem.emoji3);
-                    intent.putExtra("gender", currentItem.gender);
-                    intent.putExtra("generated_name", currentItem.personName);
+                    intent.putExtra("uuid", uuid);
+                    intent.putExtra("emoji_1", emoji1);
+                    intent.putExtra("emoji_2", emoji2);
+                    intent.putExtra("emoji_3", emoji3);
+                    intent.putExtra("gender", gender);
+                    intent.putExtra("generated_name", personName);
                     context.startActivity(intent);
 
-                    Log.d(TAG, holder.personName.getText().toString());
+                    Log.d(TAG, personName);
                 }
             });
         }
 
         @Override
         public int getItemCount() {
-            return mItems.size();
+            if (mCursor != null) {
+                return mCursor.getCount();
+            }
+            return 0;
+        }
+
+        public void changeCursor(Cursor cursor) {
+            if (cursor != mCursor) {
+                Cursor oldCursor = mCursor;
+                mCursor = cursor;
+                notifyDataSetChanged();
+                oldCursor.close();
+            }
         }
 
 

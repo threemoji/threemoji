@@ -7,19 +7,25 @@ import com.threemoji.threemoji.MyLifecycleHandler;
 import com.threemoji.threemoji.R;
 import com.threemoji.threemoji.data.ChatContract;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.CursorIndexOutOfBoundsException;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import java.util.Iterator;
 import java.util.Random;
 
 public class MyGcmListenerService extends GcmListenerService {
@@ -46,7 +52,7 @@ public class MyGcmListenerService extends GcmListenerService {
                 Log.d(TAG, "Profile lookup response: " + data.getString("body"));
             } else if (responseType.equals("lookup_nearby")) {
                 Log.d(TAG, "Nearby lookup response: " + data.getString("body"));
-
+                storePeopleNearbyData(data.getString("body"));
             }
         } else {
             String message = data.getString("body");
@@ -54,6 +60,7 @@ public class MyGcmListenerService extends GcmListenerService {
             String timestamp = data.getString("timestamp");
 
             Log.v(TAG, "From uuid: " + fromUuid);
+//            addPartnerIfNeeded()
             storeMessage(fromUuid, timestamp, message);
             String fromName = findNameFromUuid(fromUuid);
             Log.v(TAG, "From name: " + fromName);
@@ -91,18 +98,68 @@ public class MyGcmListenerService extends GcmListenerService {
             Log.e(TAG, e.getMessage());
             return "";
         }
+    }
 
+    private void storePeopleNearbyData(String body) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String userUuid = prefs.getString(getString(R.string.profile_uid_key), "");
+        try {
+            JSONObject json = new JSONObject(body);
+//            Log.v(TAG, json.toString());
+
+            Iterator<String> people = json.keys();
+            while (people.hasNext()) {
+                String uuid = people.next();
+
+                if (uuid.equals(userUuid) || personAlreadyInClientDatabase(uuid)) {
+                    continue;
+                }
+                JSONObject jsonPersonData = json.getJSONObject(uuid);
+
+                String emoji1 = (String) jsonPersonData.get("emoji_1");
+                String emoji2 = (String) jsonPersonData.get("emoji_2");
+                String emoji3 = (String) jsonPersonData.get("emoji_3");
+                String gender = (String) jsonPersonData.get("gender");
+                String generatedName = (String) jsonPersonData.get("generated_name");
+
+                ContentValues values = new ContentValues();
+                values.put(ChatContract.PeopleNearbyEntry.COLUMN_UUID, uuid);
+                values.put(ChatContract.PeopleNearbyEntry.COLUMN_EMOJI_1, emoji1);
+                values.put(ChatContract.PeopleNearbyEntry.COLUMN_EMOJI_2, emoji2);
+                values.put(ChatContract.PeopleNearbyEntry.COLUMN_EMOJI_3, emoji3);
+                values.put(ChatContract.PeopleNearbyEntry.COLUMN_GENDER, gender);
+                values.put(ChatContract.PeopleNearbyEntry.COLUMN_GENERATED_NAME, generatedName);
+                values.put(ChatContract.PeopleNearbyEntry.COLUMN_DISTANCE, "10");
+                Uri uri = getContentResolver().insert(ChatContract.PeopleNearbyEntry.CONTENT_URI,
+                                                      values);
+//                Log.v(TAG, uri.toString());
+            }
+
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
+
+    private boolean personAlreadyInClientDatabase(String uuid) {
+        Cursor cursor =
+                getContentResolver().query(ChatContract.PeopleNearbyEntry.CONTENT_URI,
+                                           new String[]{
+                                                   ChatContract.PeopleNearbyEntry.COLUMN_GENERATED_NAME},
+                                           ChatContract.PeopleNearbyEntry.COLUMN_UUID + " = ?",
+                                           new String[]{uuid},
+                                           null);
+
+        return cursor.getCount() > 0;
     }
 
     private void storeMessage(String uuid, String timestamp, String message) {
-        Uri uri;
         ContentValues values = new ContentValues();
         values.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, uuid);
         values.put(ChatContract.MessageEntry.COLUMN_DATETIME, timestamp);
         values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
                    ChatContract.MessageEntry.MessageType.RECEIVED.name());
         values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, message);
-        uri = getContentResolver().insert(
+        Uri uri = getContentResolver().insert(
                 ChatContract.MessageEntry.buildMessagesWithPartnerUri(uuid), values);
     }
 

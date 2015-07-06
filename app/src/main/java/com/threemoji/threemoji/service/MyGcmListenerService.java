@@ -38,8 +38,16 @@ public class MyGcmListenerService extends GcmListenerService {
         Log.d(TAG, data.toString());
         Log.d(TAG, "From: " + from);
         String messageType = data.getString("message_type");
+        String responseType = data.getString("response_type");
         if (messageType != null && messageType.equals("ack")) {
             Log.d(TAG, "ACK");
+        } else if (responseType != null) {
+            if (responseType.equals("lookup_profile")) {
+                Log.d(TAG, "Profile lookup response: " + data.getString("body"));
+            } else if (responseType.equals("lookup_nearby")) {
+                Log.d(TAG, "Nearby lookup response: " + data.getString("body"));
+
+            }
         } else {
             String message = data.getString("body");
             String fromUuid = data.getString("from_uid");

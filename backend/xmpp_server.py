@@ -47,7 +47,11 @@ def message_callback(session, message):
                   add_user(uid, password, data["token"], data["emoji_1"], data["emoji_2"], data["emoji_3"],
                            data["generated_name"], data["gender"], data["location"], data["radius"])
               elif user != 403:
-                if data["action"] == "lookup_profile":
+                if data["action"] == "send_message":
+                  send_message(uid, data["to"], data["message"], str(long(time.time() * 1e6)))
+                elif data["action"] == "lookup_nearby":
+                  lookup_nearby(uid, user, data["radius"])
+                elif data["action"] == "lookup_profile":
                   lookup_profile(uid, user, data["profile"])
                 elif data["action"] == "update_profile":
                   data_dict = {"token": data["token"],
@@ -57,8 +61,6 @@ def message_callback(session, message):
                   update_user(uid, user, data_dict, data["action"])
                 elif data["action"] == "update_token":
                   update_user(uid, user, {"token": data["token"]}, data["action"])
-                elif data["action"] == "send_message":
-                  send_message(uid, data["to"], data["message"], str(long(time.time() * 1e6)))
                 elif data["action"] == "delete_profile":
                   del_user(uid)
 
@@ -119,7 +121,7 @@ def add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, ge
   date_modified_property.value.timestamp_microseconds_value = current_time
 
   datastore.commit(req)
-  logging.info('Added user: ' + generated_name + ' (' + uid + ')')
+  logging.info('Added user: ' + uid + ' (' + generated_name + ')')
 
 def del_user(uid):
   user_key = datastore.Key()
@@ -147,48 +149,76 @@ def auth_user(uid, password, action):
     logging.error('Entity not found for user: ' + uid + ' action: ' + action)
     return 404
   user = resp.found[0].entity
-  if action == "lookup":
-    return user
 
-  for prop in user.property:
-    if prop.name == 'password':
-      if password != prop.value.string_value:
-        print "expected " + prop.value.string_value
-        print "got " + password
-        logging.error('Access denied for user: ' + uid + ' action: ' + action)
-        return 403
+  if action != "lookup":
+    for prop in user.property:
+      if prop.name == 'password':
+        if password != prop.value.string_value:
+          print "expected " + prop.value.string_value
+          print "got " + password
+          logging.error('Access denied for user: ' + uid + ' action: ' + action)
+          return 403
+    logging.info('Authenticated user: ' + uid + ' action: ' + action)
 
   return user
 
 def lookup_profile(uid, user, target_uid):
-  target_user = auth_user(target_uid, "", "lookup")
-
   for prop in user.property:
     if prop.name == 'token':
       token = prop.value.string_value
       break
+
+  target_user = auth_user(target_uid, "", "lookup")
+  user_dict = {}
 
   if target_user != 404:
     data_dict = {}
     for prop in target_user.property:
       if prop.name in ['emoji_1', 'emoji_2', 'emoji_3', 'generated_name', 'gender']:
         data_dict[prop.name] = prop.value.string_value
-
-    send({"to": token,
-          "message_id": next_message_id(token),
-          "notification": {
-            "title": "Lookup request succeeded",
-            "body": str(data_dict),
-            "icon": "@mipmap/ic_launcher"
-          }})
+    user_dict[target_uid] = data_dict
   else:
-    send({"to": token,
-              "message_id": next_message_id(token),
-              "notification": {
-                "title": "Lookup request failed",
-                "body": "User " + target_uid + " not found",
-                "icon": "@mipmap/ic_launcher"
-              }})
+    user_dict[target_uid] = "404"
+
+  send({"to": token,
+        "message_id": next_message_id(token),
+        "data": {
+          "response_type": "lookup_profile",
+          "body": user_dict,
+          "timestamp": str(long(time.time() * 1e6))
+        }})
+
+  logging.info('Profile lookup response sent to user: ' + uid)
+
+def lookup_nearby(uid, user, radius):
+  for prop in user.property:
+    if prop.name == 'token':
+      token = prop.value.string_value
+      break
+
+  req = datastore.RunQueryRequest()
+  query = req.query
+  query.kind.add().name = 'User'
+  resp = datastore.run_query(req)
+  user_dict = {}
+
+  for entity_result in resp.batch.entity_result:
+    found_user = entity_result.entity
+    data_dict = {}
+    for prop in found_user.property:
+      if prop.name in ['emoji_1', 'emoji_2', 'emoji_3', 'generated_name', 'gender']:
+        data_dict[prop.name] = prop.value.string_value
+    user_dict[found_user.key.path_element[0].name] = data_dict
+
+  send({"to": token,
+        "message_id": next_message_id(token),
+        "data": {
+          "response_type": "lookup_nearby",
+          "body": user_dict,
+          "timestamp": str(long(time.time() * 1e6))
+        }})
+
+  logging.info('Nearby lookup response sent to user: ' + uid)
 
 def update_user(uid, user, data_dict, action):
   for prop in user.property:
@@ -204,19 +234,12 @@ def update_user(uid, user, data_dict, action):
   logging.info('Updated user: ' + uid + ' action: ' + action)
 
 def send_message(from_uid, to_uid, message, timestamp):
-  user_key = datastore.Key()
-  path = user_key.path_element.add()
-  path.name = to_uid
-  path.kind = 'User'
+  user = auth_user(to_uid, "", "lookup")
 
-  req = datastore.LookupRequest()
-  req.key.extend([user_key])
-  resp = datastore.lookup(req)
-  if len(resp.missing) is 1:
-    logging.error('Entity not found for user: ' + to_uid + ' action: send_message')
+  if user == 404:
+    logging.error('Failed to send message to user: ' + to_uid)
     return 404
 
-  user = resp.found[0].entity
   for prop in user.property:
     if prop.name == 'token':
       token = prop.value.string_value
@@ -230,10 +253,12 @@ def send_message(from_uid, to_uid, message, timestamp):
           "timestamp": timestamp
         }})
 
+  logging.info('Message sent to user: ' + to_uid)
+
 def next_message_id(token):
   return token[-4:] + str(long(time.time() * 1e4))
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(format='%(asctime)-15s %(levelname)s: %(message)s', level=logging.INFO)
 client = xmpp.Client(SERVER, debug=['socket'])
 client.connect(server=(SERVER,PORT), secure=1, use_srv=False)
 auth = client.auth(USERNAME, PASSWORD)

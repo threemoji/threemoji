@@ -7,11 +7,11 @@
     android:background="@color/threemoji_green"
     android:gravity="top|center_horizontal"
     android:orientation="vertical"
-    android:padding="32dp"
+    android:padding="36dp"
     tools:context="com.threemoji.threemoji.StartPageActivity">
 
     <ImageView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:layout_weight="7"
         android:src="@drawable/logo" />
@@ -28,14 +28,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Select 3 emoji:"
-            android:textColor="@color/threemoji_brown"
+            android:textColor="@color/white"
             android:textSize="20dp"
             android:textStyle="bold" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="36dp"
+            android:layout_marginBottom="28dp"
             android:layout_marginTop="20dp"
             android:gravity="center_horizontal"
             android:orientation="horizontal">
@@ -44,8 +44,8 @@
                 android:id="@+id/start_page_emoji1"
                 android:layout_width="72dp"
                 android:layout_height="72dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
+                android:layout_marginLeft="6dp"
+                android:layout_marginRight="6dp"
                 android:background="@drawable/start_page_icon_one"
                 android:clickable="true"
                 android:onClick="selectEmoji"
@@ -55,8 +55,8 @@
                 android:id="@+id/start_page_emoji2"
                 android:layout_width="72dp"
                 android:layout_height="72dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
+                android:layout_marginLeft="6dp"
+                android:layout_marginRight="6dp"
                 android:background="@drawable/start_page_icon_two"
                 android:onClick="selectEmoji"
                 android:scaleType="fitCenter" />
@@ -65,8 +65,8 @@
                 android:id="@+id/start_page_emoji3"
                 android:layout_width="72dp"
                 android:layout_height="72dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
+                android:layout_marginLeft="6dp"
+                android:layout_marginRight="6dp"
                 android:background="@drawable/start_page_icon_three"
                 android:onClick="selectEmoji"
                 android:scaleType="fitCenter" />
@@ -77,7 +77,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Your gender:"
-            android:textColor="@color/threemoji_brown"
+            android:textColor="@color/white"
             android:textSize="20dp"
             android:textStyle="bold" />
 
@@ -89,32 +89,39 @@
             android:orientation="horizontal"
             android:paddingTop="8dp">
 
-            <RadioButton
+            <android.support.v7.widget.AppCompatRadioButton
                 android:id="@+id/radio_button_female"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:checked="true"
                 android:paddingRight="16dp"
-                android:text="Female" />
+                android:text="Female"
+                android:textColor="@color/white"
+                android:theme="@style/RadioButton" />
 
-            <RadioButton
+            <android.support.v7.widget.AppCompatRadioButton
                 android:id="@+id/radio_button_male"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:checked="false"
-                android:text="Male" />
+                android:text="Male"
+                android:textColor="@color/white"
+                android:theme="@style/RadioButton" />
         </RadioGroup>
 
-        <Button
+        <android.support.v7.widget.AppCompatButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="submitStartPage"
-            android:padding="24dp"
-            android:text="Create New Profile" />
+            android:paddingBottom="24dp"
+            android:paddingLeft="36dp"
+            android:paddingRight="36dp"
+            android:paddingTop="24dp"
+            android:text="Create New Profile"
+            android:theme="@style/Button" />
 
     </LinearLayout>
-
 
 </LinearLayout>

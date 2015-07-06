@@ -1,7 +1,6 @@
 <resources>
 
     <style name="ThreemojiTheme" parent="ThreemojiTheme.Base">
-
     </style>
 
     <!-- Base application theme. -->
@@ -15,6 +14,16 @@
     <style name="MenuItemStyle" parent="@android:style/TextAppearance.Widget.IconMenu.Item">
         <item name="android:textColor">@color/black_87</item>
         <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="Button" parent="Base.Widget.AppCompat.Button">
+        <item name="colorButtonNormal">@color/white</item>
+    </style>
+
+    <style name="RadioButton" parent="Base.Widget.AppCompat.CompoundButton.RadioButton">
+        <item name="colorAccent">@color/white</item>
+        <item name="android:textColorSecondary">@color/white_33</item>
+        <item name="android:textSize">16sp</item>
     </style>
 
 </resources>

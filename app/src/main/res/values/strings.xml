@@ -67,10 +67,10 @@
     <string name="backend_action_upload_profile_key">upload_profile</string>
     <string name="backend_action_update_profile_key">update_profile</string>
     <string name="backend_action_update_token_key">update_token</string>
-    <string name="backend_action_send_message">send_message</string>
-    <string name="backend_action_lookup_profile">lookup_profile</string>
-    <string name="backend_action_lookup_nearby">lookup_nearby</string>
-    <string name="backend_action_delete_profile">delete_profile</string>
+    <string name="backend_action_send_message_key">send_message</string>
+    <string name="backend_action_lookup_profile_key">lookup_profile</string>
+    <string name="backend_action_lookup_nearby_key">lookup_nearby</string>
+    <string name="backend_action_delete_profile_key">delete_profile</string>
 
     <string name="backend_uid_key">uid</string>
     <string name="backend_password_key">password</string>

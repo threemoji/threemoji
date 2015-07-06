@@ -66,9 +66,6 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
         setContentView(R.layout.activity_start_page);
         initEmojiButtons();
         initGender();
-
-        startService(RegistrationIntentService.createIntent(this,
-                                                            RegistrationIntentService.Action.CREATE_TOKEN));
     }
 
     private void initEmojiButtons() {

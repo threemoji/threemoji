@@ -19,6 +19,8 @@ import java.util.UUID;
 public class RegistrationIntentService extends IntentService {
 
     private static final String TAG = RegistrationIntentService.class.getSimpleName();
+    private GoogleCloudMessaging gcm;
+    InstanceID instanceID;
     private int timeToLive = 60 * 60; // one hour
 
     public static enum Action {
@@ -37,9 +39,10 @@ public class RegistrationIntentService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        gcm = GoogleCloudMessaging.getInstance(this);
+        instanceID = InstanceID.getInstance(this);
         Log.v(TAG, "intent string: " + intent.toString());
         Action action = Action.valueOf(intent.getStringExtra("action"));
-        String token;
         try {
             switch (action) {
 
@@ -54,36 +57,34 @@ public class RegistrationIntentService extends IntentService {
                     break;
 
                 case CREATE_TOKEN:
-                    token = getGcmToken();
-                    storeToken(token);
-                    sendTokenToServer(token);
+                    unregisterTokenFromServer();
+                    getGcmToken();
+                    sendTokenToServer();
                     break;
 
                 case UPDATE_TOKEN:
-                    unregisterFromServer();
-                    token = getGcmToken();
-                    storeToken(token);
-                    updateTokenOnServer(token);
+                    unregisterTokenFromServer();
+                    getGcmToken();
+                    updateTokenOnServer();
                     break;
             }
         } catch (Exception e) {
-            Log.d(TAG, "Failed to complete token refresh", e);
+            Log.d(TAG, "Failed to complete " + action, e);
         } finally {
             stopSelf();
         }
     }
 
-    private String getGcmToken() throws IOException {
-        InstanceID instanceID = InstanceID.getInstance(this);
+    private void getGcmToken() throws IOException {
         String token = instanceID.getToken(getString(R.string.gcm_project_num),
                                            GoogleCloudMessaging.INSTANCE_ID_SCOPE);
         Log.i(TAG, "GCM Registration Token: " + token);
-        return token;
+        storeToken(token);
+        return;
     }
 
-    private void unregisterFromServer() throws IOException {
+    private void unregisterTokenFromServer() throws IOException {
         Log.v(TAG, "Unregistering from server");
-        InstanceID instanceID = InstanceID.getInstance(this);
         instanceID.deleteToken(getString(R.string.gcm_project_num),
                                GoogleCloudMessaging.INSTANCE_ID_SCOPE);
 //        instanceID.deleteToken(getString(R.string.gcm_defaultSenderId),
@@ -108,15 +109,13 @@ public class RegistrationIntentService extends IntentService {
         if (password == null) {
             getPrefs().edit()
                       .putString(getString(R.string.profile_password_key),
-                                 InstanceID.getInstance(this).getId())
+                                 instanceID.getId())
                       .apply();
         }
     }
 
     private void uploadProfile(boolean update) {
         Log.v(TAG, "Uploading profile");
-        int timeToLive = 60 * 60; // one hour
-        GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
         String token = getPrefs().getString(getString(R.string.pref_token_key), "");
         try {
             Bundle data = new Bundle();
@@ -135,8 +134,7 @@ public class RegistrationIntentService extends IntentService {
             data.putString(getString(R.string.backend_emoji_three_key),
                            getPrefs().getString(getString(R.string.profile_emoji_three_key), ""));
             data.putString(getString(R.string.backend_generated_name_key),
-                           getPrefs().getString(getString(R.string.profile_generated_name_key),
-                                                ""));
+                           getPrefs().getString(getString(R.string.profile_generated_name_key), ""));
             data.putString(getString(R.string.backend_gender_key),
                            getPrefs().getString(getString(R.string.profile_gender_key), ""));
             data.putString(getString(R.string.backend_location_key), "LOCATION");
@@ -148,14 +146,13 @@ public class RegistrationIntentService extends IntentService {
                      timeToLive, data);
             Log.v(TAG, "profile uploaded");
         } catch (IOException e) {
-            Log.e(TAG,
-                  "IOException while uploading profile to backend...", e);
+            Log.e(TAG, "IOException while uploading profile to backend...", e);
         }
     }
 
-    private void sendTokenToServer(String token) {
+    private void sendTokenToServer() {
         Log.v(TAG, "Sending token to server");
-        GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
+        String token = getPrefs().getString(getString(R.string.pref_token_key), "");
         try {
             Bundle data = new Bundle();
             data.putString("payload", token);
@@ -164,14 +161,13 @@ public class RegistrationIntentService extends IntentService {
                      timeToLive, data);
             Log.v(TAG, "token sent: " + token);
         } catch (IOException e) {
-            Log.e(TAG,
-                  "IOException while sending token to backend...", e);
+            Log.e(TAG, "IOException while sending token to backend...", e);
         }
     }
 
-    private void updateTokenOnServer(String token) {
+    private void updateTokenOnServer() {
         Log.v(TAG, "Updating token on server");
-        GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
+        String token = getPrefs().getString(getString(R.string.pref_token_key), "");
         try {
             Bundle data = new Bundle();
             data.putString("action", getString(R.string.backend_action_update_token_key));
@@ -183,8 +179,7 @@ public class RegistrationIntentService extends IntentService {
                     timeToLive, data);
             Log.v(TAG, "token updated: " + token);
         } catch (IOException e) {
-            Log.e(TAG,
-                    "IOException while sending token to backend...", e);
+            Log.e(TAG, "IOException while updating token on backend...", e);
         }
     }
 

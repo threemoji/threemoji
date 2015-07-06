@@ -16,6 +16,7 @@ import java.io.IOException;
 public class ChatIntentService extends IntentService {
 
     private static final String TAG = ChatIntentService.class.getSimpleName();
+    private GoogleCloudMessaging gcm;
     private int timeToLive = 60 * 60; // one hour
 
     public static enum Action {
@@ -28,13 +29,13 @@ public class ChatIntentService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        gcm = GoogleCloudMessaging.getInstance(this);
         Log.v(TAG, "intent string: " + intent.toString());
         String action = intent.getStringExtra("action");
         if (action != null && Action.valueOf(action) == Action.LOOKUP_ALL) {
-            GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
             try {
                 Bundle data = new Bundle();
-                data.putString("action", getString(R.string.backend_action_lookup_nearby));
+                data.putString("action", getString(R.string.backend_action_lookup_nearby_key));
                 data.putString(getString(R.string.backend_uid_key), getPrefs().getString(getString(R.string.profile_uid_key), ""));
                 data.putString(getString(R.string.backend_password_key), getPrefs().getString(getString(R.string.profile_password_key), ""));
                 data.putString(getString(R.string.backend_radius_key), "123");
@@ -46,13 +47,10 @@ public class ChatIntentService extends IntentService {
                 Log.e(TAG, "IOException while sending request...", e);
             }
         } else if (action != null && Action.valueOf(action) == Action.LOOKUP_UUID) {
-            // intent.getStringExtra("message").startsWith("/lookup ")
-//            String targetUid = intent.getStringExtra("message").substring(8);
             String targetUid = intent.getStringExtra("uuid");
-            GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
             try {
                 Bundle data = new Bundle();
-                data.putString("action", getString(R.string.backend_action_lookup_profile));
+                data.putString("action", getString(R.string.backend_action_lookup_profile_key));
                 data.putString(getString(R.string.backend_uid_key), getPrefs().getString(getString(R.string.profile_uid_key), ""));
                 data.putString(getString(R.string.backend_password_key), getPrefs().getString(getString(R.string.profile_password_key), ""));
                 data.putString(getString(R.string.backend_profile_key), targetUid);
@@ -63,34 +61,15 @@ public class ChatIntentService extends IntentService {
             } catch (IOException e) {
                 Log.e(TAG, "IOException while sending request...", e);
             }
-        } else if (intent.getStringExtra("message").startsWith("/delete ")) {
-            String args[] = intent.getStringExtra("message").split("\\s+");
-            if (args.length >= 3) {
-                String targetUid = args[1], targetPass = args[2];
-                GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
-                try {
-                    Bundle data = new Bundle();
-                    data.putString("action", getString(R.string.backend_action_delete_profile));
-                    data.putString(getString(R.string.backend_uid_key), targetUid);
-                    data.putString(getString(R.string.backend_password_key), targetPass);
-                    String msgId = getNextMsgId(getPrefs().getString(getString(R.string.pref_token_key), ""));
-                    gcm.send(getString(R.string.gcm_project_num) + "@gcm.googleapis.com", msgId,
-                            timeToLive, data);
-                    Log.v(TAG, "delete profile request sent for target user: " + targetUid);
-                } catch (IOException e) {
-                    Log.e(TAG, "IOException while sending request...", e);
-                }
-            }
         } else {
             sendMessage(intent.getStringExtra("uuid"), intent.getStringExtra("message"));
         }
     }
 
     private void sendMessage(String to_uid, String message) {
-        GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
         try {
             Bundle data = new Bundle();
-            data.putString("action", getString(R.string.backend_action_send_message));
+            data.putString("action", getString(R.string.backend_action_send_message_key));
             data.putString(getString(R.string.backend_uid_key), getPrefs().getString(getString(R.string.profile_uid_key), ""));
             data.putString(getString(R.string.backend_password_key), getPrefs().getString(getString(R.string.profile_password_key), ""));
             data.putString(getString(R.string.backend_to_key), to_uid);
@@ -105,6 +84,9 @@ public class ChatIntentService extends IntentService {
     }
 
     public String getNextMsgId(String token) {
+        if (token.length() < 5) { // No token yet
+            token = "ABCDE";
+        }
         return token.substring(token.length() - 5).concat("" + System.currentTimeMillis());
     }
 

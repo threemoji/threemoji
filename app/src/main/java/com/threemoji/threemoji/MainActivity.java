@@ -50,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
             startRegistrationIntentServiceIfNeeded();
         } else {
             updateVersionInPrefs(BuildConfig.VERSION_CODE);
+            startService(RegistrationIntentService.createIntent(this,
+                                                                RegistrationIntentService.Action.CREATE_TOKEN));
             startStartPage();
         }
 
@@ -76,12 +78,9 @@ public class MainActivity extends AppCompatActivity {
     private void startRegistrationIntentServiceIfNeeded() {
         if (hasGooglePlayServices()) {
             // hasVersionChanged is always checked first to ensure shared preferences is updated
-            if (hasVersionChanged()) {
+            if (hasVersionChanged() || !hasToken()) {
                 startService(RegistrationIntentService.createIntent(this,
                                                                     RegistrationIntentService.Action.UPDATE_TOKEN));
-            } else if (!hasToken()) {
-                startService(RegistrationIntentService.createIntent(this,
-                                                                    RegistrationIntentService.Action.CREATE_TOKEN));
             }
         }
     }

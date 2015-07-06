@@ -8,6 +8,9 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -18,13 +21,12 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
-public class ChatListFragment extends Fragment {
+public class ChatListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String TAG = ChatListFragment.class.getSimpleName();
+    private ChatsRecyclerViewAdapter mAdapter;
 
     private final String[] CHAT_ITEM_PROJECTION = new String[]{
             ChatContract.PartnerEntry.COLUMN_UUID,
@@ -49,7 +51,6 @@ public class ChatListFragment extends Fragment {
     }
 
     private void setupRecyclerView(RecyclerView recyclerView) {
-        ArrayList<ChatItem> chats = new ArrayList<ChatItem>();
 
 //        ContentValues testValues = new ContentValues();
 
@@ -80,28 +81,28 @@ public class ChatListFragment extends Fragment {
         Cursor cursor = getActivity().getContentResolver()
                                      .query(ChatContract.PartnerEntry.CONTENT_URI,
                                             CHAT_ITEM_PROJECTION, null, null, null);
-//        addDummyData(chats);
-        if (cursor != null) {
-            while (cursor.moveToNext()) {
-                chats.add(
-                        new ChatItem(
-                                cursor.getString(0),
-                                cursor.getString(1),
-                                cursor.getString(2),
-                                cursor.getString(3),
-                                cursor.getString(4),
-                                cursor.getString(5),
-                                getRandomTime()));
-            }
-        }
 
         recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
-        recyclerView.setAdapter(new RecyclerViewAdapter(getActivity(), chats));
+        mAdapter = new ChatsRecyclerViewAdapter(getActivity(), cursor);
+        recyclerView.setAdapter(mAdapter);
+
+        getActivity().getSupportLoaderManager().initLoader(2, null, this);
     }
 
-    private String getRandomTime() {
-        Random rand = new Random();
-        return rand.nextInt(60) + " minutes ago";
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(getActivity(), ChatContract.PartnerEntry.CONTENT_URI,
+                                CHAT_ITEM_PROJECTION, null, null, null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mAdapter.changeCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 
 
@@ -133,20 +134,20 @@ public class ChatListFragment extends Fragment {
     // ================================================================
     // Inner class to handle the population of items in the list
     // ================================================================
-    public static class RecyclerViewAdapter
-            extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
+    public static class ChatsRecyclerViewAdapter
+            extends RecyclerView.Adapter<ChatsRecyclerViewAdapter.ViewHolder> {
 
-        private List<ChatItem> mItems;
+        private Cursor mCursor;
         private final TypedValue mTypedValue = new TypedValue();
         private int mBackground;
         private Context mContext;
 
-        public RecyclerViewAdapter(Context context, List<ChatItem> items) {
+        public ChatsRecyclerViewAdapter(Context context, Cursor cursor) {
             // Initialises the animated background of the each list item.
             context.getTheme().resolveAttribute(R.attr.selectableItemBackground, mTypedValue, true);
             mBackground = mTypedValue.resourceId;
             mContext = context;
-            mItems = items;
+            mCursor = cursor;
         }
 
         @Override
@@ -156,18 +157,25 @@ public class ChatListFragment extends Fragment {
 
             // Sets the animated background of each list item to show when item is touched.
             view.setBackgroundResource(mBackground);
-
             return new ViewHolder(view);
         }
 
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
-            final ChatItem currentItem = mItems.get(position);
-            holder.emoji1.setImageResource(mContext.getResources().getIdentifier(currentItem.emoji1, "drawable", mContext.getPackageName()));
-            holder.emoji2.setImageResource(mContext.getResources().getIdentifier(currentItem.emoji2, "drawable", mContext.getPackageName()));
-            holder.emoji3.setImageResource(mContext.getResources().getIdentifier(currentItem.emoji3, "drawable", mContext.getPackageName()));
-            holder.partnerName.setText(currentItem.partnerName);
-            holder.lastActivity.setText(currentItem.lastActivity);
+            mCursor.moveToPosition(position);
+            final String uuid = mCursor.getString(0);
+            final String emoji1 = mCursor.getString(1);
+            final String emoji2 = mCursor.getString(2);
+            final String emoji3 = mCursor.getString(3);
+            final String gender = mCursor.getString(4);
+            final String partnerName = mCursor.getString(5);
+            final String lastActivity = getRandomTime();
+
+            holder.emoji1.setImageResource(mContext.getResources().getIdentifier(emoji1, "drawable", mContext.getPackageName()));
+            holder.emoji2.setImageResource(mContext.getResources().getIdentifier(emoji2, "drawable", mContext.getPackageName()));
+            holder.emoji3.setImageResource(mContext.getResources().getIdentifier(emoji3, "drawable", mContext.getPackageName()));
+            holder.partnerName.setText(partnerName);
+            holder.lastActivity.setText(lastActivity);
 
             holder.view.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -175,12 +183,12 @@ public class ChatListFragment extends Fragment {
                     Context context = v.getContext();
                     Intent intent = new Intent(context, ChatActivity.class);
                     intent.putExtra("action", ChatActivity.Action.DISPLAY.name());
-                    intent.putExtra("uuid", currentItem.uuid);
-                    intent.putExtra("emoji_1", currentItem.emoji1);
-                    intent.putExtra("emoji_2", currentItem.emoji2);
-                    intent.putExtra("emoji_3", currentItem.emoji3);
-                    intent.putExtra("gender", currentItem.gender);
-                    intent.putExtra("generated_name", currentItem.partnerName);
+                    intent.putExtra("uuid", uuid);
+                    intent.putExtra("emoji_1", emoji1);
+                    intent.putExtra("emoji_2", emoji2);
+                    intent.putExtra("emoji_3", emoji3);
+                    intent.putExtra("gender", gender);
+                    intent.putExtra("generated_name", partnerName);
                     context.startActivity(intent);
 
                     Log.d(TAG, holder.partnerName.getText().toString());
@@ -190,7 +198,24 @@ public class ChatListFragment extends Fragment {
 
         @Override
         public int getItemCount() {
-            return mItems.size();
+            if (mCursor != null) {
+                return mCursor.getCount();
+            }
+            return 0;
+        }
+
+        public void changeCursor(Cursor cursor) {
+            if (cursor != mCursor) {
+                Cursor oldCursor = mCursor;
+                mCursor = cursor;
+                notifyDataSetChanged();
+                oldCursor.close();
+            }
+        }
+
+        private String getRandomTime() {
+            Random rand = new Random();
+            return rand.nextInt(60) + " minutes ago";
         }
 
 

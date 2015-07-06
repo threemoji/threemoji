@@ -50,6 +50,7 @@ public class MyGcmListenerService extends GcmListenerService {
         } else if (responseType != null) {
             if (responseType.equals("lookup_profile")) {
                 Log.d(TAG, "Profile lookup response: " + data.getString("body"));
+                addPartnerToDb(data.getString("body"));
             } else if (responseType.equals("lookup_nearby")) {
                 Log.d(TAG, "Nearby lookup response: " + data.getString("body"));
                 storePeopleNearbyData(data.getString("body"));
@@ -60,7 +61,13 @@ public class MyGcmListenerService extends GcmListenerService {
             String timestamp = data.getString("timestamp");
 
             Log.v(TAG, "From uuid: " + fromUuid);
-//            addPartnerIfNeeded(fromUuid);
+
+            if (findNameFromUuid(fromUuid).equals("")) {
+                Intent intent = new Intent(this, ChatIntentService.class);
+                intent.putExtra("action", ChatIntentService.Action.LOOKUP_UUID.name());
+                intent.putExtra("uuid", fromUuid);
+                this.startService(intent);
+            }
 
             storeMessage(fromUuid, timestamp, message);
             String fromName = findNameFromUuid(fromUuid);
@@ -81,14 +88,38 @@ public class MyGcmListenerService extends GcmListenerService {
     }
     // [END receive_message]
 
-    private void addPartnerIfNeeded(String fromUuid) {
-        if (findNameFromUuid(fromUuid).equals("")) {
-            Intent intent = new Intent(this, ChatIntentService.class);
-            intent.putExtra("action", ChatIntentService.Action.LOOKUP_UUID.name());
-            intent.putExtra("uuid", fromUuid);
-            this.startService(intent);
+    private void addPartnerToDb(String body) {
+        try {
+            JSONObject json = new JSONObject(body);
+//            Log.v(TAG, json.toString());
 
-            //
+            Iterator<String> people = json.keys();
+            while (people.hasNext()) {
+                String uuid = people.next();
+                JSONObject jsonPersonData = json.getJSONObject(uuid);
+                String emoji1 = (String) jsonPersonData.get("emoji_1");
+                String emoji2 = (String) jsonPersonData.get("emoji_2");
+                String emoji3 = (String) jsonPersonData.get("emoji_3");
+                String gender = (String) jsonPersonData.get("gender");
+                String generatedName = (String) jsonPersonData.get("generated_name");
+
+                ContentValues values = new ContentValues();
+                values.put(ChatContract.PartnerEntry.COLUMN_UUID, uuid);
+                values.put(ChatContract.PartnerEntry.COLUMN_EMOJI_1, emoji1);
+                values.put(ChatContract.PartnerEntry.COLUMN_EMOJI_2, emoji2);
+                values.put(ChatContract.PartnerEntry.COLUMN_EMOJI_3, emoji3);
+                values.put(ChatContract.PartnerEntry.COLUMN_GENDER, gender);
+                values.put(ChatContract.PartnerEntry.COLUMN_GENERATED_NAME, generatedName);
+
+                Uri uri = getContentResolver().insert(
+                        ChatContract.PartnerEntry.CONTENT_URI,
+                        values);
+                Log.v(TAG, uri.toString());
+
+            }
+
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage());
         }
     }
 
@@ -210,7 +241,9 @@ public class MyGcmListenerService extends GcmListenerService {
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                                                                 PendingIntent.FLAG_ONE_SHOT);
-
+        if (from.isEmpty()) {
+            from = "Message from a new partner!";
+        }
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)

@@ -123,9 +123,6 @@ public class MyGcmListenerService extends GcmListenerService {
             while (people.hasNext()) {
                 String uuid = people.next();
 
-                if (uuid.equals(userUuid) || personAlreadyInClientDatabase(uuid)) {
-                    continue;
-                }
                 JSONObject jsonPersonData = json.getJSONObject(uuid);
 
                 String emoji1 = (String) jsonPersonData.get("emoji_1");
@@ -134,6 +131,9 @@ public class MyGcmListenerService extends GcmListenerService {
                 String gender = (String) jsonPersonData.get("gender");
                 String generatedName = (String) jsonPersonData.get("generated_name");
 
+                if (uuid.equals(userUuid)) {
+                    continue;
+                }
                 ContentValues values = new ContentValues();
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_UUID, uuid);
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_EMOJI_1, emoji1);
@@ -142,9 +142,19 @@ public class MyGcmListenerService extends GcmListenerService {
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_GENDER, gender);
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_GENERATED_NAME, generatedName);
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_DISTANCE, "10");
-                Uri uri = getContentResolver().insert(ChatContract.PeopleNearbyEntry.CONTENT_URI,
-                                                      values);
-//                Log.v(TAG, uri.toString());
+
+                if (personAlreadyInClientDatabase(uuid, generatedName)) {
+                    int rowsUpdated = getContentResolver().update(
+                            ChatContract.PeopleNearbyEntry.CONTENT_URI, values,
+                            ChatContract.PeopleNearbyEntry.COLUMN_UUID + " = ?",
+                            new String[]{uuid});
+                    Log.v(TAG, "Rows updated = " + rowsUpdated);
+                } else {
+                    Uri uri = getContentResolver().insert(
+                            ChatContract.PeopleNearbyEntry.CONTENT_URI,
+                            values);
+                    Log.v(TAG, uri.toString());
+                }
             }
 
         } catch (JSONException e) {
@@ -152,7 +162,7 @@ public class MyGcmListenerService extends GcmListenerService {
         }
     }
 
-    private boolean personAlreadyInClientDatabase(String uuid) {
+    private boolean personAlreadyInClientDatabase(String uuid, String generatedName) {
         Cursor cursor =
                 getContentResolver().query(ChatContract.PeopleNearbyEntry.CONTENT_URI,
                                            new String[]{

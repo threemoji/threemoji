@@ -16,8 +16,10 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -44,6 +46,8 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
         Drawable drawable = SvgUtils.getSvgDrawable(imageResource, mSizeOfEmojiIcon,
                                                     getPackageName());
 
+        TextView label = (TextView)((FrameLayout) mCurrentEmojiButton.getParent()).findViewById(R.id.start_page_emoji_label);
+        label.setText("");
         mCurrentEmojiButton.setBackgroundResource(0);
         mCurrentEmojiButton.setImageDrawable(drawable);
 

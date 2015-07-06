@@ -40,36 +40,84 @@
             android:gravity="center_horizontal"
             android:orientation="horizontal">
 
-            <ImageButton
-                android:id="@+id/start_page_emoji1"
-                android:layout_width="72dp"
-                android:layout_height="72dp"
-                android:layout_marginLeft="6dp"
-                android:layout_marginRight="6dp"
-                android:background="@drawable/start_page_icon_one"
-                android:clickable="true"
-                android:onClick="selectEmoji"
-                android:scaleType="fitCenter" />
 
-            <ImageButton
-                android:id="@+id/start_page_emoji2"
-                android:layout_width="72dp"
-                android:layout_height="72dp"
-                android:layout_marginLeft="6dp"
-                android:layout_marginRight="6dp"
-                android:background="@drawable/start_page_icon_two"
-                android:onClick="selectEmoji"
-                android:scaleType="fitCenter" />
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
 
-            <ImageButton
-                android:id="@+id/start_page_emoji3"
-                android:layout_width="72dp"
-                android:layout_height="72dp"
-                android:layout_marginLeft="6dp"
-                android:layout_marginRight="6dp"
-                android:background="@drawable/start_page_icon_three"
-                android:onClick="selectEmoji"
-                android:scaleType="fitCenter" />
+                <ImageButton
+                    android:id="@+id/start_page_emoji1"
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:layout_marginLeft="6dp"
+                    android:layout_marginRight="6dp"
+                    android:background="@drawable/start_page_emoji_button"
+                    android:clickable="true"
+                    android:onClick="selectEmoji"
+                    android:scaleType="fitCenter" />
+
+                <TextView
+                    android:id="@+id/start_page_emoji_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="1"
+                    android:textColor="@color/white"
+                    android:textSize="40sp"
+                    android:textStyle="bold" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ImageButton
+                    android:id="@+id/start_page_emoji2"
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:layout_marginLeft="6dp"
+                    android:layout_marginRight="6dp"
+                    android:background="@drawable/start_page_emoji_button"
+                    android:clickable="true"
+                    android:onClick="selectEmoji"
+                    android:scaleType="fitCenter" />
+
+                <TextView
+                    android:id="@id/start_page_emoji_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="2"
+                    android:textColor="@color/white"
+                    android:textSize="40sp"
+                    android:textStyle="bold" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ImageButton
+                    android:id="@+id/start_page_emoji3"
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:layout_marginLeft="6dp"
+                    android:layout_marginRight="6dp"
+                    android:background="@drawable/start_page_emoji_button"
+                    android:clickable="true"
+                    android:onClick="selectEmoji"
+                    android:scaleType="fitCenter" />
+
+                <TextView
+                    android:id="@id/start_page_emoji_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="3"
+                    android:textColor="@color/white"
+                    android:textSize="40sp"
+                    android:textStyle="bold" />
+            </FrameLayout>
         </LinearLayout>
 
         <TextView
@@ -119,8 +167,7 @@
             android:paddingLeft="36dp"
             android:paddingRight="36dp"
             android:paddingTop="24dp"
-            android:text="Create New Profile"
-            android:theme="@style/Button" />
+            android:text="Create New Profile" />
 
     </LinearLayout>
 

@@ -96,6 +96,9 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
     private void updateImageById(String resourceName, int id) {
         Drawable drawable = SvgUtils.getSvgDrawable(resourceName, mSizeOfEmojiIcon, getPackageName());
         ImageButton imageButton = (ImageButton) findViewById(id);
+        TextView label = (TextView)((FrameLayout) imageButton.getParent()).findViewById(
+                R.id.start_page_emoji_label);
+        label.setText("");
         imageButton.setBackgroundResource(0);
         imageButton.setImageDrawable(drawable);
         imageButton.setTag(resourceName);

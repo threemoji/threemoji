@@ -16,10 +16,11 @@ import java.io.IOException;
 public class ChatIntentService extends IntentService {
 
     private static final String TAG = ChatIntentService.class.getSimpleName();
-    private GoogleCloudMessaging gcm;
-    private int timeToLive = 60 * 60; // one hour
+    private static final int TIME_TO_LIVE_SECONDS = 60 * 60; // one hour
 
-    public static enum Action {
+    private GoogleCloudMessaging mGcm;
+
+    public enum Action {
         LOOKUP_ALL, LOOKUP_UUID
     }
 
@@ -29,7 +30,7 @@ public class ChatIntentService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        gcm = GoogleCloudMessaging.getInstance(this);
+        mGcm = GoogleCloudMessaging.getInstance(this);
         Log.v(TAG, "intent string: " + intent.toString());
         String action = intent.getStringExtra("action");
         if (action != null && Action.valueOf(action) == Action.LOOKUP_ALL) {
@@ -40,8 +41,7 @@ public class ChatIntentService extends IntentService {
                 data.putString(getString(R.string.backend_password_key), getPrefs().getString(getString(R.string.profile_password_key), ""));
                 data.putString(getString(R.string.backend_radius_key), "123");
                 String msgId = getNextMsgId(getPrefs().getString(getString(R.string.pref_token_key), ""));
-                gcm.send(getString(R.string.gcm_project_num) + "@gcm.googleapis.com", msgId,
-                         timeToLive, data);
+                sendData(data, msgId);
                 Log.v(TAG, "nearby lookup request sent");
             } catch (IOException e) {
                 Log.e(TAG, "IOException while sending request...", e);
@@ -55,8 +55,7 @@ public class ChatIntentService extends IntentService {
                 data.putString(getString(R.string.backend_password_key), getPrefs().getString(getString(R.string.profile_password_key), ""));
                 data.putString(getString(R.string.backend_profile_key), targetUid);
                 String msgId = getNextMsgId(getPrefs().getString(getString(R.string.pref_token_key), ""));
-                gcm.send(getString(R.string.gcm_project_num) + "@gcm.googleapis.com", msgId,
-                        timeToLive, data);
+                sendData(data, msgId);
                 Log.v(TAG, "profile lookup request sent for target user: " + targetUid);
             } catch (IOException e) {
                 Log.e(TAG, "IOException while sending request...", e);
@@ -75,12 +74,16 @@ public class ChatIntentService extends IntentService {
             data.putString(getString(R.string.backend_to_key), to_uid);
             data.putString(getString(R.string.backend_message_key), message);
             String msgId = getNextMsgId(getPrefs().getString(getString(R.string.pref_token_key), ""));
-            gcm.send(getString(R.string.gcm_project_num) + "@gcm.googleapis.com", msgId,
-                    timeToLive, data);
+            sendData(data, msgId);
             Log.v(TAG, "message sent to user: " + to_uid);
         } catch (IOException e) {
             Log.e(TAG, "IOException while sending message...", e);
         }
+    }
+
+    private void sendData(Bundle data, String msgId) throws IOException {
+        mGcm.send(getString(R.string.gcm_project_num) + "@gcm.googleapis.com", msgId,
+                  TIME_TO_LIVE_SECONDS, data);
     }
 
     public String getNextMsgId(String token) {

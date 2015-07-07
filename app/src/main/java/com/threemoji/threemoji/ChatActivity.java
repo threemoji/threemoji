@@ -8,6 +8,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.CursorIndexOutOfBoundsException;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -33,23 +34,36 @@ import android.widget.TextView;
 
 public class ChatActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = ChatActivity.class.getSimpleName();
+    private static final int PARTNER_LOADER = 0;
+    private static final int MESSAGES_LOADER = 1;
 
-    private MessagesRecyclerViewAdapter mAdapter;
-    private String mUuid;
-    private Uri mUri;
-    private static final String[] projection = new String[]{
+    private static final String[] MESSAGES_PROJECTION = new String[]{
             ChatContract.MessageEntry.COLUMN_DATETIME,
             ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
-            ChatContract.MessageEntry.COLUMN_MESSAGE_DATA};
-    private static String mSortOrder =
+            ChatContract.MessageEntry.COLUMN_MESSAGE_DATA
+    };
+    private static final String MESSAGES_SORT_ORDER =
             ChatContract.MessageEntry.TABLE_NAME + "." + ChatContract.MessageEntry._ID + " DESC";
+
+    private static final String[] PARTNER_PROJECTION = new String[]{
+            ChatContract.PartnerEntry.COLUMN_EMOJI_1,
+            ChatContract.PartnerEntry.COLUMN_EMOJI_2,
+            ChatContract.PartnerEntry.COLUMN_EMOJI_3,
+            ChatContract.PartnerEntry.COLUMN_GENDER,
+            ChatContract.PartnerEntry.COLUMN_GENERATED_NAME
+    };
+
+    private MessagesRecyclerViewAdapter mMessagesAdapter;
+    private Uri mMessagesUri;
+
+    private String mPartnerUuid;
     private String mEmoji1;
     private String mEmoji2;
     private String mEmoji3;
     private String mGender;
     private String mGeneratedName;
 
-    public static enum Action {
+    public enum Action {
         NEW, DISPLAY
     }
 
@@ -60,23 +74,27 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
 
         Intent intent = getIntent();
         Action action = Action.valueOf(intent.getStringExtra("action"));
-        mUuid = intent.getStringExtra("uuid");
+        initFields(intent);
+
+        if (action == Action.NEW && !isPersonAlreadyPartner(mPartnerUuid)) {
+            addNewPartnerToDb();
+        }
+        updatePartnerIfNeeded();
+        initActionBar();
+        initMessages();
+    }
+
+    private void initFields(Intent intent) {
+        mPartnerUuid = intent.getStringExtra("uuid");
         mEmoji1 = intent.getStringExtra("emoji_1");
         mEmoji2 = intent.getStringExtra("emoji_2");
         mEmoji3 = intent.getStringExtra("emoji_3");
         mGender = intent.getStringExtra("gender");
         mGeneratedName = intent.getStringExtra("generated_name");
 //        mGeneratedName = "aaaaaaaaa aaaaaaaaa";
-
-        if (action == Action.NEW && !personIsAlreadyPartner(mUuid)) {
-            addNewPartnerToDb(mUuid, mEmoji1, mEmoji2, mEmoji3, mGender, mGeneratedName);
-        }
-//        boolean hasPartnerChangedProfile = hasPartnerChangedProfile();
-        initActionBar(mEmoji1, mEmoji2, mEmoji3, mGeneratedName);
-        initMessages(mUuid);
     }
 
-    private boolean personIsAlreadyPartner(String uuid) {
+    private boolean isPersonAlreadyPartner(String uuid) {
         Cursor cursor =
                 getContentResolver().query(ChatContract.PartnerEntry.CONTENT_URI,
                                            new String[]{
@@ -87,61 +105,67 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         return cursor.getCount() > 0;
     }
 
-    private void addNewPartnerToDb(String uuid, String emoji1, String emoji2, String emoji3,
-                                   String gender, String generatedName) {
+    private void addNewPartnerToDb() {
         ContentValues newValues = new ContentValues();
-        newValues.put(ChatContract.PartnerEntry.COLUMN_UUID, uuid);
-        newValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_1, emoji1);
-        newValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_2, emoji2);
-        newValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_3, emoji3);
-        newValues.put(ChatContract.PartnerEntry.COLUMN_GENDER, gender);
-        newValues.put(ChatContract.PartnerEntry.COLUMN_GENERATED_NAME, generatedName);
+        newValues.put(ChatContract.PartnerEntry.COLUMN_UUID, mPartnerUuid);
+        newValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_1, mEmoji1);
+        newValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_2, mEmoji2);
+        newValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_3, mEmoji3);
+        newValues.put(ChatContract.PartnerEntry.COLUMN_GENDER, mGender);
+        newValues.put(ChatContract.PartnerEntry.COLUMN_GENERATED_NAME, mGeneratedName);
 
         Uri uri = getContentResolver().insert(ChatContract.PartnerEntry.CONTENT_URI, newValues);
         Log.v(TAG, uri.toString());
     }
 
-//    private boolean hasPartnerChangedProfile() {
-//        Intent intent = new Intent(this, ChatIntentService.class);
-//        intent.putExtra("action", ChatIntentService.Action.LOOKUP_UUID.name());
-//        return false;
-//    }
+    private void updatePartnerIfNeeded() {
+        Intent intent = new Intent(this, ChatIntentService.class);
+        intent.putExtra("action", ChatIntentService.Action.LOOKUP_UUID.name());
+        intent.putExtra("uuid", mPartnerUuid);
+        startService(intent);
+    }
 
-    private void initActionBar(String emoji1, String emoji2, String emoji3, String title) {
+    private void initActionBar() {
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
         getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME |
-                                                ActionBar.DISPLAY_HOME_AS_UP );
-        ((TextView) findViewById(R.id.title_name)).setText(title);
+                                                ActionBar.DISPLAY_HOME_AS_UP);
+        setPartnerDetails(mEmoji1, mEmoji2, mEmoji3, mGeneratedName);
+    }
+
+    private void setPartnerDetails(String emoji1, String emoji2, String emoji3,
+                                   String generatedName) {
         Drawable emoji1Drawable = SvgUtils.getSvgDrawable(emoji1, 24, getPackageName());
         Drawable emoji2Drawable = SvgUtils.getSvgDrawable(emoji2, 24, getPackageName());
         Drawable emoji3Drawable = SvgUtils.getSvgDrawable(emoji3, 24, getPackageName());
         ((ImageView) findViewById(R.id.title_emoji_1)).setImageDrawable(emoji1Drawable);
         ((ImageView) findViewById(R.id.title_emoji_2)).setImageDrawable(emoji2Drawable);
         ((ImageView) findViewById(R.id.title_emoji_3)).setImageDrawable(emoji3Drawable);
+        ((TextView) findViewById(R.id.title_name)).setText(generatedName);
     }
 
-    private void initMessages(String uuid) {
-        mUri = ChatContract.MessageEntry.buildMessagesWithPartnerUri(uuid);
+    private void initMessages() {
+        mMessagesUri = ChatContract.MessageEntry.buildMessagesWithPartnerUri(mPartnerUuid);
 
-        Cursor cursor = getContentResolver().query(mUri, projection, null, null, mSortOrder);
+        Cursor cursor = getContentResolver().query(mMessagesUri, MESSAGES_PROJECTION, null, null,
+                                                   MESSAGES_SORT_ORDER);
 
         RecyclerView messagesView = (RecyclerView) findViewById(R.id.chat_messages);
         if (cursor != null) {
-//            getContentResolver().delete(mUri, null, null);
             setupRecyclerView(messagesView, cursor);
         }
-        getSupportLoaderManager().initLoader(0, null, this);
+
+        getSupportLoaderManager().initLoader(PARTNER_LOADER, null, this);
+        getSupportLoaderManager().initLoader(MESSAGES_LOADER, null, this);
     }
 
     private void setupRecyclerView(RecyclerView messagesView, Cursor cursor) {
         LinearLayoutManager layoutManager = new LinearLayoutManager(messagesView.getContext());
-//        layoutManager.setStackFromEnd(true);
         layoutManager.setReverseLayout(true);
         layoutManager.scrollToPosition(0);
 
         messagesView.setLayoutManager(layoutManager);
-        mAdapter = new MessagesRecyclerViewAdapter(this, cursor);
-        messagesView.setAdapter(mAdapter);
+        mMessagesAdapter = new MessagesRecyclerViewAdapter(this, cursor);
+        messagesView.setAdapter(mMessagesAdapter);
     }
 
     public void sendMessage(View view) {
@@ -151,47 +175,78 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
 
         if (userMessage.trim().length() > 0) {
             Intent intent = new Intent(this, ChatIntentService.class);
-            intent.putExtra("uuid", mUuid);
+            intent.putExtra("uuid", mPartnerUuid);
             intent.putExtra("message", userMessage.trim());
             this.startService(intent);
 
             Uri uri;
             ContentValues dummyValues = new ContentValues();
-            dummyValues.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, mUuid);
+            dummyValues.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, mPartnerUuid);
             dummyValues.put(ChatContract.MessageEntry.COLUMN_DATETIME, "124");
             dummyValues.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
                             ChatContract.MessageEntry.MessageType.SENT.name());
             dummyValues.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, userMessage.trim());
             uri = getContentResolver().insert(
-                    ChatContract.MessageEntry.buildMessagesWithPartnerUri(mUuid), dummyValues);
+                    ChatContract.MessageEntry.buildMessagesWithPartnerUri(mPartnerUuid),
+                    dummyValues);
             Log.v(TAG, uri.toString());
-
-//            //Testing the alerts
-//            dummyValues = new ContentValues();
-//            dummyValues.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, mUuid);
-//            dummyValues.put(ChatContract.MessageEntry.COLUMN_DATETIME, "124");
-//            dummyValues.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
-//                            ChatContract.MessageEntry.MessageType.ALERT.name());
-//            dummyValues.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA,
-//                            mGeneratedName + " updated his profile");
-//            uri = getContentResolver().insert(
-//                    ChatContract.MessageEntry.buildMessagesWithPartnerUri(mUuid), dummyValues);
-//            Log.v(TAG, uri.toString());
         }
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        if (mUri != null) {
-            return new CursorLoader(this, mUri, projection, null, null, mSortOrder);
+        switch (id) {
+            case PARTNER_LOADER:
+                return new CursorLoader(this, ChatContract.PartnerEntry.buildPartnerByUuidUri(
+                        mPartnerUuid), PARTNER_PROJECTION, null, null, null);
+            case MESSAGES_LOADER:
+                return new CursorLoader(this, mMessagesUri, MESSAGES_PROJECTION, null, null,
+                                        MESSAGES_SORT_ORDER);
+            default:
+                return null;
         }
-        return null;
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        mAdapter.changeCursor(data);
-        mAdapter.moveToEnd();
+        switch (loader.getId()) {
+            case PARTNER_LOADER:
+                try {
+                    data.moveToNext();
+                    String newEmoji1 = data.getString(0);
+                    String newEmoji2 = data.getString(1);
+                    String newEmoji3 = data.getString(2);
+                    String newName = data.getString(4);
+
+                    if (!newEmoji1.equals(mEmoji1) || !newEmoji2.equals(mEmoji2) ||
+                        !newEmoji3.equals(mEmoji3) || !newName.equals(mGeneratedName)) {
+
+                        addAlertMessage(newEmoji1, newEmoji2, newEmoji3, newName);
+                        setPartnerDetails(newEmoji1, newEmoji2, newEmoji3, newName);
+                    }
+                } catch (NullPointerException | CursorIndexOutOfBoundsException e) {
+                    Log.e(TAG, e.getMessage());
+                }
+                break;
+            case MESSAGES_LOADER:
+                mMessagesAdapter.changeCursor(data);
+                mMessagesAdapter.moveToEnd();
+                break;
+        }
+    }
+
+    private void addAlertMessage(String newEmoji1, String newEmoji2, String newEmoji3,
+                                 String newName) {
+        ContentValues values = new ContentValues();
+        values.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, mPartnerUuid);
+        values.put(ChatContract.MessageEntry.COLUMN_DATETIME, "124");
+        values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
+                   ChatContract.MessageEntry.MessageType.ALERT.name());
+        values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA,
+                   mGeneratedName + " updated his profile");
+        Uri uri = getContentResolver().insert(
+                ChatContract.MessageEntry.buildMessagesWithPartnerUri(mPartnerUuid), values);
+        Log.v(TAG, "Added alert message: " + uri.toString());
     }
 
     @Override

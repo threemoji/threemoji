@@ -111,10 +111,18 @@ public class MyGcmListenerService extends GcmListenerService {
                 values.put(ChatContract.PartnerEntry.COLUMN_GENDER, gender);
                 values.put(ChatContract.PartnerEntry.COLUMN_GENERATED_NAME, generatedName);
 
-                Uri uri = getContentResolver().insert(
-                        ChatContract.PartnerEntry.CONTENT_URI,
-                        values);
-                Log.v(TAG, uri.toString());
+                if (personAlreadyPartner(uuid)) {
+                    int rowsUpdated = getContentResolver().update(
+                            ChatContract.PartnerEntry.CONTENT_URI, values,
+                            ChatContract.PartnerEntry.COLUMN_UUID + " = ?",
+                            new String[]{uuid});
+                    Log.v(TAG, "Rows updated = " + rowsUpdated + ", " + generatedName);
+                } else {
+                    Uri uri = getContentResolver().insert(
+                            ChatContract.PartnerEntry.CONTENT_URI,
+                            values);
+                    Log.v(TAG, uri.toString());
+                }
 
             }
 
@@ -125,11 +133,11 @@ public class MyGcmListenerService extends GcmListenerService {
 
     private String findNameFromUuid(String fromUuid) {
         Cursor cursor =
-                getContentResolver().query(ChatContract.PartnerEntry.CONTENT_URI,
+                getContentResolver().query(ChatContract.PartnerEntry.buildPartnerByUuidUri(fromUuid),
                                            new String[]{
                                                    ChatContract.PartnerEntry.COLUMN_GENERATED_NAME},
-                                           ChatContract.PartnerEntry.COLUMN_UUID + " = ?",
-                                           new String[]{fromUuid},
+                                           null,
+                                           null,
                                            null);
 
         try {
@@ -174,12 +182,12 @@ public class MyGcmListenerService extends GcmListenerService {
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_GENERATED_NAME, generatedName);
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_DISTANCE, "10");
 
-                if (personAlreadyInClientDatabase(uuid, generatedName)) {
+                if (personAlreadyInClientDatabase(uuid)) {
                     int rowsUpdated = getContentResolver().update(
                             ChatContract.PeopleNearbyEntry.CONTENT_URI, values,
                             ChatContract.PeopleNearbyEntry.COLUMN_UUID + " = ?",
                             new String[]{uuid});
-                    Log.v(TAG, "Rows updated = " + rowsUpdated);
+                    Log.v(TAG, "Rows updated = " + rowsUpdated + ", " + generatedName);
                 } else {
                     Uri uri = getContentResolver().insert(
                             ChatContract.PeopleNearbyEntry.CONTENT_URI,
@@ -193,13 +201,25 @@ public class MyGcmListenerService extends GcmListenerService {
         }
     }
 
-    private boolean personAlreadyInClientDatabase(String uuid, String generatedName) {
+    private boolean personAlreadyInClientDatabase(String uuid) {
         Cursor cursor =
                 getContentResolver().query(ChatContract.PeopleNearbyEntry.CONTENT_URI,
                                            new String[]{
                                                    ChatContract.PeopleNearbyEntry.COLUMN_GENERATED_NAME},
                                            ChatContract.PeopleNearbyEntry.COLUMN_UUID + " = ?",
                                            new String[]{uuid},
+                                           null);
+
+        return cursor.getCount() > 0;
+    }
+
+    private boolean personAlreadyPartner(String uuid) {
+        Cursor cursor =
+                getContentResolver().query(ChatContract.PartnerEntry.buildPartnerByUuidUri(uuid),
+                                           new String[]{
+                                                   ChatContract.PartnerEntry.COLUMN_GENERATED_NAME},
+                                           null,
+                                           null,
                                            null);
 
         return cursor.getCount() > 0;

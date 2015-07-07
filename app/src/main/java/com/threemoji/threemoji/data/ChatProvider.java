@@ -21,6 +21,7 @@ public class ChatProvider extends ContentProvider {
 
     static final int MESSAGES_WITH_PARTNER = 101;
     static final int PARTNERS = 200;
+    static final int PARTNER = 201;
     static final int PEOPLE_NEARBY = 300;
 
     private static final SQLiteQueryBuilder sMessagesWithPartnerQueryBuilder;
@@ -45,6 +46,7 @@ public class ChatProvider extends ContentProvider {
 
         matcher.addURI(authority, ChatContract.PATH_MESSAGES + "/*", MESSAGES_WITH_PARTNER);
         matcher.addURI(authority, ChatContract.PATH_PARTNERS, PARTNERS);
+        matcher.addURI(authority, ChatContract.PATH_PARTNERS + "/*", PARTNER);
         matcher.addURI(authority, ChatContract.PATH_PEOPLE_NEARBY, PEOPLE_NEARBY);
 
         return matcher;
@@ -63,6 +65,21 @@ public class ChatProvider extends ContentProvider {
                                                       null,
                                                       null,
                                                       sortOrder);
+    }
+
+    private Cursor getPartnerByUuid(Uri uri, String[] projection, String sortOrder) {
+        String[] selectionArgs =
+                new String[]{uri.getPathSegments().get(1)};
+        String selection =
+                PartnerEntry.TABLE_NAME + "." + PartnerEntry.COLUMN_UUID + " = ? ";
+
+        return mChatDbHelper.getReadableDatabase().query(PartnerEntry.TABLE_NAME,
+                                                         projection,
+                                                         selection,
+                                                         selectionArgs,
+                                                         null,
+                                                         null,
+                                                         sortOrder);
     }
 
     @Override
@@ -90,6 +107,9 @@ public class ChatProvider extends ContentProvider {
                         sortOrder
                 );
                 break;
+            case PARTNER:
+                returnCursor = getPartnerByUuid(uri, projection, sortOrder);
+                break;
             case PEOPLE_NEARBY:
                 returnCursor = mChatDbHelper.getReadableDatabase().query(
                         PeopleNearbyEntry.TABLE_NAME,
@@ -116,6 +136,8 @@ public class ChatProvider extends ContentProvider {
                 return MessageEntry.CONTENT_TYPE;
             case PARTNERS:
                 return PartnerEntry.CONTENT_TYPE;
+            case PARTNER:
+                return PartnerEntry.CONTENT_ITEM_TYPE;
             case PEOPLE_NEARBY:
                 return PeopleNearbyEntry.CONTENT_TYPE;
             default:

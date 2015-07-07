@@ -39,6 +39,10 @@ public class ChatContract {
         public static Uri buildPartnerUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
+
+        public static Uri buildPartnerByUuidUri(String uuid) {
+            return CONTENT_URI.buildUpon().appendPath(uuid).build();
+        }
     }
 
     public static final class MessageEntry implements BaseColumns {
@@ -61,7 +65,7 @@ public class ChatContract {
         public static final String COLUMN_MESSAGE_TYPE = "message_type";
         public static final String COLUMN_MESSAGE_DATA = "message_data";
 
-        public static enum MessageType {
+        public enum MessageType {
             SENT, RECEIVED, ALERT
         }
 

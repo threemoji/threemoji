@@ -111,47 +111,19 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
 
 
     // ================================================================
-    // Inner class to represent each row of the chat list
-    // ================================================================
-    public class ChatItem {
-        public String uuid;
-        public String emoji1;
-        public String emoji2;
-        public String emoji3;
-        public String gender;
-        public String partnerName;
-        public String lastActivity;
-
-        public ChatItem(String uuid, String emoji1, String emoji2, String emoji3, String gender,
-                        String partnerName, String lastActivity) {
-            this.uuid = uuid;
-            this.emoji1 = emoji1;
-            this.emoji2 = emoji2;
-            this.emoji3 = emoji3;
-            this.gender = gender;
-            this.partnerName = partnerName;
-            this.lastActivity = lastActivity;
-        }
-    }
-
-
-    // ================================================================
     // Inner class to handle the population of items in the list
     // ================================================================
     public static class ChatsRecyclerViewAdapter
-            extends RecyclerView.Adapter<ChatsRecyclerViewAdapter.ViewHolder> {
+            extends RecyclerViewCursorAdapter<ChatsRecyclerViewAdapter.ViewHolder> {
 
-        private Cursor mCursor;
         private final TypedValue mTypedValue = new TypedValue();
         private int mBackground;
-        private Context mContext;
 
         public ChatsRecyclerViewAdapter(Context context, Cursor cursor) {
+            super(context, cursor);
             // Initialises the animated background of the each list item.
             context.getTheme().resolveAttribute(R.attr.selectableItemBackground, mTypedValue, true);
             mBackground = mTypedValue.resourceId;
-            mContext = context;
-            mCursor = cursor;
         }
 
         @Override
@@ -165,8 +137,8 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
         }
 
         @Override
-        public void onBindViewHolder(final ViewHolder holder, int position) {
-            mCursor.moveToPosition(position);
+        public void onBindViewHolder(ViewHolder holder, int position) {
+            super.onBindViewHolder(holder, position);
             final String uuid = mCursor.getString(0);
             final String emoji1 = mCursor.getString(1);
             final String emoji2 = mCursor.getString(2);
@@ -195,26 +167,9 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
                     intent.putExtra("generated_name", partnerName);
                     context.startActivity(intent);
 
-                    Log.d(TAG, holder.partnerName.getText().toString());
+                    Log.d(TAG, partnerName.toString());
                 }
             });
-        }
-
-        @Override
-        public int getItemCount() {
-            if (mCursor != null) {
-                return mCursor.getCount();
-            }
-            return 0;
-        }
-
-        public void changeCursor(Cursor cursor) {
-            if (cursor != mCursor) {
-                Cursor oldCursor = mCursor;
-                mCursor = cursor;
-                notifyDataSetChanged();
-                oldCursor.close();
-            }
         }
 
         private String getRandomTime() {

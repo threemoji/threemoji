@@ -199,15 +199,12 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     public static class MessagesRecyclerViewAdapter
-            extends RecyclerView.Adapter<MessagesRecyclerViewAdapter.ViewHolder> {
+            extends RecyclerViewCursorAdapter<MessagesRecyclerViewAdapter.ViewHolder> {
 
-        private Cursor mCursor;
-        private Context mContext;
         private RecyclerView rv;
 
         public MessagesRecyclerViewAdapter(Context context, Cursor cursor) {
-            mCursor = cursor;
-            mContext = context;
+            super(context, cursor);
         }
 
         @Override
@@ -222,7 +219,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         @Override
         public void onBindViewHolder(ViewHolder holder,
                                      int position) {
-            mCursor.moveToPosition(position);
+            super.onBindViewHolder(holder, position);
 
             String message = mCursor.getString(2);
             holder.messageData.setText(message);
@@ -276,26 +273,9 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             parent.setPadding(leftRight, topBottom, leftRight, topBottom);
         }
 
-        @Override
-        public int getItemCount() {
-            if (mCursor != null) {
-                return mCursor.getCount();
-            }
-            return 0;
-        }
-
         public void moveToEnd() {
             if (rv != null) {
                 rv.scrollToPosition(0);
-            }
-        }
-
-        public void changeCursor(Cursor cursor) {
-            if (cursor != mCursor) {
-                Cursor oldCursor = mCursor;
-                mCursor = cursor;
-                notifyDataSetChanged();
-                oldCursor.close();
             }
         }
 

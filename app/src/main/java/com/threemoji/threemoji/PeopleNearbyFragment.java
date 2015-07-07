@@ -87,19 +87,16 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
     // Inner class to handle the population of items in the list
     // ================================================================
     public static class PeopleRecyclerViewAdapter
-            extends RecyclerView.Adapter<PeopleRecyclerViewAdapter.ViewHolder> {
+            extends RecyclerViewCursorAdapter<PeopleRecyclerViewAdapter.ViewHolder> {
 
-        private Cursor mCursor;
         private final TypedValue mTypedValue = new TypedValue();
         private int mBackground;
-        private Context mContext;
 
         public PeopleRecyclerViewAdapter(Context context, Cursor cursor) {
+            super(context, cursor);
             // Initialises the animated background of the each list item.
             context.getTheme().resolveAttribute(R.attr.selectableItemBackground, mTypedValue, true);
             mBackground = mTypedValue.resourceId;
-            mContext = context;
-            mCursor = cursor;
         }
 
         @Override
@@ -113,8 +110,8 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
         }
 
         @Override
-        public void onBindViewHolder(final ViewHolder holder, int position) {
-            mCursor.moveToPosition(position);
+        public void onBindViewHolder(ViewHolder holder, int position) {
+            super.onBindViewHolder(holder, position);
             final String uuid = mCursor.getString(0);
             final String emoji1 = mCursor.getString(1);
             final String emoji2 = mCursor.getString(2);
@@ -152,23 +149,6 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
                     Log.d(TAG, personName);
                 }
             });
-        }
-
-        @Override
-        public int getItemCount() {
-            if (mCursor != null) {
-                return mCursor.getCount();
-            }
-            return 0;
-        }
-
-        public void changeCursor(Cursor cursor) {
-            if (cursor != mCursor) {
-                Cursor oldCursor = mCursor;
-                mCursor = cursor;
-                notifyDataSetChanged();
-                oldCursor.close();
-            }
         }
 
 

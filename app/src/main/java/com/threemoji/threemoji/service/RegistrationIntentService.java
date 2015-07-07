@@ -19,7 +19,7 @@ import java.util.UUID;
 public class RegistrationIntentService extends IntentService {
 
     private static final String TAG = RegistrationIntentService.class.getSimpleName();
-    private static final int mTimeToLive = 60 * 60; // one hour
+    private static final int TIME_TO_LIVE_SECONDS = 60 * 60; // one hour
 
     private GoogleCloudMessaging mGcm;
     private InstanceID mInstanceID;
@@ -157,7 +157,7 @@ public class RegistrationIntentService extends IntentService {
     private void sendData(String token, Bundle data) throws IOException {
         mGcm.send(getString(R.string.gcm_project_num) + "@gcm.googleapis.com",
                   getNextMsgId(token),
-                  mTimeToLive, data);
+                  TIME_TO_LIVE_SECONDS, data);
     }
 
 

@@ -21,6 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class PeopleNearbyFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -44,6 +45,7 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
                              Bundle savedInstanceState) {
         RecyclerView rv = (RecyclerView) inflater.inflate(
                 R.layout.fragment_chat_list, container, false);
+        Toast.makeText(getActivity(), "Finding people nearby...", Toast.LENGTH_SHORT).show();
         getPeopleNearbyData();
         setupRecyclerView(rv);
         return rv;

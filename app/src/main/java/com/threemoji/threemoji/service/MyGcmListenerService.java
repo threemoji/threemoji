@@ -172,6 +172,7 @@ public class MyGcmListenerService extends GcmListenerService {
 //            Log.v(TAG, json.toString());
 
             Iterator<String> people = json.keys();
+            getContentResolver().delete(ChatContract.PeopleNearbyEntry.CONTENT_URI, null, null);
             while (people.hasNext()) {
                 String uuid = people.next();
 

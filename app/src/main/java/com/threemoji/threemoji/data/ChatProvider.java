@@ -12,7 +12,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
-import android.util.Log;
 
 public class ChatProvider extends ContentProvider {
 
@@ -147,7 +146,6 @@ public class ChatProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-        Log.v("", uri.toString());
         final SQLiteDatabase db = mChatDbHelper.getWritableDatabase();
         Uri returnUri;
 

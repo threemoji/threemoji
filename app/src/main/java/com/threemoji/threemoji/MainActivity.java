@@ -21,6 +21,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -118,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean hasToken() {
         String token = getPrefs().getString(getString(R.string.pref_token_key), "");
-        if (token != null && token.length() == 0) {
+        if (token.length() == 0) {
             Log.v(TAG, "Registration not found.");
             return false;
         }
@@ -270,6 +271,29 @@ public class MainActivity extends AppCompatActivity {
         adapter.addFragment(new ChatListFragment(), "Chats");
         adapter.addFragment(new PeopleNearbyFragment(), "People nearby");
         viewPager.setAdapter(adapter);
+
+        final SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
+        ViewPager.OnPageChangeListener onPageChangeListener = new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset,
+                                       int positionOffsetPixels) {
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if (position == 1) {
+                    swipeRefreshLayout.setEnabled(true);
+                } else {
+                    swipeRefreshLayout.setEnabled(false);
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+            }
+        };
+        viewPager.addOnPageChangeListener(onPageChangeListener);
+        onPageChangeListener.onPageSelected(0); // Called to disable the swipe action.
     }
 
 

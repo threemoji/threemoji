@@ -12,6 +12,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -23,11 +24,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class PeopleNearbyFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class PeopleNearbyFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener {
 
     private static final String TAG = PeopleNearbyFragment.class.getSimpleName();
 
     private PeopleRecyclerViewAdapter mAdapter;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
 
     private final String[] PEOPLE_NEARBY_ITEM_PROJECTION = new String[]{
             ChatContract.PeopleNearbyEntry.COLUMN_UUID,
@@ -45,6 +47,14 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
                              Bundle savedInstanceState) {
         RecyclerView rv = (RecyclerView) inflater.inflate(
                 R.layout.fragment_people_nearby, container, false);
+        mSwipeRefreshLayout = (SwipeRefreshLayout) getActivity().findViewById(
+                R.id.swipeRefreshLayout);
+        mSwipeRefreshLayout.setColorSchemeResources(
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light,
+                android.R.color.holo_blue_bright);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
 //        getPeopleNearbyData();
         setupRecyclerView(rv);
         return rv;
@@ -62,9 +72,20 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
                                      .query(ChatContract.PeopleNearbyEntry.CONTENT_URI,
                                             PEOPLE_NEARBY_ITEM_PROJECTION, null, null, null);
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
+        final LinearLayoutManager layoutManager = new LinearLayoutManager(recyclerView.getContext());
+        recyclerView.setLayoutManager(layoutManager);
         mAdapter = new PeopleRecyclerViewAdapter(getActivity(), cursor);
         recyclerView.setAdapter(mAdapter);
+
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                if (dy > 0) { // Ensures that at start up, this will not be called
+                    mSwipeRefreshLayout.setEnabled(
+                            layoutManager.findFirstCompletelyVisibleItemPosition() == 0);
+                }
+            }
+        });
 
         getActivity().getSupportLoaderManager().initLoader(1, null, this);
     }
@@ -77,11 +98,17 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mSwipeRefreshLayout.setRefreshing(false);
         mAdapter.changeCursor(data);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+    }
+
+    @Override
+    public void onRefresh() {
+        getPeopleNearbyData();
     }
 
 

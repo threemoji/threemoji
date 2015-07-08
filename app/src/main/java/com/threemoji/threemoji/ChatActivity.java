@@ -237,7 +237,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void addDeletedProfileAlert() {
-        addAlertMessage(mGeneratedName + " deleted his profile. This chat will be archived");
+        addAlertMessage(mGeneratedName + " deleted his profile. This chat will be archived.");
     }
 
     private void addChangedProfileAlert(String newEmoji1, String newEmoji2, String newEmoji3,

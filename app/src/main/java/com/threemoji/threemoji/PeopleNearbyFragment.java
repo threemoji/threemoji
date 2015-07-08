@@ -44,14 +44,14 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         RecyclerView rv = (RecyclerView) inflater.inflate(
-                R.layout.fragment_chat_list, container, false);
-        Toast.makeText(getActivity(), "Finding people nearby...", Toast.LENGTH_SHORT).show();
-        getPeopleNearbyData();
+                R.layout.fragment_people_nearby, container, false);
+//        getPeopleNearbyData();
         setupRecyclerView(rv);
         return rv;
     }
 
     private void getPeopleNearbyData() {
+        Toast.makeText(getActivity(), "Finding people nearby...", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(getActivity(), ChatIntentService.class);
         intent.putExtra("action", ChatIntentService.Action.LOOKUP_ALL.name());
         getActivity().startService(intent);

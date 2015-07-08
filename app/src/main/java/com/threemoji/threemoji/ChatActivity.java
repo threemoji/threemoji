@@ -50,7 +50,8 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             ChatContract.PartnerEntry.COLUMN_EMOJI_2,
             ChatContract.PartnerEntry.COLUMN_EMOJI_3,
             ChatContract.PartnerEntry.COLUMN_GENDER,
-            ChatContract.PartnerEntry.COLUMN_GENERATED_NAME
+            ChatContract.PartnerEntry.COLUMN_GENERATED_NAME,
+            ChatContract.PartnerEntry.COLUMN_IS_ALIVE
     };
 
     private MessagesRecyclerViewAdapter mMessagesAdapter;
@@ -62,6 +63,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     private String mEmoji3;
     private String mGender;
     private String mGeneratedName;
+    private boolean mIsAlive;
 
     public enum Action {
         NEW, DISPLAY
@@ -76,10 +78,12 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         Action action = Action.valueOf(intent.getStringExtra("action"));
         initFields(intent);
 
-        if (action == Action.NEW && !isPersonAlreadyPartner(mPartnerUuid)) {
-            addNewPartnerToDb();
+        if (mIsAlive) {
+            updatePartnerIfNeeded();
+        } else {
+            disableBottomBar();
         }
-        updatePartnerIfNeeded();
+
         initActionBar();
         initMessages();
     }
@@ -91,31 +95,8 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         mEmoji3 = intent.getStringExtra("emoji_3");
         mGender = intent.getStringExtra("gender");
         mGeneratedName = intent.getStringExtra("generated_name");
+        mIsAlive = intent.getBooleanExtra("isAlive", true);
 //        mGeneratedName = "aaaaaaaaa aaaaaaaaa";
-    }
-
-    private boolean isPersonAlreadyPartner(String uuid) {
-        Cursor cursor =
-                getContentResolver().query(ChatContract.PartnerEntry.CONTENT_URI,
-                                           new String[]{
-                                                   ChatContract.PartnerEntry.COLUMN_GENERATED_NAME},
-                                           ChatContract.PartnerEntry.COLUMN_UUID + " = ?",
-                                           new String[]{uuid},
-                                           null);
-        return cursor.getCount() > 0;
-    }
-
-    private void addNewPartnerToDb() {
-        ContentValues newValues = new ContentValues();
-        newValues.put(ChatContract.PartnerEntry.COLUMN_UUID, mPartnerUuid);
-        newValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_1, mEmoji1);
-        newValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_2, mEmoji2);
-        newValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_3, mEmoji3);
-        newValues.put(ChatContract.PartnerEntry.COLUMN_GENDER, mGender);
-        newValues.put(ChatContract.PartnerEntry.COLUMN_GENERATED_NAME, mGeneratedName);
-
-        Uri uri = getContentResolver().insert(ChatContract.PartnerEntry.CONTENT_URI, newValues);
-        Log.v(TAG, uri.toString());
     }
 
     private void updatePartnerIfNeeded() {
@@ -123,6 +104,13 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         intent.putExtra("action", ChatIntentService.Action.LOOKUP_UUID.name());
         intent.putExtra("uuid", mPartnerUuid);
         startService(intent);
+    }
+
+    private void disableBottomBar() {
+        EditText editText = (EditText) findViewById(R.id.user_message);
+        editText.setEnabled(false);
+        editText.setText("Partner does not exist :(");
+        findViewById(R.id.submit_button).setEnabled(false);
     }
 
     private void initActionBar() {
@@ -141,6 +129,10 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         ((ImageView) findViewById(R.id.title_emoji_2)).setImageDrawable(emoji2Drawable);
         ((ImageView) findViewById(R.id.title_emoji_3)).setImageDrawable(emoji3Drawable);
         ((TextView) findViewById(R.id.title_name)).setText(generatedName);
+        mEmoji1 = emoji1;
+        mEmoji2 = emoji2;
+        mEmoji3 = emoji3;
+        mGeneratedName = generatedName;
     }
 
     private void initMessages() {
@@ -169,6 +161,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     public void sendMessage(View view) {
+        Log.v(TAG, "Send message button was pressed");
         EditText editText = (EditText) findViewById(R.id.user_message);
         String userMessage = editText.getText().toString();
         editText.setText("");
@@ -217,13 +210,21 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
                     String newEmoji2 = data.getString(1);
                     String newEmoji3 = data.getString(2);
                     String newName = data.getString(4);
+                    boolean isAlive = data.getInt(5) > 0;
 
                     if (!newEmoji1.equals(mEmoji1) || !newEmoji2.equals(mEmoji2) ||
                         !newEmoji3.equals(mEmoji3) || !newName.equals(mGeneratedName)) {
 
-                        addAlertMessage(newEmoji1, newEmoji2, newEmoji3, newName);
+                        addChangedProfileAlert(newEmoji1, newEmoji2, newEmoji3, newName);
                         setPartnerDetails(newEmoji1, newEmoji2, newEmoji3, newName);
                     }
+
+                    if (mIsAlive && !isAlive) {
+                        addDeletedProfileAlert();
+                        mIsAlive = false;
+                        disableBottomBar();
+                    }
+
                 } catch (NullPointerException | CursorIndexOutOfBoundsException e) {
                     Log.e(TAG, e.getMessage());
                 }
@@ -235,18 +236,25 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         }
     }
 
-    private void addAlertMessage(String newEmoji1, String newEmoji2, String newEmoji3,
-                                 String newName) {
+    private void addDeletedProfileAlert() {
+        addAlertMessage(mGeneratedName + " deleted his profile. This chat will be archived");
+    }
+
+    private void addChangedProfileAlert(String newEmoji1, String newEmoji2, String newEmoji3,
+                                        String newName) {
+        addAlertMessage(mGeneratedName + " updated his profile");
+    }
+
+    private void addAlertMessage(String message) {
         ContentValues values = new ContentValues();
         values.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, mPartnerUuid);
         values.put(ChatContract.MessageEntry.COLUMN_DATETIME, "124");
         values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
                    ChatContract.MessageEntry.MessageType.ALERT.name());
-        values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA,
-                   mGeneratedName + " updated his profile");
+        values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, message);
         Uri uri = getContentResolver().insert(
                 ChatContract.MessageEntry.buildMessagesWithPartnerUri(mPartnerUuid), values);
-        Log.v(TAG, "Added alert message: " + uri.toString());
+        Log.v(TAG, "Added alert message: " + message + ", " + uri.toString());
     }
 
     @Override

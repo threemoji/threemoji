@@ -35,6 +35,7 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
             ChatContract.PartnerEntry.COLUMN_EMOJI_3,
             ChatContract.PartnerEntry.COLUMN_GENDER,
             ChatContract.PartnerEntry.COLUMN_GENERATED_NAME,
+            ChatContract.PartnerEntry.COLUMN_IS_ALIVE
     };
 
     // ================================================================
@@ -145,6 +146,7 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
             final String emoji3 = mCursor.getString(3);
             final String gender = mCursor.getString(4);
             final String partnerName = mCursor.getString(5);
+            final boolean isAlive = mCursor.getInt(6) > 0;
             final String lastActivity = getRandomTime();
 
             holder.emoji1.setImageResource(mContext.getResources().getIdentifier(emoji1, "drawable", mContext.getPackageName()));
@@ -165,9 +167,10 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
                     intent.putExtra("emoji_3", emoji3);
                     intent.putExtra("gender", gender);
                     intent.putExtra("generated_name", partnerName);
+                    intent.putExtra("isAlive", isAlive);
                     context.startActivity(intent);
 
-                    Log.d(TAG, partnerName.toString());
+                    Log.d(TAG, partnerName);
                 }
             });
         }

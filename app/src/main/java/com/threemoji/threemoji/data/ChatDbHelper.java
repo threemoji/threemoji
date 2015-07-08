@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class ChatDbHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 5;
 
     static final String DATABASE_NAME = "chat.db";
 
@@ -34,7 +34,8 @@ public class ChatDbHelper extends SQLiteOpenHelper {
                 PartnerEntry.COLUMN_EMOJI_2 + " TEXT NOT NULL, " +
                 PartnerEntry.COLUMN_EMOJI_3 + " TEXT NOT NULL, " +
                 PartnerEntry.COLUMN_GENDER + " TEXT NOT NULL, " +
-                PartnerEntry.COLUMN_GENERATED_NAME + " TEXT NOT NULL " +
+                PartnerEntry.COLUMN_GENERATED_NAME + " TEXT NOT NULL, " +
+                PartnerEntry.COLUMN_IS_ALIVE + " INTEGER DEFAULT 1 " +
                 " );";
         db.execSQL(SQL_CREATE_PARTNERS_TABLE);
     }
@@ -78,8 +79,11 @@ public class ChatDbHelper extends SQLiteOpenHelper {
 //        db.execSQL("DROP TABLE IF EXISTS " + PeopleNearbyEntry.TABLE_NAME);
 //        onCreate(db);
 
-        if (oldVersion == 3 && newVersion == 4) {
+        if (oldVersion == 3) {
             createPeopleNearbyTable(db);
+        }
+        if (oldVersion < 5) {
+            db.execSQL("ALTER TABLE " + PartnerEntry.TABLE_NAME + " ADD COLUMN " + PartnerEntry.COLUMN_IS_ALIVE + " INTEGER DEFAULT 1");
         }
     }
 }

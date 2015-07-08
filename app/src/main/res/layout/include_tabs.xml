@@ -5,5 +5,5 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/tabs"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="?attr/actionBarSize"
     tools:showIn="@layout/include_appbar_and_tabs_view" />

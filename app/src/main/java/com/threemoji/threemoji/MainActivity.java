@@ -9,6 +9,7 @@ import com.threemoji.threemoji.utility.SvgUtils;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -26,6 +27,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -249,6 +251,15 @@ public class MainActivity extends AppCompatActivity {
         if (mViewPager != null) {
             setupViewPager(mViewPager);
         }
+
+        // to push the recycler views down; to be below the bars on top
+        final TypedArray styledAttributes = getTheme().obtainStyledAttributes(
+                new int[] { android.R.attr.actionBarSize });
+        int actionBarSize = (int) styledAttributes.getDimension(0, 0);
+        styledAttributes.recycle();
+
+        FrameLayout frameLayout = (FrameLayout) findViewById(R.id.swipeWrapper);
+        frameLayout.setPadding(0, actionBarSize*2 ,0,0);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);

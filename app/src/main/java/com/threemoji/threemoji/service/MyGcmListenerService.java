@@ -246,8 +246,12 @@ public class MyGcmListenerService extends GcmListenerService {
         values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
                    ChatContract.MessageEntry.MessageType.RECEIVED.name());
         values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, message);
-        Uri uri = getContentResolver().insert(
-                ChatContract.MessageEntry.buildMessagesWithPartnerUri(uuid), values);
+//        try {
+            Uri uri = getContentResolver().insert(
+                    ChatContract.MessageEntry.buildMessagesWithPartnerUri(uuid), values);
+//        } catch (SQLException e) {
+//            Log.e(TAG, "Duplicate message received");
+//        }
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.threemoji.threemoji;
 
 import com.threemoji.threemoji.data.ChatContract;
+import com.threemoji.threemoji.utility.DateUtils;
 
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +13,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -36,7 +38,8 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
             ChatContract.PartnerEntry.COLUMN_EMOJI_3,
             ChatContract.PartnerEntry.COLUMN_GENDER,
             ChatContract.PartnerEntry.COLUMN_GENERATED_NAME,
-            ChatContract.PartnerEntry.COLUMN_IS_ALIVE
+            ChatContract.PartnerEntry.COLUMN_IS_ALIVE,
+            ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY
     };
 
     // ================================================================
@@ -51,6 +54,7 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
         setupRecyclerView(rv);
         if (mAdapter.getItemCount() == 0) {
             ((ViewPager) getActivity().findViewById(R.id.viewpager)).setCurrentItem(1);
+            ((SwipeRefreshLayout) getActivity().findViewById(R.id.swipeRefreshLayout)).setRefreshing(true);
         }
         return rv;
     }
@@ -151,13 +155,13 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
             final String gender = mCursor.getString(4);
             final String partnerName = mCursor.getString(5);
             final boolean isAlive = mCursor.getInt(6) > 0;
-            final String lastActivity = getRandomTime();
+            final long lastActivity = mCursor.getLong(7);
 
             holder.emoji1.setImageResource(mContext.getResources().getIdentifier(emoji1, "drawable", mContext.getPackageName()));
             holder.emoji2.setImageResource(mContext.getResources().getIdentifier(emoji2, "drawable", mContext.getPackageName()));
             holder.emoji3.setImageResource(mContext.getResources().getIdentifier(emoji3, "drawable", mContext.getPackageName()));
             holder.partnerName.setText(partnerName);
-            holder.lastActivity.setText(lastActivity);
+            holder.lastActivity.setText(DateUtils.getTimeAgo(lastActivity));
 
             holder.view.setOnClickListener(new View.OnClickListener() {
                 @Override

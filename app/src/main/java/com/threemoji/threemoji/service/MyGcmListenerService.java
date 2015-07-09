@@ -252,6 +252,11 @@ public class MyGcmListenerService extends GcmListenerService {
 //        } catch (SQLException e) {
 //            Log.e(TAG, "Duplicate message received");
 //        }
+
+        values = new ContentValues();
+        values.put(ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY, timestamp);
+        int rowsUpdated = getContentResolver().update(
+                ChatContract.PartnerEntry.buildPartnerByUuidUri(uuid), values, null, null);
     }
 
     @Override

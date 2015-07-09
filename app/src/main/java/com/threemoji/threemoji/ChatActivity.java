@@ -189,6 +189,11 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
                     values);
             Log.v(TAG, uri.toString());
 
+            values = new ContentValues();
+            values.put(ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY, currentTime);
+            int rowsUpdated = getContentResolver().update(
+                    ChatContract.PartnerEntry.buildPartnerByUuidUri(mPartnerUuid), values, null,
+                    null);
 
         }
     }

@@ -2,11 +2,21 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:paddingBottom="@dimen/chat_box_message_wrapper_padding_top_bottom"
     android:paddingLeft="@dimen/chat_box_message_wrapper_padding_left_right"
     android:paddingRight="@dimen/chat_box_message_wrapper_padding_left_right"
-    android:paddingTop="@dimen/chat_box_message_wrapper_padding_top_bottom">
+    android:paddingTop="@dimen/chat_box_message_wrapper_padding_top_bottom"
+    android:onClick="showMessageTime">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/messageTime"
+        android:paddingTop="4dp"
+        android:paddingBottom="2dp"
+        android:textSize="12sp"
+        android:visibility="gone" />
 
     <FrameLayout
         android:layout_width="wrap_content"

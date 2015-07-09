@@ -2,6 +2,7 @@ package com.threemoji.threemoji;
 
 import com.threemoji.threemoji.data.ChatContract;
 import com.threemoji.threemoji.service.ChatIntentService;
+import com.threemoji.threemoji.utility.DateUtils;
 import com.threemoji.threemoji.utility.SvgUtils;
 
 import android.content.ContentValues;
@@ -12,6 +13,7 @@ import android.database.CursorIndexOutOfBoundsException;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -26,6 +28,8 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -174,6 +178,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
 
             ContentValues values = new ContentValues();
             values.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, mPartnerUuid);
+            values.put(ChatContract.MessageEntry.COLUMN_DATETIME, System.currentTimeMillis());
             values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
                        ChatContract.MessageEntry.MessageType.SENT.name());
             values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, userMessage.trim());
@@ -236,6 +241,10 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         }
     }
 
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+    }
+
     private void addDeletedProfileAlert() {
         addAlertMessage(mGeneratedName + " deleted his profile. This chat will be archived.");
     }
@@ -256,8 +265,39 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         Log.v(TAG, "Added alert message: " + message + ", " + uri.toString());
     }
 
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
+    public void showMessageTime(View view) {
+        final TextView messageTime = (TextView) view.findViewById(R.id.messageTime);
+
+
+        AlphaAnimation fadeIn = new AlphaAnimation(0.0f, 1.0f);
+        fadeIn.setDuration(1000);
+
+        final AlphaAnimation fadeOut = new AlphaAnimation(1.0f, 0.0f);
+        fadeOut.setDuration(1000);
+        fadeOut.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                messageTime.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+            }
+        });
+
+        messageTime.setVisibility(View.VISIBLE);
+        messageTime.startAnimation(fadeIn);
+
+        new Handler().postDelayed(new Runnable() {
+                                      @Override
+                                      public void run() {
+                                          messageTime.startAnimation(fadeOut);
+                                      }
+                                  }, 10000);
     }
 
     public static class MessagesRecyclerViewAdapter
@@ -282,9 +322,10 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         public void onBindViewHolder(ViewHolder holder,
                                      int position) {
             super.onBindViewHolder(holder, position);
-
             String message = mCursor.getString(2);
             holder.messageData.setText(message);
+
+            holder.messageTime.setText(DateUtils.getDate(mCursor.getLong(0)));
 
             FrameLayout wrapper = (FrameLayout) holder.messageData.getParent();
             LinearLayout parent = (LinearLayout) wrapper.getParent();
@@ -344,11 +385,13 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         public static class ViewHolder extends RecyclerView.ViewHolder {
             public final View view;
             public final TextView messageData;
+            public final TextView messageTime;
 
             public ViewHolder(View view) {
                 super(view);
                 this.view = view;
                 messageData = (TextView) view.findViewById(R.id.chat_message);
+                messageTime = (TextView) view.findViewById(R.id.messageTime);
             }
         }
     }

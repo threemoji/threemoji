@@ -273,6 +273,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     private void addAlertMessage(String message) {
         ContentValues values = new ContentValues();
         values.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, mPartnerUuid);
+        values.put(ChatContract.MessageEntry.COLUMN_DATETIME, System.currentTimeMillis());
         values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
                    ChatContract.MessageEntry.MessageType.ALERT.name());
         values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, message);
@@ -361,6 +362,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
 
             } else if (messageType.equals(ChatContract.MessageEntry.MessageType.ALERT.name())) {
                 parent.setGravity(Gravity.CENTER);
+                parent.setOnClickListener(null);
                 wrapper.setBackgroundResource(R.drawable.chat_box_alert);
                 modifyParamsForAlerts(holder, parent);
             }

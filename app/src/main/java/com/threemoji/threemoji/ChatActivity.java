@@ -175,12 +175,14 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             ContentValues values = new ContentValues();
             values.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, mPartnerUuid);
             values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
-                            ChatContract.MessageEntry.MessageType.SENT.name());
+                       ChatContract.MessageEntry.MessageType.SENT.name());
             values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, userMessage.trim());
             Uri uri = getContentResolver().insert(
                     ChatContract.MessageEntry.buildMessagesWithPartnerUri(mPartnerUuid),
                     values);
             Log.v(TAG, uri.toString());
+
+
         }
     }
 
@@ -246,7 +248,6 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     private void addAlertMessage(String message) {
         ContentValues values = new ContentValues();
         values.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, mPartnerUuid);
-        values.put(ChatContract.MessageEntry.COLUMN_DATETIME, "124");
         values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
                    ChatContract.MessageEntry.MessageType.ALERT.name());
         values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, message);

@@ -13,7 +13,6 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -54,7 +53,6 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
         setupRecyclerView(rv);
         if (mAdapter.getItemCount() == 0) {
             ((ViewPager) getActivity().findViewById(R.id.viewpager)).setCurrentItem(1);
-            ((SwipeRefreshLayout) getActivity().findViewById(R.id.swipeRefreshLayout)).setRefreshing(true);
         }
         return rv;
     }

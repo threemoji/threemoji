@@ -55,8 +55,11 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
                 android.R.color.holo_red_light,
                 android.R.color.holo_blue_bright);
         mSwipeRefreshLayout.setOnRefreshListener(this);
-//        getPeopleNearbyData();
+
         setupRecyclerView(rv);
+        if (mAdapter.getItemCount() == 0){
+            getPeopleNearbyData();
+        }
         return rv;
     }
 

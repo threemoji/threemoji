@@ -176,9 +176,11 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             intent.putExtra("message", userMessage.trim());
             this.startService(intent);
 
+            long currentTime = System.currentTimeMillis();
+
             ContentValues values = new ContentValues();
             values.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, mPartnerUuid);
-            values.put(ChatContract.MessageEntry.COLUMN_DATETIME, System.currentTimeMillis());
+            values.put(ChatContract.MessageEntry.COLUMN_DATETIME, currentTime);
             values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
                        ChatContract.MessageEntry.MessageType.SENT.name());
             values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, userMessage.trim());
@@ -268,12 +270,11 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     public void showMessageTime(View view) {
         final TextView messageTime = (TextView) view.findViewById(R.id.messageTime);
 
-
         AlphaAnimation fadeIn = new AlphaAnimation(0.0f, 1.0f);
-        fadeIn.setDuration(1000);
+        fadeIn.setDuration(500);
 
         final AlphaAnimation fadeOut = new AlphaAnimation(1.0f, 0.0f);
-        fadeOut.setDuration(1000);
+        fadeOut.setDuration(500);
         fadeOut.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
@@ -331,6 +332,8 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             LinearLayout parent = (LinearLayout) wrapper.getParent();
 
             String messageType = mCursor.getString(1);
+
+            Log.v(TAG, messageType + " " + message + " " + DateUtils.getDate(mCursor.getLong(0) ));
 
             if (messageType.equals(ChatContract.MessageEntry.MessageType.SENT.name())) {
                 parent.setGravity(Gravity.RIGHT);

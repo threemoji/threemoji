@@ -14,7 +14,7 @@ public class DateUtils {
     }
 
     public static String getDate(long milliseconds) {
-        return getDate(milliseconds, "KK:mm ss.SSS a, dd LLL");
+        return getDate(milliseconds, "KK:mma, dd LLL");
     }
 
     public static String getTimeAgo(long milliseconds) {
@@ -25,6 +25,8 @@ public class DateUtils {
         if (diffDays > 0) {
             if (diffDays == 1) {
                 return "1 day ago";
+            } else if (diffDays > 365) {
+                return "";
             }
             return diffDays + " days ago";
         }

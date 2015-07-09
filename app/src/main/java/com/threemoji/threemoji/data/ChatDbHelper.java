@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class ChatDbHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 8;
 
     static final String DATABASE_NAME = "chat.db";
 
@@ -44,8 +44,9 @@ public class ChatDbHelper extends SQLiteOpenHelper {
     private void createMessagesTable(SQLiteDatabase db) {
         final String SQL_CREATE_MESSAGES_TABLE =
                 "CREATE TABLE " + MessageEntry.TABLE_NAME + " (" +
+                MessageEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 MessageEntry.COLUMN_PARTNER_KEY + " INTEGER NOT NULL, " +
-                MessageEntry.COLUMN_DATETIME + " INTEGER PRIMARY KEY DEFAULT CURRENT_TIMESTAMP, " +
+                MessageEntry.COLUMN_DATETIME + " INTEGER DEFAULT CURRENT_TIMESTAMP, " +
                 MessageEntry.COLUMN_MESSAGE_TYPE + " TEXT NOT NULL, " +
                 MessageEntry.COLUMN_MESSAGE_DATA + " TEXT NOT NULL, " +
 
@@ -92,16 +93,18 @@ public class ChatDbHelper extends SQLiteOpenHelper {
         if (oldVersion < 7) {
             db.execSQL("ALTER TABLE " + PartnerEntry.TABLE_NAME + " ADD COLUMN " +
                        PartnerEntry.COLUMN_LAST_ACTIVITY + " INTEGER DEFAULT CURRENT_TIMESTAMP;");
+        }
+        if (oldVersion <= 8) {
             db.execSQL("ALTER TABLE " + MessageEntry.TABLE_NAME + " RENAME TO " + MessageEntry.TABLE_NAME + "_copy;");
             createMessagesTable(db);
             db.execSQL("INSERT INTO " + MessageEntry.TABLE_NAME + " (" +
-                       MessageEntry._ID + ", " +
                        MessageEntry.COLUMN_PARTNER_KEY + ", " +
+                       MessageEntry.COLUMN_DATETIME + ", " +
                        MessageEntry.COLUMN_MESSAGE_TYPE + ", " +
                        MessageEntry.COLUMN_MESSAGE_DATA + ") " +
                        " SELECT " +
-                       MessageEntry._ID + ", " +
                        MessageEntry.COLUMN_PARTNER_KEY + ", " +
+                       MessageEntry.COLUMN_DATETIME + ", " +
                        MessageEntry.COLUMN_MESSAGE_TYPE + ", " +
                        MessageEntry.COLUMN_MESSAGE_DATA +
                        " FROM " + MessageEntry.TABLE_NAME + "_copy;");

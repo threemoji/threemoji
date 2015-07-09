@@ -1,13 +1,13 @@
 #/usr/bin/python
 import sys, json, xmpp, os, logging, time
 import googledatastore as datastore
-from datetime import datetime
 
 SERVER = 'gcm.googleapis.com'
 PORT = 5236 # change to 5235 for production
 USERNAME = os.environ.get('PROJECT_NUM')
 PASSWORD = os.environ.get('GCM_API_KEY')
 datastore.set_options(dataset=os.environ.get('PROJECT_ID'))
+logging.basicConfig(format='%(asctime)-15s %(levelname)s: %(message)s', level=logging.INFO)
 
 def send(json_dict):
   template = ("<message><gcm xmlns=\"google:mobile:data\">{0}</gcm></message>")
@@ -18,7 +18,7 @@ def message_callback(session, message):
   gcm = message.getTags('gcm')
 
   if gcm:
-    print "Received at " + str(datetime.now().time())
+    logging.info('Received GCM message')
     gcm_json = gcm[0].getData()
     msg = json.loads(gcm_json)
     msg_id = msg["message_id"]
@@ -154,8 +154,6 @@ def auth_user(uid, password, action):
     for prop in user.property:
       if prop.name == 'password':
         if password != prop.value.string_value:
-          print "expected " + prop.value.string_value
-          print "got " + password
           logging.error('Access denied for user: ' + uid + ' action: ' + action)
           return 403
     logging.info('Authenticated user: ' + uid + ' action: ' + action)
@@ -258,7 +256,6 @@ def send_message(from_uid, to_uid, message, timestamp):
 def next_message_id(token):
   return token[-4:] + str(long(time.time() * 1e4))
 
-logging.basicConfig(format='%(asctime)-15s %(levelname)s: %(message)s', level=logging.INFO)
 client = xmpp.Client(SERVER, debug=['socket'])
 client.connect(server=(SERVER,PORT), secure=1, use_srv=False)
 auth = client.auth(USERNAME, PASSWORD)
@@ -269,4 +266,9 @@ if not auth:
 client.RegisterHandler('message', message_callback)
 
 while True:
-  client.Process(1)
+  try:
+    client.Process(1)
+  except Exception as e:
+    print e.__doc__
+    print e.message
+    break

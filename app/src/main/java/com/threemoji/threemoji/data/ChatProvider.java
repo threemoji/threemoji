@@ -226,6 +226,13 @@ public class ChatProvider extends ContentProvider {
             case PARTNERS:
                 rowsUpdated = db.update(PartnerEntry.TABLE_NAME, values, selection, selectionArgs);
                 break;
+            case PARTNER:
+                rowsUpdated = db.update(PartnerEntry.TABLE_NAME,
+                                        values,
+                                        PartnerEntry.TABLE_NAME + "." + PartnerEntry.COLUMN_UUID +
+                                        " = ? ",
+                                        new String[]{uri.getPathSegments().get(1)});
+                break;
             case PEOPLE_NEARBY:
                 rowsUpdated = db.update(PeopleNearbyEntry.TABLE_NAME, values, selection, selectionArgs);
                 break;

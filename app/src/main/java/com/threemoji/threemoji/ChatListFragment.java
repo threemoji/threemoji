@@ -41,6 +41,9 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
             ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY
     };
 
+    private static final String CHAT_ITEM_SORT_ORDER =
+            ChatContract.PartnerEntry.TABLE_NAME + "." + ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY + " DESC";
+
     // ================================================================
     // Methods for initialising the components of the chat list
     // ================================================================
@@ -87,11 +90,9 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
 
         Cursor cursor = getActivity().getContentResolver()
                                      .query(ChatContract.PartnerEntry.CONTENT_URI,
-                                            CHAT_ITEM_PROJECTION, null, null, null);
+                                            CHAT_ITEM_PROJECTION, null, null, CHAT_ITEM_SORT_ORDER);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(recyclerView.getContext());
-        layoutManager.setStackFromEnd(true);
-        layoutManager.setReverseLayout(true);
         recyclerView.setLayoutManager(layoutManager);
 
         mAdapter = new ChatsRecyclerViewAdapter(getActivity(), cursor);
@@ -103,7 +104,7 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new CursorLoader(getActivity(), ChatContract.PartnerEntry.CONTENT_URI,
-                                CHAT_ITEM_PROJECTION, null, null, null);
+                                CHAT_ITEM_PROJECTION, null, null, CHAT_ITEM_SORT_ORDER);
     }
 
     @Override

@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class ChatDbHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 7;
 
     static final String DATABASE_NAME = "chat.db";
 
@@ -36,7 +36,8 @@ public class ChatDbHelper extends SQLiteOpenHelper {
                 PartnerEntry.COLUMN_GENDER + " TEXT NOT NULL, " +
                 PartnerEntry.COLUMN_GENERATED_NAME + " TEXT NOT NULL, " +
                 PartnerEntry.COLUMN_IS_ALIVE + " INTEGER DEFAULT 1, " +
-                PartnerEntry.COLUMN_IS_ARCHIVED + " INTEGER DEFAULT 0 " +
+                PartnerEntry.COLUMN_IS_ARCHIVED + " INTEGER DEFAULT 0, " +
+                PartnerEntry.COLUMN_LAST_ACTIVITY + " INTEGER DEFAULT CURRENT_TIMESTAMP " +
                 " );";
         db.execSQL(SQL_CREATE_PARTNERS_TABLE);
     }
@@ -44,9 +45,9 @@ public class ChatDbHelper extends SQLiteOpenHelper {
     private void createMessagesTable(SQLiteDatabase db) {
         final String SQL_CREATE_MESSAGES_TABLE =
                 "CREATE TABLE " + MessageEntry.TABLE_NAME + " (" +
-                MessageEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                MessageEntry._ID + " INTEGER, " +
                 MessageEntry.COLUMN_PARTNER_KEY + " INTEGER NOT NULL, " +
-                MessageEntry.COLUMN_DATETIME + " BIGINT NOT NULL, " +
+                MessageEntry.COLUMN_DATETIME + " INTEGER PRIMARY KEY DEFAULT CURRENT_TIMESTAMP, " +
                 MessageEntry.COLUMN_MESSAGE_TYPE + " TEXT NOT NULL, " +
                 MessageEntry.COLUMN_MESSAGE_DATA + " TEXT NOT NULL, " +
 
@@ -90,6 +91,24 @@ public class ChatDbHelper extends SQLiteOpenHelper {
         if (oldVersion < 6) {
             db.execSQL("ALTER TABLE " + PartnerEntry.TABLE_NAME + " ADD COLUMN " +
                        PartnerEntry.COLUMN_IS_ARCHIVED + " INTEGER DEFAULT 0");
+        }
+        if (oldVersion < 7) {
+            db.execSQL("ALTER TABLE " + PartnerEntry.TABLE_NAME + " ADD COLUMN " +
+                       PartnerEntry.COLUMN_LAST_ACTIVITY + " INTEGER DEFAULT 0;");
+            db.execSQL("ALTER TABLE " + MessageEntry.TABLE_NAME + " RENAME TO " + MessageEntry.TABLE_NAME + "_copy;");
+            createMessagesTable(db);
+            db.execSQL("INSERT INTO " + MessageEntry.TABLE_NAME + " (" +
+                       MessageEntry._ID + ", " +
+                       MessageEntry.COLUMN_PARTNER_KEY + ", " +
+                       MessageEntry.COLUMN_MESSAGE_TYPE + ", " +
+                       MessageEntry.COLUMN_MESSAGE_DATA + ") " +
+                       " SELECT " +
+                       MessageEntry._ID + ", " +
+                       MessageEntry.COLUMN_PARTNER_KEY + ", " +
+                       MessageEntry.COLUMN_MESSAGE_TYPE + ", " +
+                       MessageEntry.COLUMN_MESSAGE_DATA +
+                       " FROM " + MessageEntry.TABLE_NAME + "_copy;");
+            db.execSQL("DROP TABLE " + MessageEntry.TABLE_NAME + "_copy;");
         }
     }
 }

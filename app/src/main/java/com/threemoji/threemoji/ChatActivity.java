@@ -43,7 +43,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             ChatContract.MessageEntry.COLUMN_MESSAGE_DATA
     };
     private static final String MESSAGES_SORT_ORDER =
-            ChatContract.MessageEntry.TABLE_NAME + "." + ChatContract.MessageEntry._ID + " DESC";
+            ChatContract.MessageEntry.TABLE_NAME + "." + ChatContract.MessageEntry.COLUMN_DATETIME + " DESC";
 
     private static final String[] PARTNER_PROJECTION = new String[]{
             ChatContract.PartnerEntry.COLUMN_EMOJI_1,
@@ -172,16 +172,14 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             intent.putExtra("message", userMessage.trim());
             this.startService(intent);
 
-            Uri uri;
-            ContentValues dummyValues = new ContentValues();
-            dummyValues.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, mPartnerUuid);
-            dummyValues.put(ChatContract.MessageEntry.COLUMN_DATETIME, "124");
-            dummyValues.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
+            ContentValues values = new ContentValues();
+            values.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, mPartnerUuid);
+            values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
                             ChatContract.MessageEntry.MessageType.SENT.name());
-            dummyValues.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, userMessage.trim());
-            uri = getContentResolver().insert(
+            values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, userMessage.trim());
+            Uri uri = getContentResolver().insert(
                     ChatContract.MessageEntry.buildMessagesWithPartnerUri(mPartnerUuid),
-                    dummyValues);
+                    values);
             Log.v(TAG, uri.toString());
         }
     }

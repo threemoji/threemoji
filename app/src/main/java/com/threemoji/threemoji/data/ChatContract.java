@@ -37,6 +37,7 @@ public class ChatContract {
         public static final String COLUMN_GENERATED_NAME = "generated_name";
         public static final String COLUMN_IS_ALIVE = "is_alive";
         public static final String COLUMN_IS_ARCHIVED = "is_archived";
+        public static final String COLUMN_LAST_ACTIVITY = "last_activity";
 
         public static Uri buildPartnerUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);

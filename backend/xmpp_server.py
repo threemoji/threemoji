@@ -18,22 +18,25 @@ def message_callback(session, message):
   gcm = message.getTags('gcm')
 
   if gcm:
-    logging.info('Received GCM message')
     gcm_json = gcm[0].getData()
     msg = json.loads(gcm_json)
     msg_id = msg["message_id"]
     device_reg_id = msg["from"]
 
-    # Ignore non-standard messages (e.g. acks/nacks).
-    if not msg.has_key('message_type'):
+    if msg.has_key('message_type'):
+      logging.info('Received GCM ack: ' + msg_id)
+    else:
+      logging.info('Received GCM message: ' + msg_id)
       # Acknowledge the incoming message immediately.
       send({"to": device_reg_id,
             "message_id": msg_id,
             "message_type": "ack"})
+      logging.info('Acknowledged GCM message: ' + msg_id)
       # Handle action
       if msg.has_key('data'):
         data = msg["data"]
         if data.has_key('action'):
+          logging.info('Processing action: ' + data["action"])
           uid = data["uid"]
           password = data["password"]
           try:
@@ -48,7 +51,7 @@ def message_callback(session, message):
                            data["generated_name"], data["gender"], data["location"], data["radius"])
               elif user != 403:
                 if data["action"] == "send_message":
-                  send_message(uid, data["to"], data["message"], str(long(time.time() * 1e6)))
+                  send_message(uid, data["to"], data["message"], get_timestamp())
                 elif data["action"] == "lookup_nearby":
                   lookup_nearby(uid, user, data["radius"])
                 elif data["action"] == "lookup_profile":
@@ -161,11 +164,6 @@ def auth_user(uid, password, action):
   return user
 
 def lookup_profile(uid, user, target_uid):
-  for prop in user.property:
-    if prop.name == 'token':
-      token = prop.value.string_value
-      break
-
   target_user = auth_user(target_uid, "", "lookup")
   user_dict = {}
 
@@ -178,22 +176,19 @@ def lookup_profile(uid, user, target_uid):
   else:
     user_dict[target_uid] = "404"
 
+  token = get_token(user)
+  message_id = next_message_id(token)
   send({"to": token,
-        "message_id": next_message_id(token),
+        "message_id": message_id,
         "data": {
           "response_type": "lookup_profile",
           "body": user_dict,
-          "timestamp": str(long(time.time() * 1e6))
+          "timestamp": get_timestamp()
         }})
 
-  logging.info('Profile lookup response sent to user: ' + uid)
+  logging.info('Profile lookup response sent to user: ' + uid + ' message_id: ' + message_id)
 
 def lookup_nearby(uid, user, radius):
-  for prop in user.property:
-    if prop.name == 'token':
-      token = prop.value.string_value
-      break
-
   req = datastore.RunQueryRequest()
   query = req.query
   query.kind.add().name = 'User'
@@ -202,21 +197,25 @@ def lookup_nearby(uid, user, radius):
 
   for entity_result in resp.batch.entity_result:
     found_user = entity_result.entity
+    if found_user.key.path_element[0].name == uid:
+      continue
     data_dict = {}
     for prop in found_user.property:
       if prop.name in ['emoji_1', 'emoji_2', 'emoji_3', 'generated_name', 'gender']:
         data_dict[prop.name] = prop.value.string_value
     user_dict[found_user.key.path_element[0].name] = data_dict
 
+  token = get_token(user)
+  message_id = next_message_id(token)
   send({"to": token,
-        "message_id": next_message_id(token),
+        "message_id": message_id,
         "data": {
           "response_type": "lookup_nearby",
           "body": user_dict,
-          "timestamp": str(long(time.time() * 1e6))
+          "timestamp": get_timestamp()
         }})
 
-  logging.info('Nearby lookup response sent to user: ' + uid)
+  logging.info('Nearby lookup response sent to user: ' + uid + ' message_id: ' + message_id)
 
 def update_user(uid, user, data_dict, action):
   for prop in user.property:
@@ -238,23 +237,28 @@ def send_message(from_uid, to_uid, message, timestamp):
     logging.error('Failed to send message to user: ' + to_uid)
     return 404
 
-  for prop in user.property:
-    if prop.name == 'token':
-      token = prop.value.string_value
-      break
-
+  token = get_token(user)
+  message_id = next_message_id(token)
   send({"to": token,
-        "message_id": next_message_id(token),
+        "message_id": message_id,
         "data": {
           "from_uid": from_uid,
           "body": message,
           "timestamp": timestamp
         }})
 
-  logging.info('Message sent to user: ' + to_uid)
+  logging.info('Message sent to user: ' + to_uid + ' message_id: ' + message_id)
 
 def next_message_id(token):
   return token[-4:] + str(long(time.time() * 1e4))
+
+def get_token(user):
+  for prop in user.property:
+    if prop.name == 'token':
+      return prop.value.string_value
+
+def get_timestamp():
+  return str(long(time.time() * 1e3))
 
 client = xmpp.Client(SERVER, debug=['socket'])
 client.connect(server=(SERVER,PORT), secure=1, use_srv=False)

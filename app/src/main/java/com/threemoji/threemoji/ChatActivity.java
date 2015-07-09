@@ -69,17 +69,12 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     private String mGeneratedName;
     private boolean mIsAlive;
 
-    public enum Action {
-        NEW, DISPLAY
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
         Intent intent = getIntent();
-        Action action = Action.valueOf(intent.getStringExtra("action"));
         initFields(intent);
 
         if (mIsAlive) {
@@ -94,13 +89,26 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private void initFields(Intent intent) {
         mPartnerUuid = intent.getStringExtra("uuid");
-        mEmoji1 = intent.getStringExtra("emoji_1");
-        mEmoji2 = intent.getStringExtra("emoji_2");
-        mEmoji3 = intent.getStringExtra("emoji_3");
-        mGender = intent.getStringExtra("gender");
-        mGeneratedName = intent.getStringExtra("generated_name");
-        mIsAlive = intent.getBooleanExtra("isAlive", true);
-//        mGeneratedName = "aaaaaaaaa aaaaaaaaa";
+        Cursor cursor = getContentResolver().query(
+                ChatContract.PartnerEntry.buildPartnerByUuidUri(mPartnerUuid), PARTNER_PROJECTION,
+                null, null, null);
+
+        cursor.moveToFirst();
+        if (cursor.getCount() == 0) {
+            mEmoji1 = intent.getStringExtra("emoji_1");
+            mEmoji2 = intent.getStringExtra("emoji_2");
+            mEmoji3 = intent.getStringExtra("emoji_3");
+            mGender = intent.getStringExtra("gender");
+            mGeneratedName = intent.getStringExtra("generated_name");
+            mIsAlive = intent.getBooleanExtra("isAlive", true);
+        } else {
+            mEmoji1 = cursor.getString(0);
+            mEmoji2 = cursor.getString(1);
+            mEmoji3 = cursor.getString(2);
+            mGender = cursor.getString(3);
+            mGeneratedName = cursor.getString(4);
+            mIsAlive = cursor.getInt(5) > 0;
+        }
     }
 
     private void updatePartnerIfNeeded() {

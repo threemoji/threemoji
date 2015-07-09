@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -58,7 +59,12 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
 
         setupRecyclerView(rv);
         if (mAdapter.getItemCount() == 0){
-            getPeopleNearbyData();
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    getPeopleNearbyData();
+                }
+            }, 1000);
         }
         return rv;
     }
@@ -169,7 +175,6 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
                 public void onClick(View v) {
                     Context context = v.getContext();
                     Intent intent = new Intent(context, ChatActivity.class);
-                    intent.putExtra("action", ChatActivity.Action.NEW.name());
                     intent.putExtra("uuid", uuid);
                     intent.putExtra("emoji_1", emoji1);
                     intent.putExtra("emoji_2", emoji2);

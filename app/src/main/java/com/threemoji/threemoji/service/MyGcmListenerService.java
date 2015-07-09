@@ -2,7 +2,7 @@ package com.threemoji.threemoji.service;
 
 import com.google.android.gms.gcm.GcmListenerService;
 
-import com.threemoji.threemoji.MainActivity;
+import com.threemoji.threemoji.ChatActivity;
 import com.threemoji.threemoji.MyLifecycleHandler;
 import com.threemoji.threemoji.R;
 import com.threemoji.threemoji.data.ChatContract;
@@ -73,7 +73,7 @@ public class MyGcmListenerService extends GcmListenerService {
             String fromName = findNameFromUuid(fromUuid);
             Log.v(TAG, "From name: " + fromName);
             if (!MyLifecycleHandler.isApplicationVisible()) {
-                sendNotification(fromName, message);
+                sendNotification(fromUuid, fromName, message);
             }
             Log.d(TAG, "Message: " + message);
         }
@@ -279,18 +279,19 @@ public class MyGcmListenerService extends GcmListenerService {
      *
      * @param message GCM message received.
      */
-    private void sendNotification(String from, String message) {
-        Intent intent = new Intent(this, MainActivity.class);
+    private void sendNotification(String fromUuid, String fromName, String message) {
+        Intent intent = new Intent(this, ChatActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra("uuid", fromUuid);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                                                                 PendingIntent.FLAG_ONE_SHOT);
-        if (from.isEmpty()) {
-            from = "Message from a new partner!";
+        if (fromName.isEmpty()) {
+            fromName = "Message from a new partner!";
         }
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(from)
+                .setContentTitle(fromName)
                 .setContentText(message)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)

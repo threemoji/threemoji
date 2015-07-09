@@ -46,8 +46,8 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
             ChatContract.MessageEntry.COLUMN_MESSAGE_DATA
     };
-    private static final String MESSAGES_SORT_ORDER =
-            ChatContract.MessageEntry.TABLE_NAME + "." + ChatContract.MessageEntry.COLUMN_DATETIME + " DESC";
+    private static final String MESSAGES_SORT_ORDER = null;
+//            ChatContract.MessageEntry.TABLE_NAME + "." + ChatContract.MessageEntry._ID + " DESC";
 
     private static final String[] PARTNER_PROJECTION = new String[]{
             ChatContract.PartnerEntry.COLUMN_EMOJI_1,
@@ -156,7 +156,8 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private void setupRecyclerView(RecyclerView messagesView, Cursor cursor) {
         LinearLayoutManager layoutManager = new LinearLayoutManager(messagesView.getContext());
-        layoutManager.setReverseLayout(true);
+        layoutManager.setStackFromEnd(true);
+//        layoutManager.setReverseLayout(true);
         layoutManager.scrollToPosition(0);
 
         messagesView.setLayoutManager(layoutManager);

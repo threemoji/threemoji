@@ -28,7 +28,6 @@ public class ChatDbHelper extends SQLiteOpenHelper {
     private void createPartnersTable(SQLiteDatabase db) {
         final String SQL_CREATE_PARTNERS_TABLE =
                 "CREATE TABLE " + PartnerEntry.TABLE_NAME + " (" +
-                PartnerEntry._ID + " INTEGER, " +
                 PartnerEntry.COLUMN_UUID + " TEXT PRIMARY KEY NOT NULL, " +
                 PartnerEntry.COLUMN_EMOJI_1 + " TEXT NOT NULL, " +
                 PartnerEntry.COLUMN_EMOJI_2 + " TEXT NOT NULL, " +
@@ -45,7 +44,6 @@ public class ChatDbHelper extends SQLiteOpenHelper {
     private void createMessagesTable(SQLiteDatabase db) {
         final String SQL_CREATE_MESSAGES_TABLE =
                 "CREATE TABLE " + MessageEntry.TABLE_NAME + " (" +
-                MessageEntry._ID + " INTEGER, " +
                 MessageEntry.COLUMN_PARTNER_KEY + " INTEGER NOT NULL, " +
                 MessageEntry.COLUMN_DATETIME + " INTEGER PRIMARY KEY DEFAULT CURRENT_TIMESTAMP, " +
                 MessageEntry.COLUMN_MESSAGE_TYPE + " TEXT NOT NULL, " +
@@ -61,7 +59,6 @@ public class ChatDbHelper extends SQLiteOpenHelper {
         final String SQL_CREATE_PEOPLE_NEARBY_TABLE =
                 "CREATE TABLE " +
                 PeopleNearbyEntry.TABLE_NAME + " (" +
-                PeopleNearbyEntry._ID + " INTEGER, " +
                 PeopleNearbyEntry.COLUMN_UUID + " TEXT PRIMARY KEY NOT NULL, " +
                 PeopleNearbyEntry.COLUMN_EMOJI_1 + " TEXT NOT NULL, " +
                 PeopleNearbyEntry.COLUMN_EMOJI_2 + " TEXT NOT NULL, " +
@@ -94,7 +91,7 @@ public class ChatDbHelper extends SQLiteOpenHelper {
         }
         if (oldVersion < 7) {
             db.execSQL("ALTER TABLE " + PartnerEntry.TABLE_NAME + " ADD COLUMN " +
-                       PartnerEntry.COLUMN_LAST_ACTIVITY + " INTEGER DEFAULT 0;");
+                       PartnerEntry.COLUMN_LAST_ACTIVITY + " INTEGER DEFAULT CURRENT_TIMESTAMP;");
             db.execSQL("ALTER TABLE " + MessageEntry.TABLE_NAME + " RENAME TO " + MessageEntry.TABLE_NAME + "_copy;");
             createMessagesTable(db);
             db.execSQL("INSERT INTO " + MessageEntry.TABLE_NAME + " (" +

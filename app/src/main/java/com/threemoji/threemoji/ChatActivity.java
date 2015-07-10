@@ -253,15 +253,9 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
                     String newName = data.getString(4);
                     boolean isAlive = data.getInt(5) > 0;
 
-                    if (!newEmoji1.equals(mEmoji1) || !newEmoji2.equals(mEmoji2) ||
-                        !newEmoji3.equals(mEmoji3) || !newName.equals(mGeneratedName)) {
+                    setPartnerDetails(newEmoji1, newEmoji2, newEmoji3, newName);
 
-                        addChangedProfileAlert(newEmoji1, newEmoji2, newEmoji3, newName);
-                        setPartnerDetails(newEmoji1, newEmoji2, newEmoji3, newName);
-                    }
-
-                    if (mIsAlive && !isAlive) {
-                        addDeletedProfileAlert();
+                    if (!isAlive) {
                         mIsAlive = false;
                         disableBottomBar();
                     }
@@ -279,27 +273,6 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-    }
-
-    private void addDeletedProfileAlert() {
-        addAlertMessage(mGeneratedName + " deleted his profile. This chat will be archived.");
-    }
-
-    private void addChangedProfileAlert(String newEmoji1, String newEmoji2, String newEmoji3,
-                                        String newName) {
-        addAlertMessage(mGeneratedName + " updated his profile");
-    }
-
-    private void addAlertMessage(String message) {
-        ContentValues values = new ContentValues();
-        values.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, mPartnerUuid);
-        values.put(ChatContract.MessageEntry.COLUMN_DATETIME, System.currentTimeMillis());
-        values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
-                   ChatContract.MessageEntry.MessageType.ALERT.name());
-        values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, message);
-        Uri uri = getContentResolver().insert(
-                ChatContract.MessageEntry.buildMessagesWithPartnerUri(mPartnerUuid), values);
-        Log.v(TAG, "Added alert message: " + message + ", " + uri.toString());
     }
 
     public void showMessageTime(View view) {
@@ -367,8 +340,6 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             LinearLayout parent = (LinearLayout) wrapper.getParent();
 
             String messageType = mCursor.getString(1);
-
-            Log.v(TAG, messageType + " " + message + " " + DateUtils.getDate(mCursor.getLong(0) ));
 
             if (messageType.equals(ChatContract.MessageEntry.MessageType.SENT.name())) {
                 parent.setGravity(Gravity.RIGHT);

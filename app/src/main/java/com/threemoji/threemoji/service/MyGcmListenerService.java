@@ -97,9 +97,9 @@ public class MyGcmListenerService extends GcmListenerService {
 
             Iterator<String> people = json.keys();
             while (people.hasNext()) {
-                String uuid = people.next();
+                String uid = people.next();
                 try {
-                    JSONObject jsonPersonData = json.getJSONObject(uuid);
+                    JSONObject jsonPersonData = json.getJSONObject(uid);
                     String emoji1 = jsonPersonData.getString("emoji_1");
                     String emoji2 = jsonPersonData.getString("emoji_2");
                     String emoji3 = jsonPersonData.getString("emoji_3");
@@ -107,19 +107,30 @@ public class MyGcmListenerService extends GcmListenerService {
                     String generatedName = jsonPersonData.getString("generated_name");
 
                     ContentValues values = new ContentValues();
-                    values.put(ChatContract.PartnerEntry.COLUMN_UUID, uuid);
+                    values.put(ChatContract.PartnerEntry.COLUMN_UUID, uid);
                     values.put(ChatContract.PartnerEntry.COLUMN_EMOJI_1, emoji1);
                     values.put(ChatContract.PartnerEntry.COLUMN_EMOJI_2, emoji2);
                     values.put(ChatContract.PartnerEntry.COLUMN_EMOJI_3, emoji3);
                     values.put(ChatContract.PartnerEntry.COLUMN_GENDER, gender);
                     values.put(ChatContract.PartnerEntry.COLUMN_GENERATED_NAME, generatedName);
 
-                    if (isPersonAlreadyPartner(uuid)) {
-                        int rowsUpdated = getContentResolver().update(
-                                ChatContract.PartnerEntry.CONTENT_URI, values,
-                                ChatContract.PartnerEntry.COLUMN_UUID + " = ?",
-                                new String[]{uuid});
-                        Log.v(TAG, "Rows updated = " + rowsUpdated + ", " + generatedName);
+                    Cursor cursor = getPartnerCursor(uid);
+                    if (cursor.getCount() > 0) {
+                        cursor.moveToFirst();
+                        if (!cursor.getString(0).equals(emoji1) ||
+                            !cursor.getString(1).equals(emoji2) ||
+                            !cursor.getString(2).equals(emoji3) ||
+                            !cursor.getString(3).equals(gender) ||
+                            !cursor.getString(4).equals(generatedName)) {
+
+                            int rowsUpdated = getContentResolver().update(
+                                    ChatContract.PartnerEntry.CONTENT_URI, values,
+                                    ChatContract.PartnerEntry.COLUMN_UUID + " = ?",
+                                    new String[]{uid});
+                            Log.v(TAG, "Rows updated = " + rowsUpdated + ", " + generatedName);
+
+                            addChangedProfileAlert(uid, cursor.getString(4), generatedName);
+                        }
                     } else {
                         Uri uri = getContentResolver().insert(
                                 ChatContract.PartnerEntry.CONTENT_URI,
@@ -127,16 +138,17 @@ public class MyGcmListenerService extends GcmListenerService {
                         Log.v(TAG, uri.toString());
                     }
                 } catch (JSONException e) {
-                    String fourOFour = json.getString(uuid);
+                    String fourOFour = json.getString(uid);
                     if (fourOFour.equals("404")) {
-                        Log.v(TAG, uuid + " does not exist");
+                        Log.v(TAG, uid + " does not exist");
                         ContentValues values = new ContentValues();
                         values.put(ChatContract.PartnerEntry.COLUMN_IS_ALIVE, 0);
                         int rowsUpdated = getContentResolver().update(
                                 ChatContract.PartnerEntry.CONTENT_URI, values,
                                 ChatContract.PartnerEntry.COLUMN_UUID + " = ?",
-                                new String[]{uuid});
-                        Log.v(TAG, rowsUpdated + " rows have been updated; "+ uuid + " does not exist");
+                                new String[]{uid});
+                        Log.v(TAG, rowsUpdated + " rows have been updated; "+ uid + " does not exist");
+                        addDeletedProfileAlert(uid);
                     }
                 }
             }
@@ -144,6 +156,26 @@ public class MyGcmListenerService extends GcmListenerService {
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());
         }
+    }
+
+    private void addDeletedProfileAlert(String partnerUid) {
+        addAlertMessage(partnerUid, "Partner has left the chat");
+    }
+
+    private void addChangedProfileAlert(String partnerUid, String oldName, String newName) {
+        addAlertMessage(partnerUid, oldName + " is now " + newName);
+    }
+
+    private void addAlertMessage(String partnerUid, String message) {
+        ContentValues values = new ContentValues();
+        values.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, partnerUid);
+        values.put(ChatContract.MessageEntry.COLUMN_DATETIME, System.currentTimeMillis());
+        values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
+                   ChatContract.MessageEntry.MessageType.ALERT.name());
+        values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, message);
+        Uri uri = getContentResolver().insert(
+                ChatContract.MessageEntry.buildMessagesWithPartnerUri(partnerUid), values);
+        Log.v(TAG, "Added alert message: " + message + ", " + uri.toString());
     }
 
     private String findNameFromUuid(String fromUuid) {
@@ -217,28 +249,29 @@ public class MyGcmListenerService extends GcmListenerService {
         }
     }
 
-    private boolean personAlreadyInClientDatabase(String uuid) {
+    private boolean personAlreadyInClientDatabase(String uid) {
         Cursor cursor =
                 getContentResolver().query(ChatContract.PeopleNearbyEntry.CONTENT_URI,
                                            new String[]{
                                                    ChatContract.PeopleNearbyEntry.COLUMN_GENERATED_NAME},
                                            ChatContract.PeopleNearbyEntry.COLUMN_UUID + " = ?",
-                                           new String[]{uuid},
+                                           new String[]{uid},
                                            null);
 
         return cursor.getCount() > 0;
     }
 
-    private boolean isPersonAlreadyPartner(String uuid) {
-        Cursor cursor =
-                getContentResolver().query(ChatContract.PartnerEntry.buildPartnerByUuidUri(uuid),
-                                           new String[]{
-                                                   ChatContract.PartnerEntry.COLUMN_GENERATED_NAME},
-                                           null,
-                                           null,
-                                           null);
+    private Cursor getPartnerCursor(String uid) {
+        return getContentResolver().query(ChatContract.PartnerEntry.buildPartnerByUuidUri(uid),
+                                          new String[]{ChatContract.PartnerEntry.COLUMN_EMOJI_1,
+                                                       ChatContract.PartnerEntry.COLUMN_EMOJI_2,
+                                                       ChatContract.PartnerEntry.COLUMN_EMOJI_3,
+                                                       ChatContract.PartnerEntry.COLUMN_GENDER,
+                                                       ChatContract.PartnerEntry.COLUMN_GENERATED_NAME},
+                                          null,
+                                          null,
+                                          null);
 
-        return cursor.getCount() > 0;
     }
 
     private void storeMessage(String uuid, String timestamp, String message) {

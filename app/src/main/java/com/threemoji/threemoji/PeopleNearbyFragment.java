@@ -158,7 +158,7 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
             super.onBindViewHolder(holder, position);
-            final String uuid = mCursor.getString(0);
+            final String uid = mCursor.getString(0);
             final String emoji1 = mCursor.getString(1);
             final String emoji2 = mCursor.getString(2);
             final String emoji3 = mCursor.getString(3);
@@ -183,7 +183,7 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
                 public void onClick(View v) {
                     Context context = v.getContext();
                     Intent intent = new Intent(context, ChatActivity.class);
-                    intent.putExtra("uuid", uuid);
+                    intent.putExtra("uid", uid);
                     intent.putExtra("emoji_1", emoji1);
                     intent.putExtra("emoji_2", emoji2);
                     intent.putExtra("emoji_3", emoji3);

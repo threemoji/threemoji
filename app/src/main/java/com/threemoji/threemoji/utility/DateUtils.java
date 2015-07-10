@@ -55,6 +55,6 @@ public class DateUtils {
             return diffSeconds + " seconds ago";
         }
 
-        return "";
+        return "A few nano seconds ago";
     }
 }

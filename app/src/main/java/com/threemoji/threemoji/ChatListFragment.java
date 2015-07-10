@@ -167,7 +167,7 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
                 public void onClick(View v) {
                     Context context = v.getContext();
                     Intent intent = new Intent(context, ChatActivity.class);
-                    intent.putExtra("uuid", uuid);
+                    intent.putExtra("uid", uuid);
                     context.startActivity(intent);
 
                     Log.d(TAG, partnerName);

@@ -38,19 +38,19 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class ChatActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
-    private static final String TAG = ChatActivity.class.getSimpleName();
-    private static final int PARTNER_LOADER = 0;
-    private static final int MESSAGES_LOADER = 1;
+    public static final String TAG = ChatActivity.class.getSimpleName();
+    public static final int PARTNER_LOADER = 0;
+    public static final int MESSAGES_LOADER = 1;
 
-    private static final String[] MESSAGES_PROJECTION = new String[]{
+    public static final String[] MESSAGES_PROJECTION = new String[]{
             ChatContract.MessageEntry.COLUMN_DATETIME,
             ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
             ChatContract.MessageEntry.COLUMN_MESSAGE_DATA
     };
-    private static final String MESSAGES_SORT_ORDER =
+    public static final String MESSAGES_SORT_ORDER =
             ChatContract.MessageEntry.TABLE_NAME + "." + ChatContract.MessageEntry._ID + " DESC";
 
-    private static final String[] PARTNER_PROJECTION = new String[]{
+    public static final String[] PARTNER_PROJECTION = new String[]{
             ChatContract.PartnerEntry.COLUMN_EMOJI_1,
             ChatContract.PartnerEntry.COLUMN_EMOJI_2,
             ChatContract.PartnerEntry.COLUMN_EMOJI_3,
@@ -58,10 +58,13 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             ChatContract.PartnerEntry.COLUMN_GENERATED_NAME,
             ChatContract.PartnerEntry.COLUMN_IS_ALIVE
     };
+    public static final int FADE_IN_DURATION_MILLIS = 500;
+    public static final int FADE_OUT_DURATION_MILLIS = 500;
+    public static final int TIMESTAMP_DISPLAY_DURATION_MILLIS = 10000;
 
     private MessagesRecyclerViewAdapter mMessagesAdapter;
-    private Uri mMessagesUri;
 
+    private Uri mMessagesUri;
     private String mPartnerUid;
     private String mEmoji1;
     private String mEmoji2;
@@ -75,8 +78,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        Intent intent = getIntent();
-        initFields(intent);
+        initFields(getIntent());
 
         cancelNotifications();
 
@@ -91,26 +93,28 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void initFields(Intent intent) {
-        mPartnerUid = intent.getStringExtra("uuid");
+        mPartnerUid = intent.getStringExtra("uid");
+        mMessagesUri = ChatContract.MessageEntry.buildMessagesWithPartnerUri(mPartnerUid);
+
         Cursor cursor = getContentResolver().query(
                 ChatContract.PartnerEntry.buildPartnerByUuidUri(mPartnerUid), PARTNER_PROJECTION,
                 null, null, null);
-
         cursor.moveToFirst();
-        if (cursor.getCount() == 0) {
-            mEmoji1 = intent.getStringExtra("emoji_1");
-            mEmoji2 = intent.getStringExtra("emoji_2");
-            mEmoji3 = intent.getStringExtra("emoji_3");
-            mGender = intent.getStringExtra("gender");
-            mGeneratedName = intent.getStringExtra("generated_name");
-            mIsAlive = intent.getBooleanExtra("isAlive", true);
-        } else {
+
+        if (cursor.getCount() > 0) {
             mEmoji1 = cursor.getString(0);
             mEmoji2 = cursor.getString(1);
             mEmoji3 = cursor.getString(2);
             mGender = cursor.getString(3);
             mGeneratedName = cursor.getString(4);
             mIsAlive = cursor.getInt(5) > 0;
+        } else {
+            mEmoji1 = intent.getStringExtra("emoji_1");
+            mEmoji2 = intent.getStringExtra("emoji_2");
+            mEmoji3 = intent.getStringExtra("emoji_3");
+            mGender = intent.getStringExtra("gender");
+            mGeneratedName = intent.getStringExtra("generated_name");
+            mIsAlive = intent.getBooleanExtra("isAlive", true);
         }
     }
 
@@ -168,33 +172,28 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void initMessages() {
-        mMessagesUri = ChatContract.MessageEntry.buildMessagesWithPartnerUri(mPartnerUid);
-
-        Cursor cursor = getContentResolver().query(mMessagesUri, MESSAGES_PROJECTION, null, null,
-                                                   MESSAGES_SORT_ORDER);
-
         RecyclerView messagesView = (RecyclerView) findViewById(R.id.chat_messages);
-        if (cursor != null) {
-            setupRecyclerView(messagesView, cursor);
-        }
+        setupRecyclerView(messagesView);
 
         getSupportLoaderManager().initLoader(PARTNER_LOADER, null, this);
         getSupportLoaderManager().initLoader(MESSAGES_LOADER, null, this);
     }
 
-    private void setupRecyclerView(RecyclerView messagesView, Cursor cursor) {
+    private void setupRecyclerView(RecyclerView messagesView) {
+        Cursor cursor = getContentResolver().query(mMessagesUri, MESSAGES_PROJECTION, null, null,
+                                                   MESSAGES_SORT_ORDER);
+
         LinearLayoutManager layoutManager = new LinearLayoutManager(messagesView.getContext());
-//        layoutManager.setStackFromEnd(true);
         layoutManager.setReverseLayout(true);
         layoutManager.scrollToPosition(0);
-
         messagesView.setLayoutManager(layoutManager);
+
         mMessagesAdapter = new MessagesRecyclerViewAdapter(this, cursor);
         messagesView.setAdapter(mMessagesAdapter);
     }
 
     public void sendMessage(View view) {
-        Log.v(TAG, "Send message button was pressed");
+        Log.d(TAG, "Send message button was pressed");
         EditText editText = (EditText) findViewById(R.id.user_message);
         String userMessage = editText.getText().toString();
         editText.setText("");
@@ -203,7 +202,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             Intent intent = new Intent(this, ChatIntentService.class);
             intent.putExtra("uid", mPartnerUid);
             intent.putExtra("message", userMessage.trim());
-            this.startService(intent);
+            startService(intent);
 
             long currentTime = System.currentTimeMillis();
 
@@ -213,18 +212,52 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
                        ChatContract.MessageEntry.MessageType.SENT.name());
             values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, userMessage.trim());
+
             Uri uri = getContentResolver().insert(
                     ChatContract.MessageEntry.buildMessagesWithPartnerUri(mPartnerUid),
                     values);
-            Log.v(TAG, uri.toString());
+            Log.d(TAG, "Added message: " + uri.toString());
 
             values = new ContentValues();
             values.put(ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY, currentTime);
-            int rowsUpdated = getContentResolver().update(
+            getContentResolver().update(
                     ChatContract.PartnerEntry.buildPartnerByUuidUri(mPartnerUid), values, null,
                     null);
-
         }
+    }
+
+    public void showMessageTime(View view) {
+        final TextView messageTime = (TextView) view.findViewById(R.id.messageTime);
+
+        AlphaAnimation fadeIn = new AlphaAnimation(0.0f, 1.0f);
+        fadeIn.setDuration(FADE_IN_DURATION_MILLIS);
+
+        final AlphaAnimation fadeOut = new AlphaAnimation(1.0f, 0.0f);
+        fadeOut.setDuration(FADE_OUT_DURATION_MILLIS);
+        fadeOut.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                messageTime.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+            }
+        });
+
+        messageTime.setVisibility(View.VISIBLE);
+        messageTime.startAnimation(fadeIn);
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                messageTime.startAnimation(fadeOut);
+            }
+        }, TIMESTAMP_DISPLAY_DURATION_MILLIS);
     }
 
     @Override
@@ -275,39 +308,6 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onLoaderReset(Loader<Cursor> loader) {
     }
 
-    public void showMessageTime(View view) {
-        final TextView messageTime = (TextView) view.findViewById(R.id.messageTime);
-
-        AlphaAnimation fadeIn = new AlphaAnimation(0.0f, 1.0f);
-        fadeIn.setDuration(500);
-
-        final AlphaAnimation fadeOut = new AlphaAnimation(1.0f, 0.0f);
-        fadeOut.setDuration(500);
-        fadeOut.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                messageTime.setVisibility(View.GONE);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-            }
-        });
-
-        messageTime.setVisibility(View.VISIBLE);
-        messageTime.startAnimation(fadeIn);
-
-        new Handler().postDelayed(new Runnable() {
-                                      @Override
-                                      public void run() {
-                                          messageTime.startAnimation(fadeOut);
-                                      }
-                                  }, 10000);
-    }
 
     public static class MessagesRecyclerViewAdapter
             extends RecyclerViewCursorAdapter<MessagesRecyclerViewAdapter.ViewHolder> {

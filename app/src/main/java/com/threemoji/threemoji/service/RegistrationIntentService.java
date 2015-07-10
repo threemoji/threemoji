@@ -165,7 +165,7 @@ public class RegistrationIntentService extends IntentService {
     // Methods that modify local preferences
     // ================================================================
     private void initUid() {
-        Log.v(TAG, "Initialising uuid");
+        Log.v(TAG, "Initialising uid");
         String uid = getPrefs().getString(getString(R.string.profile_uid_key), null);
         if (uid == null) {
             getPrefs().edit()

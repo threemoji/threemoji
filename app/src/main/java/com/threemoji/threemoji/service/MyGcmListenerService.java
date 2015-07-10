@@ -50,11 +50,11 @@ public class MyGcmListenerService extends GcmListenerService {
         String responseType = data.getString("response_type");
 
         if (responseType != null) {
-            if (responseType.equals("lookup_profile")) {
+            if (responseType.equals(getString(R.string.backend_action_lookup_profile_key))) {
                 Log.d(TAG, "Profile lookup response: " + data.getString("body"));
                 addPartnerToDb(data.getString("body"));
 
-            } else if (responseType.equals("lookup_nearby")) {
+            } else if (responseType.equals(getString(R.string.backend_action_lookup_nearby_key))) {
                 Log.d(TAG, "Nearby lookup response: " + data.getString("body"));
                 storePeopleNearbyData(data.getString("body"));
             }
@@ -63,7 +63,7 @@ public class MyGcmListenerService extends GcmListenerService {
             String fromUid = data.getString("from_uid");
             String timestamp = data.getString("timestamp");
 
-            String fromName = findNameFromUuid(fromUid);
+            String fromName = findNameFromUid(fromUid);
 
             Log.d(TAG, "From uid: " + fromUid);
             Log.d(TAG, "From name: " + fromName);
@@ -141,6 +141,12 @@ public class MyGcmListenerService extends GcmListenerService {
                                 ChatContract.PartnerEntry.CONTENT_URI,
                                 values);
                         Log.d(TAG, "Added partner: " + uri.toString());
+
+                        // update last activity
+                        values = new ContentValues();
+                        values.put(ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY, System.currentTimeMillis());
+                        getContentResolver().update(
+                                ChatContract.PartnerEntry.buildPartnerByUidUri(uid), values, null, null);
                     }
                 } catch (JSONException e) { // no such person exists on the server
                     if (json.getString(uid).equals("404")) {
@@ -254,13 +260,13 @@ public class MyGcmListenerService extends GcmListenerService {
                 ChatContract.PartnerEntry.buildPartnerByUidUri(uid), values, null, null);
     }
 
-    private String findNameFromUuid(String uid) {
+    private String findNameFromUid(String uid) {
         Cursor cursor = getPartnerCursor(uid, PARTNER_PROJECTION_GENERATED_NAME);
         try {
             cursor.moveToNext();
-            String uuid = cursor.getString(0);
+            String name = cursor.getString(0);
             cursor.close();
-            return uuid;
+            return name;
         } catch (NullPointerException | CursorIndexOutOfBoundsException e) {
             return "";
         }
@@ -298,9 +304,9 @@ public class MyGcmListenerService extends GcmListenerService {
                                    notificationBuilder.build());
     }
 
-    private int getIntIDFromUid(String fromUuid) {
+    private int getIntIDFromUid(String uid) {
         int result = 0;
-        for (char c : fromUuid.toCharArray()) {
+        for (char c : uid.toCharArray()) {
             int num = Character.getNumericValue(c);
             if (num >= 0) {
                 result += num;

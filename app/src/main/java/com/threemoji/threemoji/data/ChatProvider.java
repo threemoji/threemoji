@@ -66,7 +66,7 @@ public class ChatProvider extends ContentProvider {
                                                       sortOrder);
     }
 
-    private Cursor getPartnerByUuid(Uri uri, String[] projection, String sortOrder) {
+    private Cursor getPartnerByUid(Uri uri, String[] projection, String sortOrder) {
         String[] selectionArgs =
                 new String[]{uri.getPathSegments().get(1)};
         String selection =
@@ -107,7 +107,7 @@ public class ChatProvider extends ContentProvider {
                 );
                 break;
             case PARTNER:
-                returnCursor = getPartnerByUuid(uri, projection, sortOrder);
+                returnCursor = getPartnerByUid(uri, projection, sortOrder);
                 break;
             case PEOPLE_NEARBY:
                 returnCursor = mChatDbHelper.getReadableDatabase().query(

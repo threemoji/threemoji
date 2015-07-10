@@ -50,7 +50,7 @@ public class ChatIntentService extends IntentService {
                 Log.e(TAG, "IOException while sending request...", e);
             }
         } else if (action != null && Action.valueOf(action) == Action.LOOKUP_UID) {
-            String targetUid = intent.getStringExtra("uuid");
+            String targetUid = intent.getStringExtra("uid");
             try {
                 Bundle data = new Bundle();
                 data.putString("action", getString(R.string.backend_action_lookup_profile_key));

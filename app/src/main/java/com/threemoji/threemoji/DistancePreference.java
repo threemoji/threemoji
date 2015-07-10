@@ -38,6 +38,7 @@ public class DistancePreference extends Preference {
 
     @Override
     protected View onCreateView(ViewGroup parent) {
+        super.onCreateView(parent);
         LayoutInflater li = (LayoutInflater) getContext().getSystemService(
                 Context.LAYOUT_INFLATER_SERVICE);
         View view = li.inflate(R.layout.preference_seekbar, parent, false);

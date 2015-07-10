@@ -1,5 +1,7 @@
 package com.threemoji.threemoji;
 
+import com.google.android.gms.gcm.GoogleCloudMessaging;
+
 import android.app.ActivityManager;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -8,9 +10,6 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-
-import com.google.android.gms.gcm.GoogleCloudMessaging;
-import com.threemoji.threemoji.service.RegistrationIntentService;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +26,7 @@ public class ClearDataActivity extends AppCompatActivity {
     }
 
     public void clearAppData(View view) {
-        Log.v(TAG, "Deleting profile on server");
+        Log.d(TAG, "Deleting profile on server");
         GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String token = prefs.getString(getString(R.string.pref_token_key), "");

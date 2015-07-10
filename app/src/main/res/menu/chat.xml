@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_mute_chat"
+        android:title="@string/chat_option_mute"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_archive_chat"
+        android:title="@string/chat_option_archive"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_block_chat"
+        android:title="@string/chat_option_block"
+        app:showAsAction="never" />
+</menu>

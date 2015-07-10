@@ -92,6 +92,26 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         initMessages();
     }
 
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        getMenuInflater().inflate(R.menu.chat, menu);
+//        return true;
+//    }
+//
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        int id = item.getItemId();
+//        switch (id) {
+//            case R.id.action_mute_chat:
+//                break;
+//            case R.id.action_archive_chat:
+//                break;
+//            case R.id.action_block_chat:
+//                break;
+//        }
+//        return super.onOptionsItemSelected(item);
+//    }
+
     private void initFields(Intent intent) {
         mPartnerUid = intent.getStringExtra("uid");
         mMessagesUri = ChatContract.MessageEntry.buildMessagesByUidUri(mPartnerUid);

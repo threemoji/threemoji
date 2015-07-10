@@ -90,4 +90,8 @@
 
     <string name="title_activity_clear_data">ClearDataActivity</string>
 
+    <string name="chat_option_mute">Mute</string>
+    <string name="chat_option_archive">Archive</string>
+    <string name="chat_option_block">Block</string>
+
 </resources>

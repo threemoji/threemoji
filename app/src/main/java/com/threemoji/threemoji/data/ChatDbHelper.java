@@ -28,7 +28,7 @@ public class ChatDbHelper extends SQLiteOpenHelper {
     private void createPartnersTable(SQLiteDatabase db) {
         final String SQL_CREATE_PARTNERS_TABLE =
                 "CREATE TABLE " + PartnerEntry.TABLE_NAME + " (" +
-                PartnerEntry.COLUMN_UUID + " TEXT PRIMARY KEY NOT NULL, " +
+                PartnerEntry.COLUMN_UID + " TEXT PRIMARY KEY NOT NULL, " +
                 PartnerEntry.COLUMN_EMOJI_1 + " TEXT NOT NULL, " +
                 PartnerEntry.COLUMN_EMOJI_2 + " TEXT NOT NULL, " +
                 PartnerEntry.COLUMN_EMOJI_3 + " TEXT NOT NULL, " +
@@ -51,7 +51,7 @@ public class ChatDbHelper extends SQLiteOpenHelper {
                 MessageEntry.COLUMN_MESSAGE_DATA + " TEXT NOT NULL, " +
 
                 " FOREIGN KEY (" + MessageEntry.COLUMN_PARTNER_KEY + ") REFERENCES " +
-                PartnerEntry.TABLE_NAME + " (" + PartnerEntry.COLUMN_UUID + ") " +
+                PartnerEntry.TABLE_NAME + " (" + PartnerEntry.COLUMN_UID + ") " +
                 " );";
         db.execSQL(SQL_CREATE_MESSAGES_TABLE);
     }
@@ -60,7 +60,7 @@ public class ChatDbHelper extends SQLiteOpenHelper {
         final String SQL_CREATE_PEOPLE_NEARBY_TABLE =
                 "CREATE TABLE " +
                 PeopleNearbyEntry.TABLE_NAME + " (" +
-                PeopleNearbyEntry.COLUMN_UUID + " TEXT PRIMARY KEY NOT NULL, " +
+                PeopleNearbyEntry.COLUMN_UID + " TEXT PRIMARY KEY NOT NULL, " +
                 PeopleNearbyEntry.COLUMN_EMOJI_1 + " TEXT NOT NULL, " +
                 PeopleNearbyEntry.COLUMN_EMOJI_2 + " TEXT NOT NULL, " +
                 PeopleNearbyEntry.COLUMN_EMOJI_3 + " TEXT NOT NULL, " +

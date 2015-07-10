@@ -94,10 +94,10 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private void initFields(Intent intent) {
         mPartnerUid = intent.getStringExtra("uid");
-        mMessagesUri = ChatContract.MessageEntry.buildMessagesWithPartnerUri(mPartnerUid);
+        mMessagesUri = ChatContract.MessageEntry.buildMessagesByUidUri(mPartnerUid);
 
         Cursor cursor = getContentResolver().query(
-                ChatContract.PartnerEntry.buildPartnerByUuidUri(mPartnerUid), PARTNER_PROJECTION,
+                ChatContract.PartnerEntry.buildPartnerByUidUri(mPartnerUid), PARTNER_PROJECTION,
                 null, null, null);
         cursor.moveToFirst();
 
@@ -214,14 +214,14 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, userMessage.trim());
 
             Uri uri = getContentResolver().insert(
-                    ChatContract.MessageEntry.buildMessagesWithPartnerUri(mPartnerUid),
+                    ChatContract.MessageEntry.buildMessagesByUidUri(mPartnerUid),
                     values);
             Log.d(TAG, "Added message: " + uri.toString());
 
             values = new ContentValues();
             values.put(ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY, currentTime);
             getContentResolver().update(
-                    ChatContract.PartnerEntry.buildPartnerByUuidUri(mPartnerUid), values, null,
+                    ChatContract.PartnerEntry.buildPartnerByUidUri(mPartnerUid), values, null,
                     null);
         }
     }
@@ -264,7 +264,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         switch (id) {
             case PARTNER_LOADER:
-                return new CursorLoader(this, ChatContract.PartnerEntry.buildPartnerByUuidUri(
+                return new CursorLoader(this, ChatContract.PartnerEntry.buildPartnerByUidUri(
                         mPartnerUid), PARTNER_PROJECTION, null, null, null);
             case MESSAGES_LOADER:
                 return new CursorLoader(this, mMessagesUri, MESSAGES_PROJECTION, null, null,

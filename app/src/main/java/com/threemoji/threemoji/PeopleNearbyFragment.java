@@ -33,7 +33,7 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
     private SwipeRefreshLayout mSwipeRefreshLayout;
 
     private final String[] PEOPLE_NEARBY_ITEM_PROJECTION = new String[]{
-            ChatContract.PeopleNearbyEntry.COLUMN_UUID,
+            ChatContract.PeopleNearbyEntry.COLUMN_UID,
             ChatContract.PeopleNearbyEntry.COLUMN_EMOJI_1,
             ChatContract.PeopleNearbyEntry.COLUMN_EMOJI_2,
             ChatContract.PeopleNearbyEntry.COLUMN_EMOJI_3,

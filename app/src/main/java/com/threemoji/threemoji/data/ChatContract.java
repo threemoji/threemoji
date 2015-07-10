@@ -29,7 +29,7 @@ public class ChatContract {
 
         public static final String TABLE_NAME = "partners";
 
-        public static final String COLUMN_UUID = "uuid";
+        public static final String COLUMN_UID = "uid";
         public static final String COLUMN_EMOJI_1 = "emoji_1";
         public static final String COLUMN_EMOJI_2 = "emoji_2";
         public static final String COLUMN_EMOJI_3 = "emoji_3";
@@ -43,7 +43,7 @@ public class ChatContract {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
-        public static Uri buildPartnerByUuidUri(String uuid) {
+        public static Uri buildPartnerByUidUri(String uuid) {
             return CONTENT_URI.buildUpon().appendPath(uuid).build();
         }
     }
@@ -76,8 +76,8 @@ public class ChatContract {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
-        public static Uri buildMessagesWithPartnerUri(String uuid) {
-            return CONTENT_URI.buildUpon().appendPath(uuid).build();
+        public static Uri buildMessagesByUidUri(String uid) {
+            return CONTENT_URI.buildUpon().appendPath(uid).build();
         }
     }
 
@@ -96,7 +96,7 @@ public class ChatContract {
 
         public static final String TABLE_NAME = "people";
 
-        public static final String COLUMN_UUID = "uuid";
+        public static final String COLUMN_UID = "uid";
         public static final String COLUMN_EMOJI_1 = "emoji_1";
         public static final String COLUMN_EMOJI_2 = "emoji_2";
         public static final String COLUMN_EMOJI_3 = "emoji_3";

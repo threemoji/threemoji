@@ -25,7 +25,6 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import java.util.Iterator;
-import java.util.Random;
 
 public class MyGcmListenerService extends GcmListenerService {
     public static final String TAG = MyGcmListenerService.class.getSimpleName();
@@ -116,7 +115,7 @@ public class MyGcmListenerService extends GcmListenerService {
                     String generatedName = jsonPersonData.getString("generated_name");
 
                     ContentValues values = new ContentValues();
-                    values.put(ChatContract.PartnerEntry.COLUMN_UUID, uid);
+                    values.put(ChatContract.PartnerEntry.COLUMN_UID, uid);
                     values.put(ChatContract.PartnerEntry.COLUMN_EMOJI_1, emoji1);
                     values.put(ChatContract.PartnerEntry.COLUMN_EMOJI_2, emoji2);
                     values.put(ChatContract.PartnerEntry.COLUMN_EMOJI_3, emoji3);
@@ -162,7 +161,7 @@ public class MyGcmListenerService extends GcmListenerService {
     }
 
     private Cursor getPartnerCursor(String uid, String[] projection) {
-        return getContentResolver().query(ChatContract.PartnerEntry.buildPartnerByUuidUri(uid),
+        return getContentResolver().query(ChatContract.PartnerEntry.buildPartnerByUidUri(uid),
                                           projection,
                                           null,
                                           null,
@@ -173,7 +172,7 @@ public class MyGcmListenerService extends GcmListenerService {
     private int updatePartnerEntry(String uid, ContentValues values) {
         return getContentResolver().update(
                 ChatContract.PartnerEntry.CONTENT_URI, values,
-                ChatContract.PartnerEntry.COLUMN_UUID + " = ?",
+                ChatContract.PartnerEntry.COLUMN_UID + " = ?",
                 new String[]{uid});
     }
 
@@ -194,7 +193,7 @@ public class MyGcmListenerService extends GcmListenerService {
         values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, message);
 
         Uri uri = getContentResolver().insert(
-                ChatContract.MessageEntry.buildMessagesWithPartnerUri(partnerUid), values);
+                ChatContract.MessageEntry.buildMessagesByUidUri(partnerUid), values);
         Log.d(TAG, "Added alert message: " + message + ", " + uri.toString());
     }
 
@@ -218,7 +217,7 @@ public class MyGcmListenerService extends GcmListenerService {
                 String generatedName = jsonPersonData.getString("generated_name");
 
                 ContentValues values = new ContentValues();
-                values.put(ChatContract.PeopleNearbyEntry.COLUMN_UUID, uid);
+                values.put(ChatContract.PeopleNearbyEntry.COLUMN_UID, uid);
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_EMOJI_1, emoji1);
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_EMOJI_2, emoji2);
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_EMOJI_3, emoji3);
@@ -237,22 +236,22 @@ public class MyGcmListenerService extends GcmListenerService {
         }
     }
 
-    private void storeMessage(String uuid, String timestamp, String message) {
+    private void storeMessage(String uid, String timestamp, String message) {
         ContentValues values = new ContentValues();
-        values.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, uuid);
+        values.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, uid);
         values.put(ChatContract.MessageEntry.COLUMN_DATETIME, timestamp);
         values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
                    ChatContract.MessageEntry.MessageType.RECEIVED.name());
         values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, message);
         Uri uri = getContentResolver().insert(
-                ChatContract.MessageEntry.buildMessagesWithPartnerUri(uuid), values);
+                ChatContract.MessageEntry.buildMessagesByUidUri(uid), values);
         Log.d(TAG, "Added message: " + uri.toString());
 
         // update last activity
         values = new ContentValues();
         values.put(ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY, timestamp);
         getContentResolver().update(
-                ChatContract.PartnerEntry.buildPartnerByUuidUri(uuid), values, null, null);
+                ChatContract.PartnerEntry.buildPartnerByUidUri(uid), values, null, null);
     }
 
     private String findNameFromUuid(String uid) {
@@ -272,10 +271,10 @@ public class MyGcmListenerService extends GcmListenerService {
      *
      * @param message GCM message received.
      */
-    private void sendNotification(String fromUuid, String fromName, String message) {
+    private void sendNotification(String fromUid, String fromName, String message) {
         Intent intent = new Intent(this, ChatActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.putExtra("uuid", fromUuid);
+        intent.putExtra("uid", fromUid);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                                                                 PendingIntent.FLAG_ONE_SHOT);
         if (fromName.isEmpty()) {
@@ -295,8 +294,7 @@ public class MyGcmListenerService extends GcmListenerService {
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        Random rand = new Random();
-        notificationManager.notify(getIntIDFromUid(fromUuid) /* ID of notification */,
+        notificationManager.notify(getIntIDFromUid(fromUid) /* ID of notification */,
                                    notificationBuilder.build());
     }
 

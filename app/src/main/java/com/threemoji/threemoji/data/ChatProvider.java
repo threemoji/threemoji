@@ -28,14 +28,14 @@ public class ChatProvider extends ContentProvider {
     static {
         sMessagesWithPartnerQueryBuilder = new SQLiteQueryBuilder();
 
-        // messages INNER JOIN partners ON messages.partner_id = partners.uuid
+        // messages INNER JOIN partners ON messages.partner_id = partners.uid
         sMessagesWithPartnerQueryBuilder.setTables(
                 MessageEntry.TABLE_NAME + " INNER JOIN " +
                 PartnerEntry.TABLE_NAME + " ON " +
                 MessageEntry.TABLE_NAME + "." +
                 MessageEntry.COLUMN_PARTNER_KEY + " = " +
                 PartnerEntry.TABLE_NAME + "." +
-                PartnerEntry.COLUMN_UUID
+                PartnerEntry.COLUMN_UID
         );
     }
 
@@ -55,7 +55,7 @@ public class ChatProvider extends ContentProvider {
         String[] selectionArgs =
                 new String[]{uri.getPathSegments().get(1)};
         String selection =
-                PartnerEntry.TABLE_NAME + "." + PartnerEntry.COLUMN_UUID + " = ? ";
+                PartnerEntry.TABLE_NAME + "." + PartnerEntry.COLUMN_UID + " = ? ";
 
         return sMessagesWithPartnerQueryBuilder.query(mChatDbHelper.getReadableDatabase(),
                                                       projection,
@@ -70,7 +70,7 @@ public class ChatProvider extends ContentProvider {
         String[] selectionArgs =
                 new String[]{uri.getPathSegments().get(1)};
         String selection =
-                PartnerEntry.TABLE_NAME + "." + PartnerEntry.COLUMN_UUID + " = ? ";
+                PartnerEntry.TABLE_NAME + "." + PartnerEntry.COLUMN_UID + " = ? ";
 
         return mChatDbHelper.getReadableDatabase().query(PartnerEntry.TABLE_NAME,
                                                          projection,
@@ -229,7 +229,7 @@ public class ChatProvider extends ContentProvider {
             case PARTNER:
                 rowsUpdated = db.update(PartnerEntry.TABLE_NAME,
                                         values,
-                                        PartnerEntry.TABLE_NAME + "." + PartnerEntry.COLUMN_UUID +
+                                        PartnerEntry.TABLE_NAME + "." + PartnerEntry.COLUMN_UID +
                                         " = ? ",
                                         new String[]{uri.getPathSegments().get(1)});
                 break;

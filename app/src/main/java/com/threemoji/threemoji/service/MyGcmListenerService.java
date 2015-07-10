@@ -63,7 +63,9 @@ public class MyGcmListenerService extends GcmListenerService {
 
             Log.v(TAG, "From uuid: " + fromUuid);
 
-            if (findNameFromUuid(fromUuid).equals("")) {
+            String fromName = findNameFromUuid(fromUuid);
+            Log.v(TAG, "From name: " + fromName);
+            if (fromName.equals("")) {
                 Intent intent = new Intent(this, ChatIntentService.class);
                 intent.putExtra("action", ChatIntentService.Action.LOOKUP_UUID.name());
                 intent.putExtra("uuid", fromUuid);
@@ -71,8 +73,7 @@ public class MyGcmListenerService extends GcmListenerService {
             }
 
             storeMessage(fromUuid, timestamp, message);
-            String fromName = findNameFromUuid(fromUuid);
-            Log.v(TAG, "From name: " + fromName);
+
             if (!MyLifecycleHandler.isApplicationVisible()) {
                 sendNotification(fromUuid, fromName, message);
             }
@@ -304,7 +305,18 @@ public class MyGcmListenerService extends GcmListenerService {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         Random rand = new Random();
-        notificationManager.notify(rand.nextInt() /* ID of notification */,
+        notificationManager.notify(getIntIDFromUid(fromUuid) /* ID of notification */,
                                    notificationBuilder.build());
+    }
+
+    private int getIntIDFromUid(String fromUuid) {
+        int result = 0;
+        for (char c : fromUuid.toCharArray()) {
+            int num = Character.getNumericValue(c);
+            if (num >= 0) {
+                result += num;
+            }
+        }
+        return result;
     }
 }

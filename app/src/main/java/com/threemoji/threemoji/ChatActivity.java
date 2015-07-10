@@ -62,7 +62,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     private MessagesRecyclerViewAdapter mMessagesAdapter;
     private Uri mMessagesUri;
 
-    private String mPartnerUuid;
+    private String mPartnerUid;
     private String mEmoji1;
     private String mEmoji2;
     private String mEmoji3;
@@ -91,9 +91,9 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void initFields(Intent intent) {
-        mPartnerUuid = intent.getStringExtra("uuid");
+        mPartnerUid = intent.getStringExtra("uuid");
         Cursor cursor = getContentResolver().query(
-                ChatContract.PartnerEntry.buildPartnerByUuidUri(mPartnerUuid), PARTNER_PROJECTION,
+                ChatContract.PartnerEntry.buildPartnerByUuidUri(mPartnerUid), PARTNER_PROJECTION,
                 null, null, null);
 
         cursor.moveToFirst();
@@ -117,7 +117,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     private void cancelNotifications() {
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.cancel(getIntIDFromUid(mPartnerUuid));
+        notificationManager.cancel(getIntIDFromUid(mPartnerUid));
     }
 
     private int getIntIDFromUid(String fromUuid) {
@@ -134,7 +134,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     private void updatePartnerIfNeeded() {
         Intent intent = new Intent(this, ChatIntentService.class);
         intent.putExtra("action", ChatIntentService.Action.LOOKUP_UID.name());
-        intent.putExtra("uuid", mPartnerUuid);
+        intent.putExtra("uid", mPartnerUid);
         startService(intent);
     }
 
@@ -168,7 +168,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void initMessages() {
-        mMessagesUri = ChatContract.MessageEntry.buildMessagesWithPartnerUri(mPartnerUuid);
+        mMessagesUri = ChatContract.MessageEntry.buildMessagesWithPartnerUri(mPartnerUid);
 
         Cursor cursor = getContentResolver().query(mMessagesUri, MESSAGES_PROJECTION, null, null,
                                                    MESSAGES_SORT_ORDER);
@@ -201,27 +201,27 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
 
         if (userMessage.trim().length() > 0) {
             Intent intent = new Intent(this, ChatIntentService.class);
-            intent.putExtra("uuid", mPartnerUuid);
+            intent.putExtra("uid", mPartnerUid);
             intent.putExtra("message", userMessage.trim());
             this.startService(intent);
 
             long currentTime = System.currentTimeMillis();
 
             ContentValues values = new ContentValues();
-            values.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, mPartnerUuid);
+            values.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, mPartnerUid);
             values.put(ChatContract.MessageEntry.COLUMN_DATETIME, currentTime);
             values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
                        ChatContract.MessageEntry.MessageType.SENT.name());
             values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, userMessage.trim());
             Uri uri = getContentResolver().insert(
-                    ChatContract.MessageEntry.buildMessagesWithPartnerUri(mPartnerUuid),
+                    ChatContract.MessageEntry.buildMessagesWithPartnerUri(mPartnerUid),
                     values);
             Log.v(TAG, uri.toString());
 
             values = new ContentValues();
             values.put(ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY, currentTime);
             int rowsUpdated = getContentResolver().update(
-                    ChatContract.PartnerEntry.buildPartnerByUuidUri(mPartnerUuid), values, null,
+                    ChatContract.PartnerEntry.buildPartnerByUuidUri(mPartnerUid), values, null,
                     null);
 
         }
@@ -232,7 +232,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         switch (id) {
             case PARTNER_LOADER:
                 return new CursorLoader(this, ChatContract.PartnerEntry.buildPartnerByUuidUri(
-                        mPartnerUuid), PARTNER_PROJECTION, null, null, null);
+                        mPartnerUid), PARTNER_PROJECTION, null, null, null);
             case MESSAGES_LOADER:
                 return new CursorLoader(this, mMessagesUri, MESSAGES_PROJECTION, null, null,
                                         MESSAGES_SORT_ORDER);

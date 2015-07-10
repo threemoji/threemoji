@@ -15,8 +15,8 @@ import java.io.IOException;
 
 public class ChatIntentService extends IntentService {
 
-    private static final String TAG = ChatIntentService.class.getSimpleName();
-    private static final int TIME_TO_LIVE_SECONDS = 60 * 60; // one hour
+    public static final String TAG = ChatIntentService.class.getSimpleName();
+    public static final int TIME_TO_LIVE_SECONDS = 60 * 60; // one hour
 
     private GoogleCloudMessaging mGcm;
 
@@ -31,18 +31,21 @@ public class ChatIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         mGcm = GoogleCloudMessaging.getInstance(this);
-        Log.v(TAG, "intent string: " + intent.toString());
+        Log.d(TAG, "Intent string: " + intent.toString());
         String action = intent.getStringExtra("action");
+
         if (action != null && Action.valueOf(action) == Action.LOOKUP_ALL) {
             try {
                 Bundle data = new Bundle();
                 data.putString("action", getString(R.string.backend_action_lookup_nearby_key));
                 data.putString(getString(R.string.backend_uid_key), getPrefs().getString(getString(R.string.profile_uid_key), ""));
                 data.putString(getString(R.string.backend_password_key), getPrefs().getString(getString(R.string.profile_password_key), ""));
+
                 data.putString(getString(R.string.backend_radius_key), "123");
+
                 String msgId = getNextMsgId(getPrefs().getString(getString(R.string.pref_token_key), ""));
                 sendData(data, msgId);
-                Log.v(TAG, "nearby lookup request sent");
+                Log.d(TAG, "Nearby lookup request sent");
             } catch (IOException e) {
                 Log.e(TAG, "IOException while sending request...", e);
             }
@@ -53,29 +56,33 @@ public class ChatIntentService extends IntentService {
                 data.putString("action", getString(R.string.backend_action_lookup_profile_key));
                 data.putString(getString(R.string.backend_uid_key), getPrefs().getString(getString(R.string.profile_uid_key), ""));
                 data.putString(getString(R.string.backend_password_key), getPrefs().getString(getString(R.string.profile_password_key), ""));
+
                 data.putString(getString(R.string.backend_profile_key), targetUid);
+
                 String msgId = getNextMsgId(getPrefs().getString(getString(R.string.pref_token_key), ""));
                 sendData(data, msgId);
-                Log.v(TAG, "profile lookup request sent for target user: " + targetUid);
+                Log.d(TAG, "Profile lookup request sent for target user: " + targetUid);
             } catch (IOException e) {
                 Log.e(TAG, "IOException while sending request...", e);
             }
         } else {
-            sendMessage(intent.getStringExtra("uuid"), intent.getStringExtra("message"));
+            sendMessage(intent.getStringExtra("uid"), intent.getStringExtra("message"));
         }
     }
 
-    private void sendMessage(String to_uid, String message) {
+    private void sendMessage(String toUid, String message) {
         try {
             Bundle data = new Bundle();
             data.putString("action", getString(R.string.backend_action_send_message_key));
             data.putString(getString(R.string.backend_uid_key), getPrefs().getString(getString(R.string.profile_uid_key), ""));
             data.putString(getString(R.string.backend_password_key), getPrefs().getString(getString(R.string.profile_password_key), ""));
-            data.putString(getString(R.string.backend_to_key), to_uid);
+
+            data.putString(getString(R.string.backend_to_key), toUid);
             data.putString(getString(R.string.backend_message_key), message);
+
             String msgId = getNextMsgId(getPrefs().getString(getString(R.string.pref_token_key), ""));
             sendData(data, msgId);
-            Log.v(TAG, "message sent to user: " + to_uid);
+            Log.d(TAG, "Message sent to user: " + toUid);
         } catch (IOException e) {
             Log.e(TAG, "IOException while sending message...", e);
         }

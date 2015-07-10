@@ -1,6 +1,7 @@
 #/usr/bin/python
 import sys, json, xmpp, os, logging, time
 import googledatastore as datastore
+import traceback
 
 SERVER = 'gcm.googleapis.com'
 PORT = 5236 # change to 5235 for production
@@ -173,12 +174,14 @@ def lookup_profile(uid, message_id, user, target_uid):
   user_dict = {}
 
   if target_user != 404:
+    logging.info("Target user exists")
     data_dict = {}
     for prop in target_user.property:
       if prop.name in ['emoji_1', 'emoji_2', 'emoji_3', 'generated_name', 'gender']:
         data_dict[prop.name] = prop.value.string_value
     user_dict[target_uid] = data_dict
   else:
+    logging.info("Target user does not exist")
     user_dict[target_uid] = "404"
 
   token = get_token(user)
@@ -278,6 +281,5 @@ while True:
   try:
     client.Process(1)
   except Exception as e:
-    print e.__doc__
-    print e.message
+    traceback.print_exc()
     break

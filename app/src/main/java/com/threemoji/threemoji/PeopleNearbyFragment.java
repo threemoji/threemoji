@@ -27,7 +27,7 @@ import android.widget.Toast;
 
 public class PeopleNearbyFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener {
 
-    private static final String TAG = PeopleNearbyFragment.class.getSimpleName();
+    public static final String TAG = PeopleNearbyFragment.class.getSimpleName();
 
     private PeopleRecyclerViewAdapter mAdapter;
     private SwipeRefreshLayout mSwipeRefreshLayout;
@@ -48,17 +48,13 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
                              Bundle savedInstanceState) {
         RecyclerView rv = (RecyclerView) inflater.inflate(
                 R.layout.fragment_people_nearby, container, false);
-        mSwipeRefreshLayout = (SwipeRefreshLayout) getActivity().findViewById(
-                R.id.swipeRefreshLayout);
-        mSwipeRefreshLayout.setColorSchemeResources(
-                android.R.color.holo_green_light,
-                android.R.color.holo_orange_light,
-                android.R.color.holo_red_light,
-                android.R.color.holo_blue_bright);
-        mSwipeRefreshLayout.setOnRefreshListener(this);
 
+        initSwipeRefresh();
         setupRecyclerView(rv);
+
         if (mAdapter.getItemCount() == 0){
+            // Delay for 1s before finding people nearby;
+            // this gives time for initial registration to succeed first
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -69,11 +65,15 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
         return rv;
     }
 
-    private void getPeopleNearbyData() {
-        Toast.makeText(getActivity(), "Finding people nearby...", Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(getActivity(), ChatIntentService.class);
-        intent.putExtra("action", ChatIntentService.Action.LOOKUP_ALL.name());
-        getActivity().startService(intent);
+    private void initSwipeRefresh() {
+        mSwipeRefreshLayout = (SwipeRefreshLayout) getActivity().findViewById(
+                R.id.swipeRefreshLayout);
+        mSwipeRefreshLayout.setColorSchemeResources(
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light,
+                android.R.color.holo_blue_bright);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
     }
 
     private void setupRecyclerView(RecyclerView recyclerView) {
@@ -99,6 +99,13 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
         getActivity().getSupportLoaderManager().initLoader(1, null, this);
     }
 
+    private void getPeopleNearbyData() {
+        Toast.makeText(getActivity(), "Finding people nearby...", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(getActivity(), ChatIntentService.class);
+        intent.putExtra("action", ChatIntentService.Action.LOOKUP_ALL.name());
+        getActivity().startService(intent);
+    }
+
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new CursorLoader(getActivity(), ChatContract.PeopleNearbyEntry.CONTENT_URI,
@@ -115,6 +122,7 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
     public void onLoaderReset(Loader<Cursor> loader) {
     }
 
+    // Called when view is pulled down
     @Override
     public void onRefresh() {
         getPeopleNearbyData();

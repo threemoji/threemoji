@@ -5,6 +5,7 @@ import com.threemoji.threemoji.service.ChatIntentService;
 import com.threemoji.threemoji.utility.DateUtils;
 import com.threemoji.threemoji.utility.SvgUtils;
 
+import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -77,6 +78,8 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         Intent intent = getIntent();
         initFields(intent);
 
+        cancelNotifications();
+
         if (mIsAlive) {
             updatePartnerIfNeeded();
         } else {
@@ -109,6 +112,23 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             mGeneratedName = cursor.getString(4);
             mIsAlive = cursor.getInt(5) > 0;
         }
+    }
+
+    private void cancelNotifications() {
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancel(getIntIDFromUid(mPartnerUuid));
+    }
+
+    private int getIntIDFromUid(String fromUuid) {
+        int result = 0;
+        for (char c : fromUuid.toCharArray()) {
+            int num = Character.getNumericValue(c);
+            if (num >= 0) {
+                result += num;
+            }
+        }
+        return result;
     }
 
     private void updatePartnerIfNeeded() {

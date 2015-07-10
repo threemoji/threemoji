@@ -9,6 +9,8 @@ PASSWORD = os.environ.get('GCM_API_KEY')
 datastore.set_options(dataset=os.environ.get('PROJECT_ID'))
 logging.basicConfig(format='%(asctime)-15s %(levelname)s: %(message)s', level=logging.INFO)
 
+message_id_cache = {}
+
 def send(json_dict):
   template = ("<message><gcm xmlns=\"google:mobile:data\">{0}</gcm></message>")
   message = xmpp.protocol.Message(node=template.format(json.dumps(json_dict, separators=(',', ':'))))
@@ -25,6 +27,7 @@ def message_callback(session, message):
 
     if msg.has_key('message_type'):
       logging.info('Received GCM ack: ' + msg_id)
+      message_id_cache[msg_id] = 1
     else:
       logging.info('Received GCM message: ' + msg_id)
       # Acknowledge the incoming message immediately.
@@ -32,52 +35,54 @@ def message_callback(session, message):
             "message_id": msg_id,
             "message_type": "ack"})
       logging.info('Acknowledged GCM message: ' + msg_id)
-      # Handle action
-      if msg.has_key('data'):
-        data = msg["data"]
-        if data.has_key('action'):
-          logging.info('Processing action: ' + data["action"])
-          uid = data["uid"]
-          password = data["password"]
-          try:
-            if data["action"] == "upload_profile":
-              add_user(uid, password, data["token"], data["emoji_1"], data["emoji_2"], data["emoji_3"],
-                       data["generated_name"], data["gender"], data["location"], data["radius"])
-            else:
-              user = auth_user(uid, password, data["action"])
-              if user == 404:
-                if data["action"] == "update_profile":
-                  add_user(uid, password, data["token"], data["emoji_1"], data["emoji_2"], data["emoji_3"],
-                           data["generated_name"], data["gender"], data["location"], data["radius"])
-              elif user != 403:
-                if data["action"] == "send_message":
-                  send_message(uid, data["to"], data["message"], get_timestamp())
-                elif data["action"] == "lookup_nearby":
-                  lookup_nearby(uid, user, data["radius"])
-                elif data["action"] == "lookup_profile":
-                  lookup_profile(uid, user, data["profile"])
-                elif data["action"] == "update_profile":
-                  data_dict = {"token": data["token"],
-                               "emoji_1": data["emoji_1"], "emoji_2": data["emoji_2"], "emoji_3": data["emoji_3"],
-                               "generated_name": data["generated_name"], "gender": data["gender"],
-                               "location": data["location"], "radius": data["radius"]}
-                  update_user(uid, user, data_dict, data["action"])
-                elif data["action"] == "update_token":
-                  update_user(uid, user, {"token": data["token"]}, data["action"])
-                elif data["action"] == "delete_profile":
-                  del_user(uid)
 
-          except datastore.RPCError as e:
-            # RPCError is raised if any error happened during a RPC.
-            # It includes the `method` called and the `reason` of the
-            # failure as well as the original `HTTPResponse` object.
-            logging.error('Error while doing datastore operation')
-            logging.error('RPCError: %(method)s %(reason)s',
-                          {'method': e.method,
-                           'reason': e.reason})
-            logging.error('HTTPError: %(status)s %(reason)s',
-                          {'status': e.response.status,
-                           'reason': e.response.reason})
+      if (msg_id not in message_id_cache):
+        # Handle action
+        if msg.has_key('data'):
+          data = msg["data"]
+          if data.has_key('action'):
+            logging.info('Processing action: ' + data["action"])
+            uid = data["uid"]
+            password = data["password"]
+            try:
+              if data["action"] == "upload_profile":
+                add_user(uid, password, data["token"], data["emoji_1"], data["emoji_2"], data["emoji_3"],
+                         data["generated_name"], data["gender"], data["location"], data["radius"])
+              else:
+                user = auth_user(uid, password, data["action"])
+                if user == 404:
+                  if data["action"] == "update_profile":
+                    add_user(uid, password, data["token"], data["emoji_1"], data["emoji_2"], data["emoji_3"],
+                             data["generated_name"], data["gender"], data["location"], data["radius"])
+                elif user != 403:
+                  if data["action"] == "send_message":
+                    send_message(uid, msg_id, data["to"], data["message"], get_timestamp())
+                  elif data["action"] == "lookup_nearby":
+                    lookup_nearby(uid, msg_id, user, data["radius"])
+                  elif data["action"] == "lookup_profile":
+                    lookup_profile(uid, msg_id, user, data["profile"])
+                  elif data["action"] == "update_profile":
+                    data_dict = {"token": data["token"],
+                                 "emoji_1": data["emoji_1"], "emoji_2": data["emoji_2"], "emoji_3": data["emoji_3"],
+                                 "generated_name": data["generated_name"], "gender": data["gender"],
+                                 "location": data["location"], "radius": data["radius"]}
+                    update_user(uid, user, data_dict, data["action"])
+                  elif data["action"] == "update_token":
+                    update_user(uid, user, {"token": data["token"]}, data["action"])
+                  elif data["action"] == "delete_profile":
+                    del_user(uid)
+
+            except datastore.RPCError as e:
+              # RPCError is raised if any error happened during a RPC.
+              # It includes the `method` called and the `reason` of the
+              # failure as well as the original `HTTPResponse` object.
+              logging.error('Error while doing datastore operation')
+              logging.error('RPCError: %(method)s %(reason)s',
+                            {'method': e.method,
+                             'reason': e.reason})
+              logging.error('HTTPError: %(status)s %(reason)s',
+                            {'status': e.response.status,
+                             'reason': e.response.reason})
 
 def add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, gender, location, radius):
   req = datastore.CommitRequest()
@@ -163,7 +168,7 @@ def auth_user(uid, password, action):
 
   return user
 
-def lookup_profile(uid, user, target_uid):
+def lookup_profile(uid, message_id, user, target_uid):
   target_user = auth_user(target_uid, "", "lookup")
   user_dict = {}
 
@@ -177,7 +182,7 @@ def lookup_profile(uid, user, target_uid):
     user_dict[target_uid] = "404"
 
   token = get_token(user)
-  message_id = next_message_id(token)
+  # message_id = next_message_id(token)
   send({"to": token,
         "message_id": message_id,
         "data": {
@@ -188,7 +193,7 @@ def lookup_profile(uid, user, target_uid):
 
   logging.info('Profile lookup response sent to user: ' + uid + ' message_id: ' + message_id)
 
-def lookup_nearby(uid, user, radius):
+def lookup_nearby(uid, message_id, user, radius):
   req = datastore.RunQueryRequest()
   query = req.query
   query.kind.add().name = 'User'
@@ -206,7 +211,7 @@ def lookup_nearby(uid, user, radius):
     user_dict[found_user.key.path_element[0].name] = data_dict
 
   token = get_token(user)
-  message_id = next_message_id(token)
+  # message_id = next_message_id(token)
   send({"to": token,
         "message_id": message_id,
         "data": {
@@ -230,7 +235,7 @@ def update_user(uid, user, data_dict, action):
   datastore.commit(req)
   logging.info('Updated user: ' + uid + ' action: ' + action)
 
-def send_message(from_uid, to_uid, message, timestamp):
+def send_message(from_uid, message_id, to_uid, message, timestamp):
   user = auth_user(to_uid, "", "lookup")
 
   if user == 404:
@@ -238,7 +243,7 @@ def send_message(from_uid, to_uid, message, timestamp):
     return 404
 
   token = get_token(user)
-  message_id = next_message_id(token)
+  # message_id = next_message_id(token)
   send({"to": token,
         "message_id": message_id,
         "data": {

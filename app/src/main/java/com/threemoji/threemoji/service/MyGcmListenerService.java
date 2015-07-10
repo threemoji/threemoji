@@ -21,6 +21,7 @@ import android.graphics.BitmapFactory;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -78,10 +79,15 @@ public class MyGcmListenerService extends GcmListenerService {
 
             storeMessage(fromUid, timestamp, message);
 
-            if (!MyLifecycleHandler.isApplicationVisible()) {
+            if (!MyLifecycleHandler.isApplicationVisible() && isNotificationsEnabled()) {
                 sendNotification(fromUid, fromName, message);
             }
         }
+    }
+
+    private boolean isNotificationsEnabled() {
+        return PreferenceManager.getDefaultSharedPreferences(this)
+                                .getBoolean(getString(R.string.pref_chat_notifications_key), false);
     }
 
     @Override

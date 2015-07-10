@@ -15,14 +15,12 @@ import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.CursorIndexOutOfBoundsException;
 import android.graphics.BitmapFactory;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -30,7 +28,15 @@ import java.util.Iterator;
 import java.util.Random;
 
 public class MyGcmListenerService extends GcmListenerService {
-    private static final String TAG = MyGcmListenerService.class.getSimpleName();
+    public static final String TAG = MyGcmListenerService.class.getSimpleName();
+    public static final String[] PARTNER_PROJECTION_ALL = new String[]{
+            ChatContract.PartnerEntry.COLUMN_EMOJI_1,
+            ChatContract.PartnerEntry.COLUMN_EMOJI_2,
+            ChatContract.PartnerEntry.COLUMN_EMOJI_3,
+            ChatContract.PartnerEntry.COLUMN_GENDER,
+            ChatContract.PartnerEntry.COLUMN_GENERATED_NAME};
+    public static final String[] PARTNER_PROJECTION_GENERATED_NAME = new String[]{
+            ChatContract.PartnerEntry.COLUMN_GENERATED_NAME};
 
     /**
      * Called when message is received.
@@ -39,61 +45,64 @@ public class MyGcmListenerService extends GcmListenerService {
      * @param data Data bundle containing message data as key/value pairs.
      *             For Set of keys use data.keySet().
      */
-    // [START receive_message]
     @Override
     public void onMessageReceived(String from, Bundle data) {
-        Log.d(TAG, data.toString());
-        Log.d(TAG, "From: " + from);
         String messageType = data.getString("message_type");
         String responseType = data.getString("response_type");
-        if (messageType != null && messageType.equals("ack")) {
-            Log.d(TAG, "ACK");
-        } else if (responseType != null) {
+
+        if (responseType != null) {
             if (responseType.equals("lookup_profile")) {
                 Log.d(TAG, "Profile lookup response: " + data.getString("body"));
                 addPartnerToDb(data.getString("body"));
+
             } else if (responseType.equals("lookup_nearby")) {
                 Log.d(TAG, "Nearby lookup response: " + data.getString("body"));
                 storePeopleNearbyData(data.getString("body"));
             }
         } else {
             String message = data.getString("body");
-            String fromUuid = data.getString("from_uid");
+            String fromUid = data.getString("from_uid");
             String timestamp = data.getString("timestamp");
 
-            Log.v(TAG, "From uuid: " + fromUuid);
+            String fromName = findNameFromUuid(fromUid);
 
-            String fromName = findNameFromUuid(fromUuid);
-            Log.v(TAG, "From name: " + fromName);
-            if (fromName.equals("")) {
+            Log.d(TAG, "From uid: " + fromUid);
+            Log.d(TAG, "From name: " + fromName);
+            Log.d(TAG, "Message: " + message);
+
+            if (fromName.isEmpty()) {
                 Intent intent = new Intent(this, ChatIntentService.class);
-                intent.putExtra("action", ChatIntentService.Action.LOOKUP_UUID.name());
-                intent.putExtra("uuid", fromUuid);
+                intent.putExtra("action", ChatIntentService.Action.LOOKUP_UID.name());
+                intent.putExtra("uuid", fromUid);
                 this.startService(intent);
             }
 
-            storeMessage(fromUuid, timestamp, message);
+            storeMessage(fromUid, timestamp, message);
 
             if (!MyLifecycleHandler.isApplicationVisible()) {
-                sendNotification(fromUuid, fromName, message);
+                sendNotification(fromUid, fromName, message);
             }
-            Log.d(TAG, "Message: " + message);
         }
-
-        /**
-         * Production applications would usually process the message here.
-         * Eg: - Syncing with server.
-         *     - Store message in local database.
-         *     - Update UI.
-         */
-
     }
-    // [END receive_message]
+
+    @Override
+    public void onDeletedMessages() {
+//        sendNotification("Deleted messages on server");
+    }
+
+    @Override
+    public void onMessageSent(String msgId) {
+//        sendNotification("Upstream message sent. Id=" + msgId);
+    }
+
+    @Override
+    public void onSendError(String msgId, String error) {
+//        sendNotification("Upstream message send error. Id=" + msgId + ", error" + error);
+    }
 
     private void addPartnerToDb(String body) {
         try {
             JSONObject json = new JSONObject(body);
-//            Log.v(TAG, json.toString());
 
             Iterator<String> people = json.keys();
             while (people.hasNext()) {
@@ -114,56 +123,66 @@ public class MyGcmListenerService extends GcmListenerService {
                     values.put(ChatContract.PartnerEntry.COLUMN_GENDER, gender);
                     values.put(ChatContract.PartnerEntry.COLUMN_GENERATED_NAME, generatedName);
 
-                    Cursor cursor = getPartnerCursor(uid);
-                    if (cursor.getCount() > 0) {
+                    Cursor cursor = getPartnerCursor(uid, PARTNER_PROJECTION_ALL);
+                    if (cursor.getCount() > 0) { // if partner exists
                         cursor.moveToFirst();
-                        if (!cursor.getString(0).equals(emoji1) ||
+                        if (!cursor.getString(0).equals(emoji1) || // if partner has updated profile
                             !cursor.getString(1).equals(emoji2) ||
                             !cursor.getString(2).equals(emoji3) ||
                             !cursor.getString(3).equals(gender) ||
                             !cursor.getString(4).equals(generatedName)) {
 
-                            int rowsUpdated = getContentResolver().update(
-                                    ChatContract.PartnerEntry.CONTENT_URI, values,
-                                    ChatContract.PartnerEntry.COLUMN_UUID + " = ?",
-                                    new String[]{uid});
-                            Log.v(TAG, "Rows updated = " + rowsUpdated + ", " + generatedName);
+                            int rowsUpdated = updatePartnerEntry(uid, values);
+                            Log.d(TAG, "Rows updated = " + rowsUpdated + ", " + generatedName);
 
                             addChangedProfileAlert(uid, cursor.getString(4), generatedName);
                         }
-                    } else {
+                    } else { // new partner
                         Uri uri = getContentResolver().insert(
                                 ChatContract.PartnerEntry.CONTENT_URI,
                                 values);
-                        Log.v(TAG, uri.toString());
+                        Log.d(TAG, "Added partner: " + uri.toString());
                     }
-                } catch (JSONException e) {
-                    String fourOFour = json.getString(uid);
-                    if (fourOFour.equals("404")) {
-                        Log.v(TAG, uid + " does not exist");
+                } catch (JSONException e) { // no such person exists on the server
+                    if (json.getString(uid).equals("404")) {
+                        Log.d(TAG, uid + " does not exist");
+
                         ContentValues values = new ContentValues();
                         values.put(ChatContract.PartnerEntry.COLUMN_IS_ALIVE, 0);
-                        int rowsUpdated = getContentResolver().update(
-                                ChatContract.PartnerEntry.CONTENT_URI, values,
-                                ChatContract.PartnerEntry.COLUMN_UUID + " = ?",
-                                new String[]{uid});
-                        Log.v(TAG, rowsUpdated + " rows have been updated; "+ uid + " does not exist");
+                        int rowsUpdated = updatePartnerEntry(uid, values);
+                        Log.d(TAG, rowsUpdated + " rows have been updated");
+
                         addDeletedProfileAlert(uid);
                     }
                 }
             }
-
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());
         }
     }
 
-    private void addDeletedProfileAlert(String partnerUid) {
-        addAlertMessage(partnerUid, "Partner has left the chat");
+    private Cursor getPartnerCursor(String uid, String[] projection) {
+        return getContentResolver().query(ChatContract.PartnerEntry.buildPartnerByUuidUri(uid),
+                                          projection,
+                                          null,
+                                          null,
+                                          null);
+
+    }
+
+    private int updatePartnerEntry(String uid, ContentValues values) {
+        return getContentResolver().update(
+                ChatContract.PartnerEntry.CONTENT_URI, values,
+                ChatContract.PartnerEntry.COLUMN_UUID + " = ?",
+                new String[]{uid});
     }
 
     private void addChangedProfileAlert(String partnerUid, String oldName, String newName) {
         addAlertMessage(partnerUid, oldName + " is now " + newName);
+    }
+
+    private void addDeletedProfileAlert(String partnerUid) {
+        addAlertMessage(partnerUid, "Partner has left the chat");
     }
 
     private void addAlertMessage(String partnerUid, String message) {
@@ -173,56 +192,33 @@ public class MyGcmListenerService extends GcmListenerService {
         values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
                    ChatContract.MessageEntry.MessageType.ALERT.name());
         values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, message);
+
         Uri uri = getContentResolver().insert(
                 ChatContract.MessageEntry.buildMessagesWithPartnerUri(partnerUid), values);
-        Log.v(TAG, "Added alert message: " + message + ", " + uri.toString());
-    }
-
-    private String findNameFromUuid(String fromUuid) {
-        Cursor cursor =
-                getContentResolver().query(ChatContract.PartnerEntry.buildPartnerByUuidUri(fromUuid),
-                                           new String[]{
-                                                   ChatContract.PartnerEntry.COLUMN_GENERATED_NAME},
-                                           null,
-                                           null,
-                                           null);
-
-        try {
-            cursor.moveToNext();
-            String uuid = cursor.getString(0);
-            cursor.close();
-            return uuid;
-        } catch (NullPointerException | CursorIndexOutOfBoundsException e) {
-            Log.e(TAG, e.getMessage());
-            return "";
-        }
+        Log.d(TAG, "Added alert message: " + message + ", " + uri.toString());
     }
 
     private void storePeopleNearbyData(String body) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String userUuid = prefs.getString(getString(R.string.profile_uid_key), "");
         try {
             JSONObject json = new JSONObject(body);
-//            Log.v(TAG, json.toString());
-
             Iterator<String> people = json.keys();
+
+            // clear all existing data
             getContentResolver().delete(ChatContract.PeopleNearbyEntry.CONTENT_URI, null, null);
+
             while (people.hasNext()) {
-                String uuid = people.next();
+                String uid = people.next();
 
-                JSONObject jsonPersonData = json.getJSONObject(uuid);
+                JSONObject jsonPersonData = json.getJSONObject(uid);
 
-                String emoji1 = (String) jsonPersonData.get("emoji_1");
-                String emoji2 = (String) jsonPersonData.get("emoji_2");
-                String emoji3 = (String) jsonPersonData.get("emoji_3");
-                String gender = (String) jsonPersonData.get("gender");
-                String generatedName = (String) jsonPersonData.get("generated_name");
+                String emoji1 = jsonPersonData.getString("emoji_1");
+                String emoji2 = jsonPersonData.getString("emoji_2");
+                String emoji3 = jsonPersonData.getString("emoji_3");
+                String gender = jsonPersonData.getString("gender");
+                String generatedName = jsonPersonData.getString("generated_name");
 
-                if (uuid.equals(userUuid)) {
-                    continue;
-                }
                 ContentValues values = new ContentValues();
-                values.put(ChatContract.PeopleNearbyEntry.COLUMN_UUID, uuid);
+                values.put(ChatContract.PeopleNearbyEntry.COLUMN_UUID, uid);
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_EMOJI_1, emoji1);
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_EMOJI_2, emoji2);
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_EMOJI_3, emoji3);
@@ -230,48 +226,15 @@ public class MyGcmListenerService extends GcmListenerService {
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_GENERATED_NAME, generatedName);
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_DISTANCE, "10");
 
-                if (personAlreadyInClientDatabase(uuid)) {
-                    int rowsUpdated = getContentResolver().update(
-                            ChatContract.PeopleNearbyEntry.CONTENT_URI, values,
-                            ChatContract.PeopleNearbyEntry.COLUMN_UUID + " = ?",
-                            new String[]{uuid});
-                    Log.v(TAG, "Rows updated = " + rowsUpdated + ", " + generatedName);
-                } else {
-                    Uri uri = getContentResolver().insert(
-                            ChatContract.PeopleNearbyEntry.CONTENT_URI,
-                            values);
-                    Log.v(TAG, uri.toString());
-                }
+                Uri uri = getContentResolver().insert(
+                        ChatContract.PeopleNearbyEntry.CONTENT_URI,
+                        values);
+                Log.d(TAG, "Added person nearby: " + uri.toString());
             }
 
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());
         }
-    }
-
-    private boolean personAlreadyInClientDatabase(String uid) {
-        Cursor cursor =
-                getContentResolver().query(ChatContract.PeopleNearbyEntry.CONTENT_URI,
-                                           new String[]{
-                                                   ChatContract.PeopleNearbyEntry.COLUMN_GENERATED_NAME},
-                                           ChatContract.PeopleNearbyEntry.COLUMN_UUID + " = ?",
-                                           new String[]{uid},
-                                           null);
-
-        return cursor.getCount() > 0;
-    }
-
-    private Cursor getPartnerCursor(String uid) {
-        return getContentResolver().query(ChatContract.PartnerEntry.buildPartnerByUuidUri(uid),
-                                          new String[]{ChatContract.PartnerEntry.COLUMN_EMOJI_1,
-                                                       ChatContract.PartnerEntry.COLUMN_EMOJI_2,
-                                                       ChatContract.PartnerEntry.COLUMN_EMOJI_3,
-                                                       ChatContract.PartnerEntry.COLUMN_GENDER,
-                                                       ChatContract.PartnerEntry.COLUMN_GENERATED_NAME},
-                                          null,
-                                          null,
-                                          null);
-
     }
 
     private void storeMessage(String uuid, String timestamp, String message) {
@@ -281,32 +244,27 @@ public class MyGcmListenerService extends GcmListenerService {
         values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
                    ChatContract.MessageEntry.MessageType.RECEIVED.name());
         values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, message);
-//        try {
-            Uri uri = getContentResolver().insert(
-                    ChatContract.MessageEntry.buildMessagesWithPartnerUri(uuid), values);
-//        } catch (SQLException e) {
-//            Log.e(TAG, "Duplicate message received");
-//        }
+        Uri uri = getContentResolver().insert(
+                ChatContract.MessageEntry.buildMessagesWithPartnerUri(uuid), values);
+        Log.d(TAG, "Added message: " + uri.toString());
 
+        // update last activity
         values = new ContentValues();
         values.put(ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY, timestamp);
-        int rowsUpdated = getContentResolver().update(
+        getContentResolver().update(
                 ChatContract.PartnerEntry.buildPartnerByUuidUri(uuid), values, null, null);
     }
 
-    @Override
-    public void onDeletedMessages() {
-//        sendNotification("Deleted messages on server");
-    }
-
-    @Override
-    public void onMessageSent(String msgId) {
-        //sendNotification("Upstream message sent. Id=" + msgId);
-    }
-
-    @Override
-    public void onSendError(String msgId, String error) {
-//        sendNotification("Upstream message send error. Id=" + msgId + ", error" + error);
+    private String findNameFromUuid(String uid) {
+        Cursor cursor = getPartnerCursor(uid, PARTNER_PROJECTION_GENERATED_NAME);
+        try {
+            cursor.moveToNext();
+            String uuid = cursor.getString(0);
+            cursor.close();
+            return uuid;
+        } catch (NullPointerException | CursorIndexOutOfBoundsException e) {
+            return "";
+        }
     }
 
     /**

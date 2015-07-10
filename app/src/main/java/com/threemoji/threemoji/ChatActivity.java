@@ -133,7 +133,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private void updatePartnerIfNeeded() {
         Intent intent = new Intent(this, ChatIntentService.class);
-        intent.putExtra("action", ChatIntentService.Action.LOOKUP_UUID.name());
+        intent.putExtra("action", ChatIntentService.Action.LOOKUP_UID.name());
         intent.putExtra("uuid", mPartnerUuid);
         startService(intent);
     }

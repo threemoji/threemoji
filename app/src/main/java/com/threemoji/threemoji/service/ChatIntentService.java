@@ -21,7 +21,7 @@ public class ChatIntentService extends IntentService {
     private GoogleCloudMessaging mGcm;
 
     public enum Action {
-        LOOKUP_ALL, LOOKUP_UUID
+        LOOKUP_ALL, LOOKUP_UID
     }
 
     public ChatIntentService() {
@@ -46,7 +46,7 @@ public class ChatIntentService extends IntentService {
             } catch (IOException e) {
                 Log.e(TAG, "IOException while sending request...", e);
             }
-        } else if (action != null && Action.valueOf(action) == Action.LOOKUP_UUID) {
+        } else if (action != null && Action.valueOf(action) == Action.LOOKUP_UID) {
             String targetUid = intent.getStringExtra("uuid");
             try {
                 Bundle data = new Bundle();

@@ -23,15 +23,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.Random;
-
 public class ChatListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private static final String TAG = ChatListFragment.class.getSimpleName();
-    private ChatsRecyclerViewAdapter mAdapter;
-
-    private final String[] CHAT_ITEM_PROJECTION = new String[]{
-            ChatContract.PartnerEntry.COLUMN_UUID,
+    public static final String TAG = ChatListFragment.class.getSimpleName();
+    public static final String[] CHAT_ITEM_PROJECTION = new String[]{
+            ChatContract.PartnerEntry.COLUMN_UID,
             ChatContract.PartnerEntry.COLUMN_EMOJI_1,
             ChatContract.PartnerEntry.COLUMN_EMOJI_2,
             ChatContract.PartnerEntry.COLUMN_EMOJI_3,
@@ -40,9 +36,11 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
             ChatContract.PartnerEntry.COLUMN_IS_ALIVE,
             ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY
     };
-
-    private static final String CHAT_ITEM_SORT_ORDER =
+    public static final String CHAT_ITEM_SORT_ORDER =
             ChatContract.PartnerEntry.TABLE_NAME + "." + ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY + " DESC";
+
+    private ChatsRecyclerViewAdapter mAdapter;
+
 
     // ================================================================
     // Methods for initialising the components of the chat list
@@ -62,17 +60,11 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
 
     private void setupRecyclerView(RecyclerView recyclerView) {
 
+//        // Add a chat with yourself
 //        ContentValues testValues = new ContentValues();
-
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_UUID, "1d0982b4-4a73-41b1-b220-052667e223c2");
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_1, "emoji_1f604");
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_2, "emoji_1f603");
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_3, "emoji_1f600");
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_GENDER, "FEMALE");
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_GENERATED_NAME, "Weepy Xoni");
-
+//
 //        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-//        testValues.put(ChatContract.PartnerEntry.COLUMN_UUID, prefs.getString(getString(R.string.profile_uid_key), ""));
+//        testValues.put(ChatContract.PartnerEntry.COLUMN_UID, prefs.getString(getString(R.string.profile_uid_key), ""));
 //        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_1, prefs.getString(getString(R.string.profile_emoji_one_key), ""));
 //        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_2, prefs.getString(getString(R.string.profile_emoji_two_key), ""));
 //        testValues.put(ChatContract.PartnerEntry.COLUMN_EMOJI_3, prefs.getString(getString(R.string.profile_emoji_three_key), ""));
@@ -82,11 +74,6 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
 //        Uri uri = getActivity().getContentResolver()
 //                  .insert(ChatContract.PartnerEntry.CONTENT_URI, testValues);
 //        Log.v(TAG, uri.toString());
-
-//        int rowsDeleted = getActivity().getContentResolver().delete(ChatContract.PartnerEntry.CONTENT_URI,
-//                                                                    ChatContract.PartnerEntry.COLUMN_GENERATED_NAME + " = ?",
-//                                                                    new String[] {"Shiny Boubou"});
-//        Log.v(TAG, rowsDeleted+"");
 
         Cursor cursor = getActivity().getContentResolver()
                                      .query(ChatContract.PartnerEntry.CONTENT_URI,
@@ -113,9 +100,7 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-
-    }
+    public void onLoaderReset(Loader<Cursor> loader) {}
 
 
     // ================================================================
@@ -147,7 +132,7 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
             super.onBindViewHolder(holder, position);
-            final String uuid = mCursor.getString(0);
+            final String uid = mCursor.getString(0);
             final String emoji1 = mCursor.getString(1);
             final String emoji2 = mCursor.getString(2);
             final String emoji3 = mCursor.getString(3);
@@ -167,17 +152,12 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
                 public void onClick(View v) {
                     Context context = v.getContext();
                     Intent intent = new Intent(context, ChatActivity.class);
-                    intent.putExtra("uid", uuid);
+                    intent.putExtra("uid", uid);
                     context.startActivity(intent);
 
                     Log.d(TAG, partnerName);
                 }
             });
-        }
-
-        private String getRandomTime() {
-            Random rand = new Random();
-            return rand.nextInt(60) + " minutes ago";
         }
 
 

@@ -87,7 +87,7 @@ public class MyGcmListenerService extends GcmListenerService {
 
     private boolean isNotificationsEnabled() {
         return PreferenceManager.getDefaultSharedPreferences(this)
-                                .getBoolean(getString(R.string.pref_chat_notifications_key), false);
+                                .getBoolean(getString(R.string.pref_chat_notifications_key), true);
     }
 
     @Override

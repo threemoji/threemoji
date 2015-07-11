@@ -13,6 +13,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -28,6 +29,8 @@ import android.widget.Toast;
 public class PeopleNearbyFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener {
 
     public static final String TAG = PeopleNearbyFragment.class.getSimpleName();
+
+    private boolean mIsVisibleToUser;
 
     private PeopleRecyclerViewAdapter mAdapter;
     private SwipeRefreshLayout mSwipeRefreshLayout;
@@ -89,10 +92,11 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                if (dy > 0) { // Ensures that at start up, this will not be called
-                    mSwipeRefreshLayout.setEnabled(
-                            layoutManager.findFirstCompletelyVisibleItemPosition() == 0);
-                }
+                mSwipeRefreshLayout
+                        .setEnabled(mIsVisibleToUser &&
+                                    layoutManager.findFirstCompletelyVisibleItemPosition() == 0 &&
+                                    !ViewCompat.canScrollVertically(recyclerView, -1));
+
             }
         });
 
@@ -128,6 +132,12 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
         getPeopleNearbyData();
     }
 
+    // Finds out if this fragment is in view
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        mIsVisibleToUser = isVisibleToUser;
+    }
 
     // ================================================================
     // Inner class to handle the population of items in the list

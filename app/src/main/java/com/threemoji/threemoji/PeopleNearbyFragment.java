@@ -1,11 +1,18 @@
 package com.threemoji.threemoji;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
+import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
+import com.google.android.gms.location.LocationServices;
+
 import com.threemoji.threemoji.data.ChatContract;
 import com.threemoji.threemoji.service.ChatIntentService;
 
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -26,7 +33,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class PeopleNearbyFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener {
+public class PeopleNearbyFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener, ConnectionCallbacks, OnConnectionFailedListener{
 
     public static final String TAG = PeopleNearbyFragment.class.getSimpleName();
 
@@ -34,6 +41,8 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
 
     private PeopleRecyclerViewAdapter mAdapter;
     private SwipeRefreshLayout mSwipeRefreshLayout;
+    private GoogleApiClient mGoogleApiClient;
+    private Location mLastLocation;
 
     private final String[] PEOPLE_NEARBY_ITEM_PROJECTION = new String[]{
             ChatContract.PeopleNearbyEntry.COLUMN_UID,
@@ -49,6 +58,7 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        buildGoogleApiClient();
         RecyclerView rv = (RecyclerView) inflater.inflate(
                 R.layout.fragment_people_nearby, container, false);
 
@@ -110,6 +120,14 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
         getActivity().startService(intent);
     }
 
+    protected synchronized void buildGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+    }
+
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new CursorLoader(getActivity(), ChatContract.PeopleNearbyEntry.CONTENT_URI,
@@ -137,6 +155,44 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         mIsVisibleToUser = isVisibleToUser;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                mGoogleApiClient);
+        if (mLastLocation != null) {
+            Toast.makeText(getActivity(), String.valueOf(mLastLocation.getLatitude()) + ", " +
+                                 String.valueOf(mLastLocation.getLongitude()), Toast.LENGTH_LONG)
+                 .show();
+            Log.d(TAG, String.valueOf(mLastLocation.getLatitude()) + ", " +
+                       String.valueOf(mLastLocation.getLongitude()));
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int cause) {
+        Log.i(TAG, "Connection suspended");
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + connectionResult.getErrorCode());
     }
 
     // ================================================================

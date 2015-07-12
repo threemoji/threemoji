@@ -241,6 +241,18 @@ def lookup_nearby(uid, message_id, user, radius):
   resp = datastore.run_query(req)
   user_dict = {}
 
+  # pg_conn = psycopg2.connect(host=PG_SERVER, user=PG_USER, password=PG_KEY, dbname=PG_DB)
+  # pg_curs = pg_conn.cursor()
+  # pg_curs.execute('SELECT text(uid) FROM ' + PG_TABLE +
+  #                 ' WHERE ST_DWithin(ST_SetSRID(ST_MakePoint(%s, %s),4326)::GEOGRAPHY, location, %s);',
+  #                 (lon, lat, radius*1e3))
+  # results = pg_curs.fetchall()
+  # pg_conn.close()
+
+  # PostGIS table and index creation
+  # CREATE TABLE ${PG_TABLE}(uid TEXT PRIMARY KEY, location GEOGRAPHY(POINT,4326));
+  # CREATE INDEX ${PG_TABLE}_gix ON ${PG_TABLE} USING GIST (location);
+
   for entity_result in resp.batch.entity_result:
     found_user = entity_result.entity
     if found_user.key.path_element[0].name == uid:

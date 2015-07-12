@@ -2,6 +2,7 @@
 import sys, json, xmpp, os, logging, time
 import googledatastore as datastore
 import traceback
+from collections import OrderedDict
 
 SERVER = 'gcm.googleapis.com'
 PORT = 5236 # change to 5235 for production
@@ -10,7 +11,20 @@ PASSWORD = os.environ.get('GCM_API_KEY')
 datastore.set_options(dataset=os.environ.get('PROJECT_ID'))
 logging.basicConfig(format='%(asctime)-15s %(levelname)s: %(message)s', level=logging.INFO)
 
-message_id_cache = {}
+class LimitedSizeDict(OrderedDict):
+  def __init__(self, *args, **kwds):
+    self.size_limit = kwds.pop("size_limit", None)
+    OrderedDict.__init__(self, *args, **kwds)
+    self._check_size_limit()
+  def __setitem__(self, key, value):
+    OrderedDict.__setitem__(self, key, value)
+    self._check_size_limit()
+  def _check_size_limit(self):
+    if self.size_limit is not None:
+      while len(self) > self.size_limit:
+        self.popitem(last=False)
+
+message_id_cache = LimitedSizeDict(size_limit=1000)
 
 def send(json_dict):
   template = ("<message><gcm xmlns=\"google:mobile:data\">{0}</gcm></message>")
@@ -282,4 +296,5 @@ while True:
     client.Process(1)
   except Exception as e:
     traceback.print_exc()
+    logging.error('Something went wrong', exc_info=True)
     break

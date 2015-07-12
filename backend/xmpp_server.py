@@ -3,12 +3,21 @@ import sys, json, xmpp, os, logging, time
 import googledatastore as datastore
 import traceback
 from collections import OrderedDict
+import psycopg2
 
 SERVER = 'gcm.googleapis.com'
 PORT = 5236 # change to 5235 for production
 USERNAME = os.environ.get('PROJECT_NUM')
 PASSWORD = os.environ.get('GCM_API_KEY')
+
 datastore.set_options(dataset=os.environ.get('PROJECT_ID'))
+
+PG_SERVER = os.environ.get('POSTGIS_SERVER')
+PG_USER = os.environ.get('POSTGIS_USER')
+PG_KEY = os.environ.get('POSTGIS_KEY')
+PG_DB = os.environ.get('POSTGIS_DB')
+PG_TABLE = os.environ.get('POSTGIS_TABLE')
+
 logging.basicConfig(format='%(asctime)-15s %(levelname)s: %(message)s', level=logging.INFO)
 
 class LimitedSizeDict(OrderedDict):
@@ -76,6 +85,8 @@ def message_callback(session, message):
                     lookup_nearby(uid, msg_id, user, data["radius"])
                   elif data["action"] == "lookup_profile":
                     lookup_profile(uid, msg_id, user, data["profile"])
+                  elif data["action"] == "update_location":
+                    update_location(uid, user, data["latitude"], data["longitude"])
                   elif data["action"] == "update_profile":
                     data_dict = {"token": data["token"],
                                  "emoji_1": data["emoji_1"], "emoji_2": data["emoji_2"], "emoji_3": data["emoji_3"],
@@ -142,8 +153,14 @@ def add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, ge
   date_modified_property = user.property.add()
   date_modified_property.name = 'date_modified'
   date_modified_property.value.timestamp_microseconds_value = current_time
-
   datastore.commit(req)
+
+  pg_conn = psycopg2.connect(host=PG_SERVER, user=PG_USER, password=PG_KEY, dbname=PG_DB)
+  pg_curs = pg_conn.cursor()
+  pg_curs.execute('INSERT INTO ' + PG_TABLE + ' VALUES(%s);', (uid,))
+  pg_conn.commit()
+  pg_conn.close()
+
   logging.info('Added user: ' + uid + ' (' + generated_name + ')')
 
 def del_user(uid):
@@ -156,6 +173,13 @@ def del_user(uid):
   req.mode = datastore.CommitRequest.NON_TRANSACTIONAL
   req.mutation.delete.extend([user_key])
   datastore.commit(req)
+
+  pg_conn = psycopg2.connect(host=PG_SERVER, user=PG_USER, password=PG_KEY, dbname=PG_DB)
+  pg_curs = pg_conn.cursor()
+  pg_curs.execute('DELETE FROM ' + PG_TABLE + ' WHERE uid = %s;', (uid,))
+  pg_conn.commit()
+  pg_conn.close()
+
   logging.info('Deleted user: ' + uid)
 
 def auth_user(uid, password, action):
@@ -251,6 +275,17 @@ def update_user(uid, user, data_dict, action):
   req.mutation.update.extend([user])
   datastore.commit(req)
   logging.info('Updated user: ' + uid + ' action: ' + action)
+
+def update_location(uid, user, lat, lon):
+  pg_conn = psycopg2.connect(host=PG_SERVER, user=PG_USER, password=PG_KEY, dbname=PG_DB)
+  pg_curs = pg_conn.cursor()
+  pg_curs.execute('UPDATE ' + PG_TABLE +
+                  ' SET location = ST_SetSRID(ST_MakePoint(%s, %s),4326)::GEOGRAPHY WHERE uid = %s;',
+                  (lon, lat, uid))
+  pg_conn.commit()
+  pg_conn.close()
+
+  update_user(uid, user, {}, "update_location")
 
 def send_message(from_uid, message_id, to_uid, message, timestamp):
   user = auth_user(to_uid, "", "lookup")

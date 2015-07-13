@@ -106,9 +106,8 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
 
     private void getPeopleNearbyData() {
         Toast.makeText(getActivity(), "Finding people nearby...", Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(getActivity(), ChatIntentService.class);
-        intent.putExtra("action", ChatIntentService.Action.LOOKUP_ALL.name());
-        getActivity().startService(intent);
+        getActivity().startService(ChatIntentService.createIntent(getActivity(),
+                                                                  ChatIntentService.Action.LOOKUP_ALL));
     }
 
     @Override

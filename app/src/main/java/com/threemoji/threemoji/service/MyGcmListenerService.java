@@ -71,9 +71,7 @@ public class MyGcmListenerService extends GcmListenerService {
             Log.d(TAG, "Message: " + message);
 
             if (fromName.isEmpty()) {
-                Intent intent = new Intent(this, ChatIntentService.class);
-                intent.putExtra("action", ChatIntentService.Action.LOOKUP_UID.name());
-                intent.putExtra("uid", fromUid);
+                Intent intent = ChatIntentService.createIntent(this, ChatIntentService.Action.LOOKUP_UID, fromUid);
                 this.startService(intent);
             }
 

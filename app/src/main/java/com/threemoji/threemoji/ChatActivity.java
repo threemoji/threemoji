@@ -156,9 +156,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void updatePartnerIfNeeded() {
-        Intent intent = new Intent(this, ChatIntentService.class);
-        intent.putExtra("action", ChatIntentService.Action.LOOKUP_UID.name());
-        intent.putExtra("uid", mPartnerUid);
+        Intent intent = ChatIntentService.createIntent(this, ChatIntentService.Action.LOOKUP_UID, mPartnerUid);
         startService(intent);
     }
 
@@ -219,9 +217,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         editText.setText("");
 
         if (userMessage.trim().length() > 0) {
-            Intent intent = new Intent(this, ChatIntentService.class);
-            intent.putExtra("uid", mPartnerUid);
-            intent.putExtra("message", userMessage.trim());
+            Intent intent = ChatIntentService.createIntent(this, ChatIntentService.Action.SEND_MESSAGE, mPartnerUid, userMessage.trim());
             startService(intent);
 
             long currentTime = System.currentTimeMillis();

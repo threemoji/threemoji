@@ -66,6 +66,7 @@
     <string name="profile_location_longitude">profileLongitude</string>
     <string name="profile_location_latitude">profileLatitude</string>
 
+    <string name="backend_action_key">action</string>
     <string name="backend_action_upload_profile_key">upload_profile</string>
     <string name="backend_action_update_profile_key">update_profile</string>
     <string name="backend_action_update_token_key">update_token</string>
@@ -98,5 +99,9 @@
     <string name="chat_option_mute">Mute</string>
     <string name="chat_option_archive">Archive</string>
     <string name="chat_option_block">Block</string>
+
+    <string name="chat_intent_extra_action">action</string>
+    <string name="chat_intent_extra_uid">uid</string>
+    <string name="chat_intent_extra_message">message</string>
 
 </resources>

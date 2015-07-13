@@ -87,7 +87,7 @@ def message_callback(session, message):
                     if data["radius"] == "123":
                       old_lookup_nearby(uid, msg_id, user)
                     else:
-                      lookup_nearby(uid, msg_id, user, data["radius"])
+                      lookup_nearby(uid, msg_id, user, data["latitude"], data["longitude"], data["radius"])
                   elif data["action"] == "lookup_profile":
                     lookup_profile(uid, msg_id, user, data["profile"])
                   elif data["action"] == "update_location":
@@ -252,22 +252,27 @@ def old_lookup_nearby(uid, message_id, user):
 
   logging.info('Old nearby lookup response sent to user: ' + uid + ' message_id: ' + message_id)
 
-def lookup_nearby(uid, message_id, user, radius):
-  # pg_curs.execute('SELECT text(uid) FROM ' + PG_TABLE +
-  #                 ' WHERE ST_DWithin(ST_SetSRID(ST_MakePoint(%s, %s),4326)::GEOGRAPHY, location, %s);',
-  #                 (lon, lat, radius*1e3))
-  # results = pg_curs.fetchall()
+def lookup_nearby(uid, message_id, user, lat, lon, radius):
+  pg_curs.execute('SELECT uid FROM ' + PG_TABLE +
+                  ' WHERE ST_DWithin(ST_SetSRID(ST_MakePoint(%s, %s),4326)::GEOGRAPHY, location, LEAST(radius, %s))' +
+                  ' AND uid != %s;',
+                  (lon, lat, radius*1e3, uid))
+  results = pg_curs.fetchall()
 
-  req = datastore.RunQueryRequest()
-  query = req.query
-  query.kind.add().name = 'User'
-  resp = datastore.run_query(req)
+  req = datastore.LookupRequest()
+  for result in results:
+    result_uid = result[0]
+    user_key = datastore.Key()
+    path = user_key.path_element.add()
+    path.name = result_uid
+    path.kind = 'User'
+    req.key.extend([user_key])
+
+  resp = datastore.lookup(req)
   user_dict = {}
 
-  for entity_result in resp.batch.entity_result:
+  for entity_result in resp.found:
     found_user = entity_result.entity
-    if found_user.key.path_element[0].name == uid:
-      continue
     data_dict = {}
     for prop in found_user.property:
       if prop.name in ['emoji_1', 'emoji_2', 'emoji_3', 'generated_name', 'gender']:

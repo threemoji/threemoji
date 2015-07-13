@@ -25,7 +25,7 @@ public class RegistrationIntentService extends IntentService {
     private InstanceID mInstanceID;
 
     public enum Action {
-        CREATE_PROFILE, UPDATE_PROFILE, CREATE_TOKEN, UPDATE_TOKEN
+        CREATE_PROFILE, UPDATE_PROFILE, CREATE_TOKEN, UPDATE_TOKEN, UPDATE_LOCATION
     }
 
     public RegistrationIntentService() {
@@ -67,6 +67,10 @@ public class RegistrationIntentService extends IntentService {
                     unregisterTokenFromServer();
                     getAndStoreGcmToken();
                     updateTokenOnServer();
+                    break;
+
+                case UPDATE_LOCATION:
+                    updateLocation();
                     break;
             }
         } catch (Exception e) {
@@ -149,6 +153,30 @@ public class RegistrationIntentService extends IntentService {
             data.putString(getString(R.string.backend_token_key), token);
             sendData(token, data);
             Log.v(TAG, "token updated: " + token);
+        } catch (IOException e) {
+            Log.e(TAG, "IOException while updating token on backend...", e);
+        }
+    }
+
+    private void updateLocation() {
+        Log.v(TAG, "Updating location on server");
+        SharedPreferences prefs = getPrefs();
+        String token = prefs.getString(getString(R.string.pref_token_key), "");
+        try {
+            Bundle data = new Bundle();
+            data.putString("action", getString(R.string.backend_action_update_location_key));
+            data.putString(getString(R.string.backend_uid_key),
+                           prefs.getString(getString(R.string.profile_uid_key), ""));
+            data.putString(getString(R.string.backend_password_key),
+                           prefs.getString(getString(R.string.profile_password_key), ""));
+
+            data.putString(getString(R.string.backend_location_latitude_key),
+                           prefs.getString(getString(R.string.profile_location_latitude), ""));
+            data.putString(getString(R.string.backend_location_longitude_key),
+                           prefs.getString(getString(R.string.profile_location_longitude), ""));
+
+            sendData(token, data);
+            Log.v(TAG, "location updated");
         } catch (IOException e) {
             Log.e(TAG, "IOException while updating token on backend...", e);
         }

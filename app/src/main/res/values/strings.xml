@@ -73,6 +73,7 @@
     <string name="backend_action_lookup_profile_key">lookup_profile</string>
     <string name="backend_action_lookup_nearby_key">lookup_nearby</string>
     <string name="backend_action_delete_profile_key">delete_profile</string>
+    <string name="backend_action_update_location_key">update_location</string>
 
     <string name="backend_uid_key">uid</string>
     <string name="backend_password_key">password</string>
@@ -83,6 +84,8 @@
     <string name="backend_generated_name_key">generated_name</string>
     <string name="backend_gender_key">gender</string>
     <string name="backend_location_key">location</string>
+    <string name="backend_location_latitude_key">latitude</string>
+    <string name="backend_location_longitude_key">longitude</string>
     <string name="backend_radius_key">radius</string>
 
     <string name="backend_to_key">to</string>

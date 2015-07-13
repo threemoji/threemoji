@@ -30,7 +30,7 @@ public class ChatIntentService extends IntentService {
     }
 
     public static Intent createIntent(Context context, Action action) {
-        Intent intent = new Intent(context, RegistrationIntentService.class);
+        Intent intent = new Intent(context, ChatIntentService.class);
         intent.putExtra(context.getString(R.string.chat_intent_extra_action), action.name());
         return intent;
     }

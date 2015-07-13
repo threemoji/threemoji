@@ -17,6 +17,8 @@ PG_USER = os.environ.get('POSTGIS_USER')
 PG_KEY = os.environ.get('POSTGIS_KEY')
 PG_DB = os.environ.get('POSTGIS_DB')
 PG_TABLE = os.environ.get('POSTGIS_TABLE')
+pg_conn = psycopg2.connect(host=PG_SERVER, user=PG_USER, password=PG_KEY, dbname=PG_DB)
+pg_curs = pg_conn.cursor()
 
 logging.basicConfig(format='%(asctime)-15s %(levelname)s: %(message)s', level=logging.INFO)
 
@@ -149,11 +151,8 @@ def add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, ge
   date_modified_property.value.timestamp_microseconds_value = current_time
   datastore.commit(req)
 
-  pg_conn = psycopg2.connect(host=PG_SERVER, user=PG_USER, password=PG_KEY, dbname=PG_DB)
-  pg_curs = pg_conn.cursor()
   pg_curs.execute('INSERT INTO ' + PG_TABLE + ' VALUES(%s, NULL, %s);', (uid, int(radius)))
   pg_conn.commit()
-  pg_conn.close()
 
   logging.info('Added user: ' + uid + ' (' + generated_name + ')')
 
@@ -168,11 +167,8 @@ def del_user(uid):
   req.mutation.delete.extend([user_key])
   datastore.commit(req)
 
-  pg_conn = psycopg2.connect(host=PG_SERVER, user=PG_USER, password=PG_KEY, dbname=PG_DB)
-  pg_curs = pg_conn.cursor()
   pg_curs.execute('DELETE FROM ' + PG_TABLE + ' WHERE uid = %s;', (uid,))
   pg_conn.commit()
-  pg_conn.close()
 
   logging.info('Deleted user: ' + uid)
 
@@ -235,17 +231,12 @@ def lookup_nearby(uid, message_id, user, radius):
   resp = datastore.run_query(req)
   user_dict = {}
 
-  # pg_conn = psycopg2.connect(host=PG_SERVER, user=PG_USER, password=PG_KEY, dbname=PG_DB)
-  # pg_curs = pg_conn.cursor()
   # pg_curs.execute('SELECT text(uid) FROM ' + PG_TABLE +
   #                 ' WHERE ST_DWithin(ST_SetSRID(ST_MakePoint(%s, %s),4326)::GEOGRAPHY, location, %s);',
   #                 (lon, lat, radius*1e3))
   # results = pg_curs.fetchall()
-  # pg_conn.close()
 
-  # PostGIS table and index creation
-  # CREATE TABLE ${PG_TABLE}(uid TEXT PRIMARY KEY, location GEOGRAPHY(POINT,4326));
-  # CREATE INDEX ${PG_TABLE}_gix ON ${PG_TABLE} USING GIST (location);
+  # ALTER TABLE ${PG_TABLE} ADD COLUMN radius INTEGER;
 
   for entity_result in resp.batch.entity_result:
     found_user = entity_result.entity
@@ -282,24 +273,18 @@ def update_user(uid, user, data_dict, action):
   datastore.commit(req)
 
   if data_dict.has_key('radius'):
-    pg_conn = psycopg2.connect(host=PG_SERVER, user=PG_USER, password=PG_KEY, dbname=PG_DB)
-    pg_curs = pg_conn.cursor()
     pg_curs.execute('UPDATE ' + PG_TABLE +
                     ' SET radius = %s WHERE uid = %s;',
                     (int(data_dict['radius']), uid))
     pg_conn.commit()
-    pg_conn.close()
 
   logging.info('Updated user: ' + uid + ' action: ' + action)
 
 def update_location(uid, user, lat, lon):
-  pg_conn = psycopg2.connect(host=PG_SERVER, user=PG_USER, password=PG_KEY, dbname=PG_DB)
-  pg_curs = pg_conn.cursor()
   pg_curs.execute('UPDATE ' + PG_TABLE +
                   ' SET location = ST_SetSRID(ST_MakePoint(%s, %s),4326)::GEOGRAPHY WHERE uid = %s;',
                   (lon, lat, uid))
   pg_conn.commit()
-  pg_conn.close()
 
   update_user(uid, user, {}, "update_location")
 

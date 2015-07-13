@@ -31,19 +31,19 @@ public class ChatIntentService extends IntentService {
 
     public static Intent createIntent(Context context, Action action) {
         Intent intent = new Intent(context, RegistrationIntentService.class);
-        intent.putExtra("action", action.name());
+        intent.putExtra(context.getString(R.string.chat_intent_extra_action), action.name());
         return intent;
     }
 
     public static Intent createIntent(Context context, Action action, String uid) {
         Intent intent = createIntent(context, action);
-        intent.putExtra("uid", uid);
+        intent.putExtra(context.getString(R.string.chat_intent_extra_uid), uid);
         return intent;
     }
 
     public static Intent createIntent(Context context, Action action, String uid, String message) {
         Intent intent = createIntent(context, action, uid);
-        intent.putExtra("message", message.trim());
+        intent.putExtra(context.getString(R.string.chat_intent_extra_message), message.trim());
         return intent;
     }
 
@@ -51,42 +51,15 @@ public class ChatIntentService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         mGcm = GoogleCloudMessaging.getInstance(this);
         Log.d(TAG, "Intent string: " + intent.toString());
-        Action action = Action.valueOf(intent.getStringExtra("action"));
+        Action action = Action.valueOf(intent.getStringExtra(getString(R.string.chat_intent_extra_action)));
 
         switch (action) {
             case LOOKUP_ALL:
-                try {
-                    Bundle data = new Bundle();
-                    data.putString("action", getString(R.string.backend_action_lookup_nearby_key));
-                    data.putString(getString(R.string.backend_uid_key), getPrefs().getString(getString(R.string.profile_uid_key), ""));
-                    data.putString(getString(R.string.backend_password_key), getPrefs().getString(getString(R.string.profile_password_key), ""));
-
-                    data.putString(getString(R.string.backend_radius_key), "123");
-
-                    String msgId = getNextMsgId(getPrefs().getString(getString(R.string.pref_token_key), ""));
-                    sendData(data, msgId);
-                    Log.d(TAG, "Nearby lookup request sent");
-                } catch (IOException e) {
-                    Log.e(TAG, "IOException while sending request...", e);
-                }
+                lookupAll();
                 break;
 
             case LOOKUP_UID:
-                String targetUid = intent.getStringExtra("uid");
-                try {
-                    Bundle data = new Bundle();
-                    data.putString("action", getString(R.string.backend_action_lookup_profile_key));
-                    data.putString(getString(R.string.backend_uid_key), getPrefs().getString(getString(R.string.profile_uid_key), ""));
-                    data.putString(getString(R.string.backend_password_key), getPrefs().getString(getString(R.string.profile_password_key), ""));
-
-                    data.putString(getString(R.string.backend_profile_key), targetUid);
-
-                    String msgId = getNextMsgId(getPrefs().getString(getString(R.string.pref_token_key), ""));
-                    sendData(data, msgId);
-                    Log.d(TAG, "Profile lookup request sent for target user: " + targetUid);
-                } catch (IOException e) {
-                    Log.e(TAG, "IOException while sending request...", e);
-                }
+                lookupUid(intent.getStringExtra("uid"));
                 break;
 
             case SEND_MESSAGE:
@@ -96,10 +69,44 @@ public class ChatIntentService extends IntentService {
         }
     }
 
+    private void lookupAll() {
+        try {
+            Bundle data = new Bundle();
+            data.putString(getString(R.string.backend_action_key), getString(R.string.backend_action_lookup_nearby_key));
+            data.putString(getString(R.string.backend_uid_key), getPrefs().getString(getString(R.string.profile_uid_key), ""));
+            data.putString(getString(R.string.backend_password_key), getPrefs().getString(getString(R.string.profile_password_key), ""));
+
+            data.putString(getString(R.string.backend_radius_key), "123");
+
+            String msgId = getNextMsgId(getPrefs().getString(getString(R.string.pref_token_key), ""));
+            sendData(data, msgId);
+            Log.d(TAG, "Nearby lookup request sent");
+        } catch (IOException e) {
+            Log.e(TAG, "IOException while sending request...", e);
+        }
+    }
+
+    private void lookupUid(String targetUid) {
+        try {
+            Bundle data = new Bundle();
+            data.putString(getString(R.string.backend_action_key), getString(R.string.backend_action_lookup_profile_key));
+            data.putString(getString(R.string.backend_uid_key), getPrefs().getString(getString(R.string.profile_uid_key), ""));
+            data.putString(getString(R.string.backend_password_key), getPrefs().getString(getString(R.string.profile_password_key), ""));
+
+            data.putString(getString(R.string.backend_profile_key), targetUid);
+
+            String msgId = getNextMsgId(getPrefs().getString(getString(R.string.pref_token_key), ""));
+            sendData(data, msgId);
+            Log.d(TAG, "Profile lookup request sent for target user: " + targetUid);
+        } catch (IOException e) {
+            Log.e(TAG, "IOException while sending request...", e);
+        }
+    }
+
     private void sendMessage(String toUid, String message) {
         try {
             Bundle data = new Bundle();
-            data.putString("action", getString(R.string.backend_action_send_message_key));
+            data.putString(getString(R.string.backend_action_key), getString(R.string.backend_action_send_message_key));
             data.putString(getString(R.string.backend_uid_key), getPrefs().getString(getString(R.string.profile_uid_key), ""));
             data.putString(getString(R.string.backend_password_key), getPrefs().getString(getString(R.string.profile_password_key), ""));
 

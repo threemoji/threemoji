@@ -71,13 +71,13 @@ def message_callback(session, message):
             try:
               if data["action"] == "upload_profile":
                 add_user(uid, password, data["token"], data["emoji_1"], data["emoji_2"], data["emoji_3"],
-                         data["generated_name"], data["gender"], data["location"], data["radius"])
+                         data["generated_name"], data["gender"], data["radius"])
               else:
                 user = auth_user(uid, password, data["action"])
                 if user == 404:
                   if data["action"] == "update_profile":
                     add_user(uid, password, data["token"], data["emoji_1"], data["emoji_2"], data["emoji_3"],
-                             data["generated_name"], data["gender"], data["location"], data["radius"])
+                             data["generated_name"], data["gender"], data["radius"])
                 elif user != 403:
                   if data["action"] == "send_message":
                     send_message(uid, msg_id, data["to"], data["message"], get_timestamp())
@@ -91,7 +91,7 @@ def message_callback(session, message):
                     data_dict = {"token": data["token"],
                                  "emoji_1": data["emoji_1"], "emoji_2": data["emoji_2"], "emoji_3": data["emoji_3"],
                                  "generated_name": data["generated_name"], "gender": data["gender"],
-                                 "location": data["location"], "radius": data["radius"]}
+                                 "radius": data["radius"]}
                     update_user(uid, user, data_dict, data["action"])
                   elif data["action"] == "update_token":
                     update_user(uid, user, {"token": data["token"]}, data["action"])
@@ -110,7 +110,7 @@ def message_callback(session, message):
                             {'status': e.response.status,
                              'reason': e.response.reason})
 
-def add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, gender, location, radius):
+def add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, gender, radius):
   req = datastore.CommitRequest()
   req.mode = datastore.CommitRequest.NON_TRANSACTIONAL
 
@@ -141,12 +141,6 @@ def add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, ge
   gender_property = user.property.add()
   gender_property.name = 'gender'
   gender_property.value.string_value = gender
-  location_property = user.property.add()
-  location_property.name = 'location'
-  location_property.value.string_value = location
-  radius_property = user.property.add()
-  radius_property.name = 'radius'
-  radius_property.value.string_value = radius
   date_created_property = user.property.add()
   date_created_property.name = 'date_created'
   date_created_property.value.timestamp_microseconds_value = current_time
@@ -157,7 +151,7 @@ def add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, ge
 
   pg_conn = psycopg2.connect(host=PG_SERVER, user=PG_USER, password=PG_KEY, dbname=PG_DB)
   pg_curs = pg_conn.cursor()
-  pg_curs.execute('INSERT INTO ' + PG_TABLE + ' VALUES(%s);', (uid,))
+  pg_curs.execute('INSERT INTO ' + PG_TABLE + ' VALUES(%s, NULL, %s);', (uid, int(radius)))
   pg_conn.commit()
   pg_conn.close()
 
@@ -286,6 +280,16 @@ def update_user(uid, user, data_dict, action):
   req.mode = datastore.CommitRequest.NON_TRANSACTIONAL
   req.mutation.update.extend([user])
   datastore.commit(req)
+
+  if data_dict.has_key('radius'):
+    pg_conn = psycopg2.connect(host=PG_SERVER, user=PG_USER, password=PG_KEY, dbname=PG_DB)
+    pg_curs = pg_conn.cursor()
+    pg_curs.execute('UPDATE ' + PG_TABLE +
+                    ' SET radius = %s WHERE uid = %s;',
+                    (int(data_dict['radius']), uid))
+    pg_conn.commit()
+    pg_conn.close()
+
   logging.info('Updated user: ' + uid + ' action: ' + action)
 
 def update_location(uid, user, lat, lon):

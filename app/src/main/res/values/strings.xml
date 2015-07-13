@@ -84,7 +84,6 @@
     <string name="backend_emoji_three_key">emoji_3</string>
     <string name="backend_generated_name_key">generated_name</string>
     <string name="backend_gender_key">gender</string>
-    <string name="backend_location_key">location</string>
     <string name="backend_location_latitude_key">latitude</string>
     <string name="backend_location_longitude_key">longitude</string>
     <string name="backend_radius_key">radius</string>

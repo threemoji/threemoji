@@ -199,45 +199,6 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
                   .apply();
     }
 
-    private void uploadProfile(boolean update) {
-        int timeToLive = 60 * 60; // one hour
-        GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
-        String token = getPrefs().getString(getString(R.string.pref_token_key), "");
-        try {
-            Bundle data = new Bundle();
-            data.putString("action", update ? getString(
-                    R.string.backend_action_update_profile_key) : getString(
-                    R.string.backend_action_upload_profile_key));
-            data.putString(getString(R.string.backend_uid_key),
-                           getPrefs().getString(getString(R.string.profile_uid_key), ""));
-            data.putString(getString(R.string.backend_password_key),
-                           getPrefs().getString(getString(R.string.profile_password_key), ""));
-            data.putString(getString(R.string.backend_token_key), token);
-            data.putString(getString(R.string.backend_emoji_one_key),
-                    getPrefs().getString(getString(R.string.profile_emoji_one_key), ""));
-            data.putString(getString(R.string.backend_emoji_two_key),
-                    getPrefs().getString(getString(R.string.profile_emoji_two_key), ""));
-            data.putString(getString(R.string.backend_emoji_three_key),
-                    getPrefs().getString(getString(R.string.profile_emoji_three_key), ""));
-            data.putString(getString(R.string.backend_generated_name_key),
-                           getPrefs().getString(getString(R.string.profile_generated_name_key),
-                                                ""));
-            data.putString(getString(R.string.backend_gender_key),
-                           getPrefs().getString(getString(R.string.profile_gender_key), ""));
-            data.putString(getString(R.string.backend_location_key), "LOCATION");
-            data.putString(getString(R.string.backend_radius_key),
-                           getPrefs().getString(getString(R.string.pref_max_distance_key),
-                                                getString(R.string.pref_max_distance_default)));
-            String msgId = getNextMsgId(token);
-            gcm.send(getString(R.string.gcm_project_num) + "@gcm.googleapis.com", msgId,
-                     timeToLive, data);
-            Log.v(TAG, "profile uploaded");
-        } catch (IOException e) {
-            Log.e(TAG,
-                  "IOException while uploading profile to backend...", e);
-        }
-    }
-
     public String getNextMsgId(String token) {
         return token.substring(token.length() - 5).concat("" + System.currentTimeMillis());
     }

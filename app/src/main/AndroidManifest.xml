@@ -33,6 +33,8 @@
             </intent-filter>
         </receiver>
 
+        <receiver android:name=".LocationReceiver" />
+        <service android:name=".service.BackgroundLocationService" />
         <service
             android:name=".service.MyGcmListenerService"
             android:exported="false" >

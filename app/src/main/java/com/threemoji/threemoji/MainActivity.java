@@ -3,6 +3,7 @@ package com.threemoji.threemoji;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
+import com.threemoji.threemoji.service.BackgroundLocationService;
 import com.threemoji.threemoji.service.RegistrationIntentService;
 import com.threemoji.threemoji.utility.SvgUtils;
 
@@ -51,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (getPrefs().getBoolean(getString(R.string.pref_has_seen_start_page_key), false)) {
             startRegistrationIntentServiceIfNeeded();
+            startService(new Intent(this, BackgroundLocationService.class));
         } else {
             updateVersionInPrefs(BuildConfig.VERSION_CODE);
             startService(RegistrationIntentService.createIntent(this,

@@ -84,7 +84,10 @@ def message_callback(session, message):
                   if data["action"] == "send_message":
                     send_message(uid, msg_id, data["to"], data["message"], get_timestamp())
                   elif data["action"] == "lookup_nearby":
-                    lookup_nearby(uid, msg_id, user, data["radius"])
+                    if data["radius"] == "123":
+                      old_lookup_nearby(uid, msg_id, user)
+                    else:
+                      lookup_nearby(uid, msg_id, user, data["radius"])
                   elif data["action"] == "lookup_profile":
                     lookup_profile(uid, msg_id, user, data["profile"])
                   elif data["action"] == "update_location":
@@ -212,9 +215,7 @@ def lookup_profile(uid, message_id, user, target_uid):
     logging.info("Target user does not exist")
     user_dict[target_uid] = "404"
 
-  token = get_token(user)
-  # message_id = next_message_id(token)
-  send({"to": token,
+  send({"to": get_token(user),
         "message_id": message_id,
         "data": {
           "response_type": "lookup_profile",
@@ -224,19 +225,12 @@ def lookup_profile(uid, message_id, user, target_uid):
 
   logging.info('Profile lookup response sent to user: ' + uid + ' message_id: ' + message_id)
 
-def lookup_nearby(uid, message_id, user, radius):
+def old_lookup_nearby(uid, message_id, user):
   req = datastore.RunQueryRequest()
   query = req.query
   query.kind.add().name = 'User'
   resp = datastore.run_query(req)
   user_dict = {}
-
-  # pg_curs.execute('SELECT text(uid) FROM ' + PG_TABLE +
-  #                 ' WHERE ST_DWithin(ST_SetSRID(ST_MakePoint(%s, %s),4326)::GEOGRAPHY, location, %s);',
-  #                 (lon, lat, radius*1e3))
-  # results = pg_curs.fetchall()
-
-  # ALTER TABLE ${PG_TABLE} ADD COLUMN radius INTEGER;
 
   for entity_result in resp.batch.entity_result:
     found_user = entity_result.entity
@@ -248,9 +242,39 @@ def lookup_nearby(uid, message_id, user, radius):
         data_dict[prop.name] = prop.value.string_value
     user_dict[found_user.key.path_element[0].name] = data_dict
 
-  token = get_token(user)
-  # message_id = next_message_id(token)
-  send({"to": token,
+  send({"to": get_token(user),
+        "message_id": message_id,
+        "data": {
+          "response_type": "lookup_nearby",
+          "body": user_dict,
+          "timestamp": get_timestamp()
+        }})
+
+  logging.info('Old nearby lookup response sent to user: ' + uid + ' message_id: ' + message_id)
+
+def lookup_nearby(uid, message_id, user, radius):
+  # pg_curs.execute('SELECT text(uid) FROM ' + PG_TABLE +
+  #                 ' WHERE ST_DWithin(ST_SetSRID(ST_MakePoint(%s, %s),4326)::GEOGRAPHY, location, %s);',
+  #                 (lon, lat, radius*1e3))
+  # results = pg_curs.fetchall()
+
+  req = datastore.RunQueryRequest()
+  query = req.query
+  query.kind.add().name = 'User'
+  resp = datastore.run_query(req)
+  user_dict = {}
+
+  for entity_result in resp.batch.entity_result:
+    found_user = entity_result.entity
+    if found_user.key.path_element[0].name == uid:
+      continue
+    data_dict = {}
+    for prop in found_user.property:
+      if prop.name in ['emoji_1', 'emoji_2', 'emoji_3', 'generated_name', 'gender']:
+        data_dict[prop.name] = prop.value.string_value
+    user_dict[found_user.key.path_element[0].name] = data_dict
+
+  send({"to": get_token(user),
         "message_id": message_id,
         "data": {
           "response_type": "lookup_nearby",
@@ -295,9 +319,7 @@ def send_message(from_uid, message_id, to_uid, message, timestamp):
     logging.error('Failed to send message to user: ' + to_uid)
     return 404
 
-  token = get_token(user)
-  # message_id = next_message_id(token)
-  send({"to": token,
+  send({"to": get_token(user),
         "message_id": message_id,
         "data": {
           "from_uid": from_uid,
@@ -306,9 +328,6 @@ def send_message(from_uid, message_id, to_uid, message, timestamp):
         }})
 
   logging.info('Message sent to user: ' + to_uid + ' message_id: ' + message_id)
-
-def next_message_id(token):
-  return token[-4:] + str(long(time.time() * 1e4))
 
 def get_token(user):
   for prop in user.property:

@@ -76,7 +76,9 @@ public class ChatIntentService extends IntentService {
             data.putString(getString(R.string.backend_uid_key), getPrefs().getString(getString(R.string.profile_uid_key), ""));
             data.putString(getString(R.string.backend_password_key), getPrefs().getString(getString(R.string.profile_password_key), ""));
 
-            data.putString(getString(R.string.backend_radius_key), "123");
+            data.putString(getString(R.string.backend_radius_key), getPrefs().getString(getString(R.string.pref_max_distance_key), getString(R.string.pref_max_distance_default)));
+            data.putString(getString(R.string.backend_location_latitude_key), getPrefs().getString(getString(R.string.profile_location_latitude), ""));
+            data.putString(getString(R.string.backend_location_longitude_key), getPrefs().getString(getString(R.string.profile_location_longitude), ""));
 
             String msgId = getNextMsgId(getPrefs().getString(getString(R.string.pref_token_key), ""));
             sendData(data, msgId);

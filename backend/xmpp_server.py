@@ -1,5 +1,5 @@
 #/usr/bin/python
-import sys, json, xmpp, os, logging, time, traceback
+import sys, json, xmpp, os, logging, time
 import googledatastore as datastore
 import psycopg2
 from collections import OrderedDict
@@ -365,15 +365,19 @@ client = xmpp.Client(SERVER, debug=['socket'])
 client.connect(server=(SERVER,PORT), secure=1, use_srv=False)
 auth = client.auth(USERNAME, PASSWORD)
 if not auth:
-  print 'Authentication failed!'
+  logging.error('Authentication failed! Exiting...')
   sys.exit(1)
-
 client.RegisterHandler('message', message_callback)
 
 while True:
-  try:
+  if client.isConnected():
     client.Process(1)
-  except Exception as e:
-    traceback.print_exc()
-    logging.error('Something went wrong', exc_info=True)
-    break
+  else:
+    logging.error('Disconnected! Reconnecting...')
+    client = xmpp.Client(SERVER, debug=['socket'])
+    client.connect(server=(SERVER,PORT), secure=1, use_srv=False)
+    auth = client.auth(USERNAME, PASSWORD)
+    if not auth:
+      logging.error('Authentication failed! Exiting...')
+      sys.exit(1)
+    client.RegisterHandler('message', message_callback)

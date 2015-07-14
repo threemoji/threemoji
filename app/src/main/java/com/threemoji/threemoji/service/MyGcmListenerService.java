@@ -236,7 +236,7 @@ public class MyGcmListenerService extends GcmListenerService {
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_EMOJI_3, emoji3);
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_GENDER, gender);
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_GENERATED_NAME, generatedName);
-                values.put(ChatContract.PeopleNearbyEntry.COLUMN_DISTANCE, df.format(distance) + "km");
+                values.put(ChatContract.PeopleNearbyEntry.COLUMN_DISTANCE, df.format(distance));
 
                 Uri uri = getContentResolver().insert(
                         ChatContract.PeopleNearbyEntry.CONTENT_URI,

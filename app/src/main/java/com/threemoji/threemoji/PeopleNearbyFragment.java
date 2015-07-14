@@ -198,7 +198,7 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
                                                    .getIdentifier(emoji3, "drawable",
                                                                   mContext.getPackageName()));
             holder.personName.setText(personName);
-            holder.distance.setText(distance);
+            holder.distance.setText(distance + "km");
 
             holder.view.setOnClickListener(new View.OnClickListener() {
                 @Override

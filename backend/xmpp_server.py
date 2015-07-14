@@ -264,17 +264,21 @@ def old_lookup_nearby(uid, message_id, user):
   logging.info('Old nearby lookup response sent to user: ' + uid + ' message_id: ' + message_id)
 
 def lookup_nearby(uid, message_id, user, lat, lon, radius):
-  pg_curs.execute('SELECT uid FROM ' + PG_TABLE +
+  pg_curs.execute('SELECT uid, ST_Distance(location, ST_SetSRID(ST_MakePoint(%s, %s),4326)::GEOGRAPHY)' +
+                  ' FROM ' + PG_TABLE +
                   ' WHERE ST_DWithin(ST_SetSRID(ST_MakePoint(%s, %s),4326)::GEOGRAPHY, ' \
                                     'location, LEAST(radius * 1000, %s));',
-                  (lon, lat, int(radius)*1e3))
+                  (lon, lat, lon, lat, int(radius)*1e3))
   results = pg_curs.fetchall()
 
   req = datastore.LookupRequest()
+  dist_dict = {}
   for result in results:
     result_uid = result[0]
+    result_dist = result[1]
     if result_uid == uid:
       continue
+    dist_dict[result_uid] = result_dist
     user_key = datastore.Key()
     path = user_key.path_element.add()
     path.name = result_uid
@@ -286,10 +290,12 @@ def lookup_nearby(uid, message_id, user, lat, lon, radius):
 
   for entity_result in resp.found:
     found_user = entity_result.entity
+    found_user_uid = found_user.key.path_element[0].name
     data_dict = {}
     for prop in found_user.property:
       if prop.name in ['emoji_1', 'emoji_2', 'emoji_3', 'generated_name', 'gender']:
         data_dict[prop.name] = prop.value.string_value
+    data_dict['distance'] = dist_dict[found_user_uid]
     user_dict[found_user.key.path_element[0].name] = data_dict
 
   send({"to": get_token(user),

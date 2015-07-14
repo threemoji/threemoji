@@ -1,9 +1,8 @@
 #/usr/bin/python
-import sys, json, xmpp, os, logging, time
+import sys, json, xmpp, os, logging, time, traceback
 import googledatastore as datastore
-import traceback
-from collections import OrderedDict
 import psycopg2
+from collections import OrderedDict
 
 SERVER = 'gcm.googleapis.com'
 PORT = 5236 # change to 5235 for production
@@ -62,58 +61,70 @@ def message_callback(session, message):
             "message_type": "ack"})
       logging.info('Acknowledged GCM message: ' + msg_id)
 
-      if (msg_id not in message_id_cache):
+      if (msg.has_key('data') and msg_id not in message_id_cache):
         # Handle action
-        if msg.has_key('data'):
-          data = msg["data"]
-          if data.has_key('action'):
-            logging.info('Processing action: ' + data["action"])
+        data = msg["data"]
+        if data.has_key('action'):
+          logging.info('Processing action: ' + data["action"])
+          try:
             uid = data["uid"]
             password = data["password"]
-            try:
-              if data["action"] == "upload_profile":
-                add_user(uid, password, data["token"], data["emoji_1"], data["emoji_2"], data["emoji_3"],
-                         data["generated_name"], data["gender"], data["radius"])
-              else:
-                user = auth_user(uid, password, data["action"])
-                if user == 404:
-                  if data["action"] == "update_profile":
-                    add_user(uid, password, data["token"], data["emoji_1"], data["emoji_2"], data["emoji_3"],
-                             data["generated_name"], data["gender"], data["radius"])
-                elif user != 403:
-                  if data["action"] == "send_message":
-                    send_message(uid, msg_id, data["to"], data["message"], get_timestamp())
-                  elif data["action"] == "lookup_nearby":
-                    if data["radius"] == "123":
-                      old_lookup_nearby(uid, msg_id, user)
-                    else:
-                      lookup_nearby(uid, msg_id, user, data["latitude"], data["longitude"], data["radius"])
-                  elif data["action"] == "lookup_profile":
-                    lookup_profile(uid, msg_id, user, data["profile"])
-                  elif data["action"] == "update_location":
-                    update_location(uid, user, data["latitude"], data["longitude"])
-                  elif data["action"] == "update_profile":
-                    data_dict = {"token": data["token"],
-                                 "emoji_1": data["emoji_1"], "emoji_2": data["emoji_2"], "emoji_3": data["emoji_3"],
-                                 "generated_name": data["generated_name"], "gender": data["gender"],
-                                 "radius": data["radius"]}
-                    update_user(uid, user, data_dict, data["action"])
-                  elif data["action"] == "update_token":
-                    update_user(uid, user, {"token": data["token"]}, data["action"])
-                  elif data["action"] == "delete_profile":
-                    del_user(uid)
 
-            except datastore.RPCError as e:
-              # RPCError is raised if any error happened during a RPC.
-              # It includes the `method` called and the `reason` of the
-              # failure as well as the original `HTTPResponse` object.
-              logging.error('Error while doing datastore operation')
-              logging.error('RPCError: %(method)s %(reason)s',
-                            {'method': e.method,
-                             'reason': e.reason})
-              logging.error('HTTPError: %(status)s %(reason)s',
-                            {'status': e.response.status,
-                             'reason': e.response.reason})
+            if data["action"] == "upload_profile":
+              add_user(uid, password, data["token"], data["emoji_1"], data["emoji_2"], data["emoji_3"],
+                       data["generated_name"], data["gender"], data["radius"])
+
+            else:
+              user = auth_user(uid, password, data["action"])
+
+              if user == 404:
+                if data["action"] == "update_profile":
+                  add_user(uid, password, data["token"], data["emoji_1"], data["emoji_2"], data["emoji_3"],
+                           data["generated_name"], data["gender"], data["radius"])
+
+              elif user != 403:
+                if data["action"] == "send_message":
+                  send_message(uid, msg_id, data["to"], data["message"], get_timestamp())
+
+                elif data["action"] == "lookup_nearby":
+                  if data["radius"] == "123":
+                    old_lookup_nearby(uid, msg_id, user)
+                  else:
+                    lookup_nearby(uid, msg_id, user, data["latitude"], data["longitude"], data["radius"])
+
+                elif data["action"] == "lookup_profile":
+                  lookup_profile(uid, msg_id, user, data["profile"])
+
+                elif data["action"] == "update_location":
+                  update_location(uid, user, data["latitude"], data["longitude"])
+
+                elif data["action"] == "update_profile":
+                  data_dict = {}
+                  for param in data:
+                    if param in ['token', 'emoji_1', 'emoji_2', 'emoji_3', 'generated_name', 'gender', 'radius']:
+                      data_dict[param] = data[param]
+                  update_user(uid, user, data_dict, data["action"])
+
+                elif data["action"] == "update_token":
+                  update_user(uid, user, {"token": data["token"]}, data["action"])
+
+                elif data["action"] == "delete_profile":
+                  del_user(uid)
+
+          except KeyError as e:
+            logging.error('Invalid request: missing parameters for action: ' + data["action"])
+
+          except datastore.RPCError as e:
+            # RPCError is raised if any error happened during a RPC.
+            # It includes the `method` called and the `reason` of the
+            # failure as well as the original `HTTPResponse` object.
+            logging.error('Error while doing datastore operation')
+            logging.error('RPCError: %(method)s %(reason)s',
+                          {'method': e.method,
+                           'reason': e.reason})
+            logging.error('HTTPError: %(status)s %(reason)s',
+                          {'status': e.response.status,
+                           'reason': e.response.reason})
 
 def add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, gender, radius):
   req = datastore.CommitRequest()
@@ -254,14 +265,16 @@ def old_lookup_nearby(uid, message_id, user):
 
 def lookup_nearby(uid, message_id, user, lat, lon, radius):
   pg_curs.execute('SELECT uid FROM ' + PG_TABLE +
-                  ' WHERE ST_DWithin(ST_SetSRID(ST_MakePoint(%s, %s),4326)::GEOGRAPHY, location, LEAST(radius * 1000, %s))' +
-                  ' AND uid != %s;',
-                  (lon, lat, int(radius)*1e3, uid))
+                  ' WHERE ST_DWithin(ST_SetSRID(ST_MakePoint(%s, %s),4326)::GEOGRAPHY, ' \
+                                    'location, LEAST(radius * 1000, %s));',
+                  (lon, lat, int(radius)*1e3))
   results = pg_curs.fetchall()
 
   req = datastore.LookupRequest()
   for result in results:
     result_uid = result[0]
+    if result_uid == uid:
+      continue
     user_key = datastore.Key()
     path = user_key.path_element.add()
     path.name = result_uid

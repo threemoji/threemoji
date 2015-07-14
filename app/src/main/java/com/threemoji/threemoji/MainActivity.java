@@ -295,6 +295,7 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         viewPager.addOnPageChangeListener(onPageChangeListener);
+        onPageChangeListener.onPageSelected(0);
     }
 
 

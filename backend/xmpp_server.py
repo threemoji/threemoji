@@ -265,8 +265,9 @@ def old_lookup_nearby(uid, message_id, user):
 
 def lookup_nearby(uid, message_id, user, lat, lon, radius):
   pg_curs.execute('SELECT uid FROM ' + PG_TABLE +
-                  ' WHERE ST_DWithin(ST_SetSRID(ST_MakePoint(%s, %s),4326)::GEOGRAPHY, location, LEAST(radius * 1000, %s));',
-                  (lon, lat, int(radius)*1e3, uid))
+                  ' WHERE ST_DWithin(ST_SetSRID(ST_MakePoint(%s, %s),4326)::GEOGRAPHY, ' \
+                                    'location, LEAST(radius * 1000, %s));',
+                  (lon, lat, int(radius)*1e3))
   results = pg_curs.fetchall()
 
   req = datastore.LookupRequest()

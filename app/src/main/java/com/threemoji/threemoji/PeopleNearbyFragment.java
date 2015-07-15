@@ -6,6 +6,7 @@ import com.threemoji.threemoji.service.BackgroundLocationService;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -52,7 +53,7 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        
+
         FrameLayout frameLayout = (FrameLayout) inflater.inflate(
                 R.layout.fragment_people_nearby, container, false);
 
@@ -114,10 +115,21 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
     }
 
     private void getPeopleNearbyData() {
-        Toast.makeText(getActivity(), "Finding people nearby...", Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(getActivity(), BackgroundLocationService.class);
-        intent.putExtra(getString(R.string.location_service_lookup_nearby), true);
-        getActivity().startService(intent);
+        if (isNetworkProviderEnabled()) {
+            Toast.makeText(getActivity(), "Finding people nearby...", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(getActivity(), BackgroundLocationService.class);
+            intent.putExtra(getString(R.string.location_service_lookup_nearby), true);
+            getActivity().startService(intent);
+        } else {
+            Toast.makeText(getActivity(), "Please turn on your location services", Toast.LENGTH_LONG).show();
+            mSwipeRefreshLayout.setRefreshing(false);
+        }
+    }
+
+    private boolean isNetworkProviderEnabled() {
+        LocationManager locationManager = (LocationManager) getActivity().getSystemService(
+                Context.LOCATION_SERVICE);
+        return locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
 
     @Override

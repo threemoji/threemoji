@@ -22,6 +22,7 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,6 +33,8 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
 
     private boolean mIsVisibleToUser;
 
+    private RecyclerView mRecyclerView;
+    private TextView mNoDataText;
     private PeopleRecyclerViewAdapter mAdapter;
     private SwipeRefreshLayout mSwipeRefreshLayout;
 
@@ -49,13 +52,17 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        RecyclerView rv = (RecyclerView) inflater.inflate(
+        FrameLayout frameLayout = (FrameLayout) inflater.inflate(
                 R.layout.fragment_people_nearby, container, false);
 
+        mNoDataText = (TextView) frameLayout.findViewById(R.id.noDataText);
+        mRecyclerView = (RecyclerView) frameLayout.findViewById(R.id.recyclerView);
+
         initSwipeRefresh();
-        setupRecyclerView(rv);
+        setupRecyclerView(mRecyclerView);
 
         if (mAdapter.getItemCount() == 0){
+            showNoDataText();
             // Delay for 1s before finding people nearby;
             // this gives time for initial registration to succeed first
             new Handler().postDelayed(new Runnable() {
@@ -64,8 +71,10 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
                     getPeopleNearbyData();
                 }
             }, 1000);
+        } else {
+            hideNoDataText();
         }
-        return rv;
+        return frameLayout;
     }
 
     private void initSwipeRefresh() {
@@ -122,6 +131,21 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mSwipeRefreshLayout.setRefreshing(false);
         mAdapter.changeCursor(data);
+        if (mAdapter.getItemCount() == 0) {
+            showNoDataText();
+        } else {
+            hideNoDataText();
+        }
+    }
+
+    private void showNoDataText() {
+        mRecyclerView.setVisibility(View.GONE);
+        mNoDataText.setVisibility(View.VISIBLE);
+    }
+
+    private void hideNoDataText() {
+        mRecyclerView.setVisibility(View.VISIBLE);
+        mNoDataText.setVisibility(View.GONE);
     }
 
     @Override

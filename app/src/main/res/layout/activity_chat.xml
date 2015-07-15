@@ -26,23 +26,24 @@
         <LinearLayout
             android:id="@+id/bottom_bar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="wrap_content"
             android:background="@color/threemoji_green"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingBottom="4dp"
             android:paddingLeft="8dp"
             android:paddingRight="8dp"
-            android:paddingTop="4dp">
+            android:paddingTop="4dp"
+            android:minHeight="?attr/actionBarSize">
 
             <EditText
                 android:id="@+id/user_message"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:ems="10"
                 android:hint="Send message"
-                android:inputType="textMultiLine|textCapSentences" />
+                android:inputType="textMultiLine|textCapSentences"
+                android:maxHeight="150dp" />
 
             <ImageButton
                 android:id="@+id/submit_button"

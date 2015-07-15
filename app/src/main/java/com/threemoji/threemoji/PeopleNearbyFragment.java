@@ -129,7 +129,9 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
     // Called when view is pulled down
     @Override
     public void onRefresh() {
-        getActivity().startService(new Intent(getActivity(), BackgroundLocationService.class));
+        Intent intent = new Intent(getActivity(), BackgroundLocationService.class);
+        intent.putExtra(getString(R.string.location_service_must_restart), true);
+        getActivity().startService(intent);
         getPeopleNearbyData();
     }
 

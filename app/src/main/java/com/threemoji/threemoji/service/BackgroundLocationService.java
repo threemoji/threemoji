@@ -6,6 +6,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 import com.threemoji.threemoji.LocationReceiver;
+import com.threemoji.threemoji.R;
 
 import android.app.PendingIntent;
 import android.app.Service;
@@ -21,8 +22,8 @@ public class BackgroundLocationService extends Service implements
 
     public static final String TAG = BackgroundLocationService.class.getSimpleName();
 
-    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 1000 * 60 * 30;
-    public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = 1000 * 10;
+    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 1000 * 60 * 60;
+    public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = 1000 * 60 * 30;
     public static final int BROADCAST_REQUEST_CODE = 1;
 
     private GoogleApiClient mGoogleApiClient;
@@ -38,7 +39,7 @@ public class BackgroundLocationService extends Service implements
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (mGoogleApiClient.isConnected()) {
+        if (intent != null && intent.getBooleanExtra(getString(R.string.location_service_must_restart), false) && mGoogleApiClient.isConnected()) {
             stopLocationUpdates();
             startLocationUpdates();
         }
@@ -93,6 +94,7 @@ public class BackgroundLocationService extends Service implements
     }
 
     private void startLocationUpdates() {
+        Log.v(TAG, "Starting location updates");
         Intent intent = new Intent(this, LocationReceiver.class);
         mLocationIntent = PendingIntent.getBroadcast(this, BROADCAST_REQUEST_CODE, intent,
                                                      PendingIntent.FLAG_UPDATE_CURRENT);

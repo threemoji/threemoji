@@ -14,7 +14,9 @@
         android:key="@string/pref_filter_gender_key"
         android:title="@string/pref_filter_gender_label" />
 
-    <com.threemoji.threemoji.DistancePreference android:title="@string/pref_max_distance_label" />
+    <com.threemoji.threemoji.DistancePreference
+        android:key="@string/pref_max_distance_key"
+        android:title="@string/pref_max_distance_label" />
 
     <ListPreference
         android:defaultValue="@string/pref_chat_archive_duration_default"

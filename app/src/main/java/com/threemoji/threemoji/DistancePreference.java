@@ -11,6 +11,8 @@ import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.threemoji.threemoji.service.RegistrationIntentService;
+
 /**
  * This class is for the custom seekbar preference item seen in settings
  * http://stackoverflow.com/questions/16108609/android-creating-custom-preference
@@ -66,6 +68,9 @@ public class DistancePreference extends Preference {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                Context context = seekBar.getContext();
+                context.startService(RegistrationIntentService.createIntent(context,
+                        RegistrationIntentService.Action.UPDATE_PROFILE));
             }
         });
 

@@ -112,7 +112,7 @@ def message_callback(session, message):
                   del_user(uid)
 
           except KeyError as e:
-            logging.error('Invalid request: missing parameters for action: ' + data["action"])
+            logging.exception('Invalid request: missing parameters for action: ' + data["action"])
 
           except datastore.RPCError as e:
             # RPCError is raised if any error happened during a RPC.
@@ -125,6 +125,10 @@ def message_callback(session, message):
             logging.error('HTTPError: %(status)s %(reason)s',
                           {'status': e.response.status,
                            'reason': e.response.reason})
+
+          except psycopg2.Error as e:
+            pg_conn.rollback()
+            logging.exception('Error doing PostGIS database operation for action: ' + data["action"])
 
 def add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, gender, radius):
   req = datastore.CommitRequest()

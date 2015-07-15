@@ -5,9 +5,11 @@ import com.threemoji.threemoji.service.BackgroundLocationService;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -27,7 +29,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class PeopleNearbyFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener {
+public class PeopleNearbyFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener, SharedPreferences.OnSharedPreferenceChangeListener{
 
     public static final String TAG = PeopleNearbyFragment.class.getSimpleName();
 
@@ -52,6 +54,9 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        PreferenceManager.getDefaultSharedPreferences(getActivity()).registerOnSharedPreferenceChangeListener(this);
+
         FrameLayout frameLayout = (FrameLayout) inflater.inflate(
                 R.layout.fragment_people_nearby, container, false);
 
@@ -129,8 +134,11 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        mSwipeRefreshLayout.setRefreshing(false);
         mAdapter.changeCursor(data);
+        hideNoDataTextIfNeeded();
+    }
+
+    private void hideNoDataTextIfNeeded() {
         if (mAdapter.getItemCount() == 0) {
             showNoDataText();
         } else {
@@ -155,6 +163,7 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
     // Called when view is pulled down
     @Override
     public void onRefresh() {
+        hideNoDataText();
         getPeopleNearbyData();
     }
 
@@ -173,6 +182,15 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
     @Override
     public void onStop() {
         super.onStop();
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        Log.v(TAG, "Preferences changed: " + key);
+        if (key.equals(getString(R.string.prefs_lookup_nearby_time))) {
+            mSwipeRefreshLayout.setRefreshing(false);
+            hideNoDataTextIfNeeded();
+        }
     }
 
 

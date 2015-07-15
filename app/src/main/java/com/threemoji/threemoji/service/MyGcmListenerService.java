@@ -15,6 +15,7 @@ import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.CursorIndexOutOfBoundsException;
 import android.graphics.BitmapFactory;
@@ -58,6 +59,7 @@ public class MyGcmListenerService extends GcmListenerService {
 
             } else if (responseType.equals(getString(R.string.backend_action_lookup_nearby_key))) {
                 Log.d(TAG, "Nearby lookup response: " + data.getString("body"));
+                updateLookupNearbyTimestamp();
                 storePeopleNearbyData(data.getString("body"));
             }
         } else {
@@ -206,6 +208,13 @@ public class MyGcmListenerService extends GcmListenerService {
         Uri uri = getContentResolver().insert(
                 ChatContract.MessageEntry.buildMessagesByUidUri(partnerUid), values);
         Log.d(TAG, "Added alert message: " + message + ", " + uri.toString());
+    }
+
+    private void updateLookupNearbyTimestamp() {
+        long time = System.currentTimeMillis();
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+        editor.putLong(getString(R.string.prefs_lookup_nearby_time), time);
+        editor.apply();
     }
 
     private void storePeopleNearbyData(String body) {

@@ -4,11 +4,13 @@ import com.threemoji.threemoji.data.ChatContract;
 import com.threemoji.threemoji.service.BackgroundLocationService;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -16,6 +18,7 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -115,21 +118,41 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
     }
 
     private void getPeopleNearbyData() {
-        if (isNetworkProviderEnabled()) {
+        if (isLocationSettingsEnabled()) {
             Toast.makeText(getActivity(), "Finding people nearby...", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(getActivity(), BackgroundLocationService.class);
             intent.putExtra(getString(R.string.location_service_lookup_nearby), true);
             getActivity().startService(intent);
         } else {
-            Toast.makeText(getActivity(), "Please turn on your location services", Toast.LENGTH_LONG).show();
             mSwipeRefreshLayout.setRefreshing(false);
+            showLocationSettingsDialog();
         }
     }
 
-    private boolean isNetworkProviderEnabled() {
+    private boolean isLocationSettingsEnabled() {
         LocationManager locationManager = (LocationManager) getActivity().getSystemService(
                 Context.LOCATION_SERVICE);
         return locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+    }
+
+    private void showLocationSettingsDialog() {
+        final AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+        dialog.setTitle("Enable Location")
+              .setMessage("Please enable the \"Battery saving\" location mode to " +
+                          "use Threemoji.")
+              .setPositiveButton("Location Settings", new DialogInterface.OnClickListener() {
+                  @Override
+                  public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                      Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                      startActivity(myIntent);
+                  }
+              })
+              .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                  @Override
+                  public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                  }
+              });
+        dialog.show();
     }
 
     @Override

@@ -1,7 +1,6 @@
 package com.threemoji.threemoji;
 
 import com.threemoji.threemoji.data.ChatContract;
-import com.threemoji.threemoji.service.ChatIntentService;
 import com.threemoji.threemoji.service.BackgroundLocationService;
 
 import android.content.Context;
@@ -106,8 +105,11 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
 
     private void getPeopleNearbyData() {
         Toast.makeText(getActivity(), "Finding people nearby...", Toast.LENGTH_SHORT).show();
-        getActivity().startService(ChatIntentService.createIntent(getActivity(),
-                                                                  ChatIntentService.Action.LOOKUP_ALL));
+        Intent intent = new Intent(getActivity(), BackgroundLocationService.class);
+        intent.putExtra(getString(R.string.location_service_lookup_nearby), true);
+        getActivity().startService(intent);
+//        getActivity().startService(ChatIntentService.createIntent(getActivity(),
+//                                                                  ChatIntentService.Action.LOOKUP_ALL));
     }
 
     @Override
@@ -129,9 +131,6 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
     // Called when view is pulled down
     @Override
     public void onRefresh() {
-        Intent intent = new Intent(getActivity(), BackgroundLocationService.class);
-        intent.putExtra(getString(R.string.location_service_must_restart), true);
-        getActivity().startService(intent);
         getPeopleNearbyData();
     }
 

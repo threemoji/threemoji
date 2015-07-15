@@ -102,6 +102,6 @@
     <string name="chat_intent_extra_action">action</string>
     <string name="chat_intent_extra_uid">uid</string>
     <string name="chat_intent_extra_message">message</string>
-    <string name="location_service_must_restart">restart</string>
+    <string name="location_service_lookup_nearby">restart</string>
 
 </resources>

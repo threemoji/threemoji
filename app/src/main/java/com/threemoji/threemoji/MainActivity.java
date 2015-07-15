@@ -37,11 +37,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener{
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private DrawerLayout mDrawerLayout;
     private ViewPager mViewPager;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
 
     // ================================================================
     // Initialisation methods
@@ -49,6 +50,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(
+                this);
 
         if (getPrefs().getBoolean(getString(R.string.pref_has_seen_start_page_key), false)) {
             startRegistrationIntentServiceIfNeeded();
@@ -274,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
         adapter.addFragment(new PeopleNearbyFragment(), "People nearby");
         viewPager.setAdapter(adapter);
 
-        final SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
+        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
         ViewPager.OnPageChangeListener onPageChangeListener = new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset,
@@ -284,9 +288,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageSelected(int position) {
                 if (position == 1) {
-                    swipeRefreshLayout.setEnabled(true);
+                    mSwipeRefreshLayout.setEnabled(true);
                 } else {
-                    swipeRefreshLayout.setEnabled(false);
+                    mSwipeRefreshLayout.setEnabled(false);
                 }
             }
 
@@ -338,6 +342,14 @@ public class MainActivity extends AppCompatActivity {
     // ================================================================
     private SharedPreferences getPrefs() {
         return PreferenceManager.getDefaultSharedPreferences(this);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        Log.v(TAG, "Preferences changed: " + key);
+        if (key.equals(getString(R.string.prefs_lookup_nearby_time))) {
+            mSwipeRefreshLayout.setRefreshing(false);
+        }
     }
 
 

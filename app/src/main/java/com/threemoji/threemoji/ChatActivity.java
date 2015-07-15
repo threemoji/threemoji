@@ -58,8 +58,8 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             ChatContract.PartnerEntry.COLUMN_GENERATED_NAME,
             ChatContract.PartnerEntry.COLUMN_IS_ALIVE
     };
-    public static final int FADE_IN_DURATION_MILLIS = 500;
-    public static final int FADE_OUT_DURATION_MILLIS = 500;
+    public static final int FADE_IN_DURATION_MILLIS = 300;
+    public static final int FADE_OUT_DURATION_MILLIS = 300;
     public static final int TIMESTAMP_DISPLAY_DURATION_MILLIS = 10000;
 
     private MessagesRecyclerViewAdapter mMessagesAdapter;
@@ -265,15 +265,21 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         });
 
-        messageTime.setVisibility(View.VISIBLE);
-        messageTime.startAnimation(fadeIn);
+        if (messageTime.getVisibility() == View.VISIBLE) {
+            messageTime.startAnimation(fadeOut);
+        } else {
+            messageTime.setVisibility(View.VISIBLE);
+            messageTime.startAnimation(fadeIn);
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                messageTime.startAnimation(fadeOut);
-            }
-        }, TIMESTAMP_DISPLAY_DURATION_MILLIS);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (messageTime.getVisibility() == View.VISIBLE) {
+                        messageTime.startAnimation(fadeOut);
+                    }
+                }
+            }, TIMESTAMP_DISPLAY_DURATION_MILLIS);
+        }
     }
 
     @Override

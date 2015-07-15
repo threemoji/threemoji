@@ -346,7 +346,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        Log.v(TAG, "Preferences changed: " + key);
         if (key.equals(getString(R.string.prefs_lookup_nearby_time))) {
             mSwipeRefreshLayout.setRefreshing(false);
         }

@@ -9,12 +9,14 @@ import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.CursorIndexOutOfBoundsException;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -36,6 +38,9 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class ChatActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     public static final String TAG = ChatActivity.class.getSimpleName();
@@ -324,6 +329,30 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
                 mMessagesAdapter.moveToEnd();
                 break;
         }
+    }
+
+    @Override
+    protected void onPause() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        Set<String> uidsOfOpenedChats = prefs.getStringSet(getString(R.string.uids_of_opened_chats),
+                                                           new HashSet<String>());
+        uidsOfOpenedChats.remove(mPartnerUid);
+        prefs.edit().putStringSet(getString(R.string.uids_of_opened_chats), uidsOfOpenedChats).apply();
+
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        Set<String> uidsOfOpenedChats = prefs.getStringSet(getString(R.string.uids_of_opened_chats),
+                                                           new HashSet<String>());
+        uidsOfOpenedChats.add(mPartnerUid);
+        prefs.edit().putStringSet(getString(R.string.uids_of_opened_chats), uidsOfOpenedChats).apply();
     }
 
     @Override

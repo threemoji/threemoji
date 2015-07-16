@@ -3,7 +3,6 @@ package com.threemoji.threemoji.service;
 import com.google.android.gms.gcm.GcmListenerService;
 
 import com.threemoji.threemoji.ChatActivity;
-import com.threemoji.threemoji.MyLifecycleHandler;
 import com.threemoji.threemoji.R;
 import com.threemoji.threemoji.data.ChatContract;
 
@@ -27,8 +26,9 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-import java.util.Iterator;
 import java.text.DecimalFormat;
+import java.util.Iterator;
+import java.util.Set;
 
 public class MyGcmListenerService extends GcmListenerService {
     public static final String TAG = MyGcmListenerService.class.getSimpleName();
@@ -81,10 +81,18 @@ public class MyGcmListenerService extends GcmListenerService {
 
             storeMessage(fromUid, timestamp, message);
 
-            if (!MyLifecycleHandler.isApplicationVisible() && isNotificationsEnabled()) {
+            if (!isChatVisible(fromUid) && isNotificationsEnabled()) {
                 sendNotification(fromUid, fromName, message);
             }
         }
+    }
+
+    private boolean isChatVisible(String fromUid) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        Set<String> uidsOfOpenedChats = prefs.getStringSet(getString(R.string.uids_of_opened_chats),
+                                                           null);
+
+        return uidsOfOpenedChats != null && uidsOfOpenedChats.contains(fromUid);
     }
 
     private boolean isNotificationsEnabled() {

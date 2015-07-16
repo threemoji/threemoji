@@ -107,4 +107,5 @@
     <string name="location_service_lookup_nearby">restart</string>
 
     <string name="no_one_nearby">Could not find anyone nearby.</string>
+    <string name="uids_of_opened_chats">uidsOfOpenedChats</string>
 </resources>

@@ -27,6 +27,7 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import java.text.DecimalFormat;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -90,9 +91,9 @@ public class MyGcmListenerService extends GcmListenerService {
     private boolean isChatVisible(String fromUid) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         Set<String> uidsOfOpenedChats = prefs.getStringSet(getString(R.string.uids_of_opened_chats),
-                                                           null);
+                                                           new HashSet<String>());
 
-        return uidsOfOpenedChats != null && uidsOfOpenedChats.contains(fromUid);
+        return !uidsOfOpenedChats.isEmpty() && uidsOfOpenedChats.contains(fromUid);
     }
 
     private boolean isNotificationsEnabled() {

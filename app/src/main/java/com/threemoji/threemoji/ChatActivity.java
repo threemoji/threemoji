@@ -332,6 +332,10 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+    }
+
+    @Override
     protected void onPause() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -353,10 +357,6 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
                                                            new HashSet<String>());
         uidsOfOpenedChats.add(mPartnerUid);
         prefs.edit().putStringSet(getString(R.string.uids_of_opened_chats), uidsOfOpenedChats).apply();
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
     }
 
 

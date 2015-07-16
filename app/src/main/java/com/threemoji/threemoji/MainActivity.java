@@ -51,8 +51,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(
-                this);
+        getPrefs().registerOnSharedPreferenceChangeListener(this);
 
         if (getPrefs().getBoolean(getString(R.string.pref_has_seen_start_page_key), false)) {
             startRegistrationIntentServiceIfNeeded();
@@ -72,6 +71,8 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         initNavigationDrawer();
 
         initViewPagerAndTabs();
+
+        deleteAllOpenedChatUids();
     }
 
     private void startStartPage() {
@@ -80,6 +81,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         finish();
     }
 
+    private void deleteAllOpenedChatUids() {
+        getPrefs().edit().remove(getString(R.string.uids_of_opened_chats)).apply();
+    }
 
     // ================================================================
     // Methods to check if registration is needed

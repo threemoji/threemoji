@@ -18,6 +18,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.CursorIndexOutOfBoundsException;
+import android.database.sqlite.SQLiteException;
 import android.graphics.BitmapFactory;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -246,11 +247,14 @@ public class MyGcmListenerService extends GcmListenerService {
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_GENDER, gender);
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_GENERATED_NAME, generatedName);
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_DISTANCE, df.format(distance));
-
-                Uri uri = getContentResolver().insert(
-                        ChatContract.PeopleNearbyEntry.CONTENT_URI,
-                        values);
-                Log.d(TAG, "Added person nearby: " + uri.toString());
+                try {
+                    Uri uri = getContentResolver().insert(
+                            ChatContract.PeopleNearbyEntry.CONTENT_URI,
+                            values);
+                    Log.d(TAG, "Added person nearby: " + uri.toString());
+                } catch (SQLiteException e) {
+                    Log.e(TAG, "Failed to add new row to people nearby table");
+                }
             }
 
         } catch (JSONException e) {

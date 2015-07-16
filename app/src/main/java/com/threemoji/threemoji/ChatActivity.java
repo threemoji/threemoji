@@ -85,9 +85,9 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
 
         initFields(getIntent());
 
-        cancelNotifications();
-
         if (mIsAlive) {
+            cancelNotifications();
+            resetNumNewMessages();
             updatePartnerIfNeeded();
         } else {
             disableBottomBar();
@@ -147,6 +147,13 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(getIntIDFromUid(mPartnerUid));
+    }
+
+    private void resetNumNewMessages() {
+        ContentValues values = new ContentValues();
+        values.put(ChatContract.PartnerEntry.COLUMN_NUM_NEW_MESSAGES, 0);
+        getContentResolver().update(
+                ChatContract.PartnerEntry.buildPartnerByUidUri(mPartnerUid), values, null, null);
     }
 
     private int getIntIDFromUid(String fromUuid) {

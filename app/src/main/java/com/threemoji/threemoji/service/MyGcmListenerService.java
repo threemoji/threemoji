@@ -40,6 +40,8 @@ public class MyGcmListenerService extends GcmListenerService {
             ChatContract.PartnerEntry.COLUMN_GENERATED_NAME};
     public static final String[] PARTNER_PROJECTION_GENERATED_NAME = new String[]{
             ChatContract.PartnerEntry.COLUMN_GENERATED_NAME};
+    public static final String[] PARTNER_PROJECTION_NUM_NEW_MESSAGES = new String[]{
+            ChatContract.PartnerEntry.COLUMN_NUM_NEW_MESSAGES};
 
     /**
      * Called when message is received.
@@ -82,6 +84,7 @@ public class MyGcmListenerService extends GcmListenerService {
             storeMessage(fromUid, timestamp, message);
 
             if (!isChatVisible(fromUid) && isNotificationsEnabled()) {
+                updateNumNewMessages(fromUid);
                 sendNotification(fromUid, fromName, message);
             }
         }
@@ -297,6 +300,23 @@ public class MyGcmListenerService extends GcmListenerService {
         } catch (NullPointerException | CursorIndexOutOfBoundsException e) {
             return "";
         }
+    }
+
+    private void updateNumNewMessages(String fromUid) {
+        Cursor cursor = getPartnerCursor(fromUid, PARTNER_PROJECTION_NUM_NEW_MESSAGES);
+        int newMessages = 0;
+        try {
+            cursor.moveToNext();
+            newMessages = cursor.getInt(0);
+            cursor.close();
+        } catch (NullPointerException | CursorIndexOutOfBoundsException e) {
+            Log.e(TAG, "Could not get number of new messages for uid: " + fromUid);
+        }
+
+        ContentValues values = new ContentValues();
+        values.put(ChatContract.PartnerEntry.COLUMN_NUM_NEW_MESSAGES, ++newMessages);
+        getContentResolver().update(
+                ChatContract.PartnerEntry.buildPartnerByUidUri(fromUid), values, null, null);
     }
 
     /**

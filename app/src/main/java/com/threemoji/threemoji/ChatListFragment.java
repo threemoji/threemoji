@@ -34,7 +34,8 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
             ChatContract.PartnerEntry.COLUMN_GENDER,
             ChatContract.PartnerEntry.COLUMN_GENERATED_NAME,
             ChatContract.PartnerEntry.COLUMN_IS_ALIVE,
-            ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY
+            ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY,
+            ChatContract.PartnerEntry.COLUMN_NUM_NEW_MESSAGES
     };
     public static final String CHAT_ITEM_SORT_ORDER =
             ChatContract.PartnerEntry.TABLE_NAME + "." + ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY + " DESC";
@@ -140,12 +141,26 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
             final String partnerName = mCursor.getString(5);
             final boolean isAlive = mCursor.getInt(6) > 0;
             final long lastActivity = mCursor.getLong(7);
+            final int numNewMessages = mCursor.getInt(8);
 
-            holder.emoji1.setImageResource(mContext.getResources().getIdentifier(emoji1, "drawable", mContext.getPackageName()));
-            holder.emoji2.setImageResource(mContext.getResources().getIdentifier(emoji2, "drawable", mContext.getPackageName()));
-            holder.emoji3.setImageResource(mContext.getResources().getIdentifier(emoji3, "drawable", mContext.getPackageName()));
+            holder.emoji1.setImageResource(mContext.getResources()
+                                                   .getIdentifier(emoji1, "drawable",
+                                                                  mContext.getPackageName()));
+            holder.emoji2.setImageResource(mContext.getResources()
+                                                   .getIdentifier(emoji2, "drawable",
+                                                                  mContext.getPackageName()));
+            holder.emoji3.setImageResource(mContext.getResources()
+                                                   .getIdentifier(emoji3, "drawable",
+                                                                  mContext.getPackageName()));
             holder.partnerName.setText(partnerName);
             holder.lastActivity.setText(DateUtils.getTimeAgo(lastActivity));
+            if (numNewMessages == 0) {
+                holder.numNewMessages.setVisibility(View.GONE);
+            } else {
+                holder.numNewMessages.setVisibility(View.VISIBLE);
+                holder.numNewMessages.setText(
+                        numNewMessages > 99 ? "99+" : String.valueOf(numNewMessages));
+            }
 
             holder.view.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -171,6 +186,7 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
             public final ImageView emoji3;
             public final TextView partnerName;
             public final TextView lastActivity;
+            public final TextView numNewMessages;
 
             public ViewHolder(View view) {
                 super(view);
@@ -180,6 +196,7 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
                 emoji3 = (ImageView) view.findViewById(R.id.emoji3);
                 partnerName = (TextView) view.findViewById(R.id.partnerName);
                 lastActivity = (TextView) view.findViewById(R.id.lastActivity);
+                numNewMessages = (TextView) view.findViewById(R.id.numNewMessages);
             }
         }
     }

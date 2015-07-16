@@ -58,17 +58,19 @@
 
     </LinearLayout>
 
-    <!--<TextView-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:textAppearance="?android:attr/textAppearanceSmall"-->
-        <!--android:text="99+"-->
-        <!--android:id="@+id/textView"-->
-        <!--android:gravity="center|right"-->
-        <!--android:background="@drawable/notifications_alert"-->
-        <!--android:padding="4dp"-->
-        <!--android:layout_marginLeft="4dp"-->
-        <!--android:textColor="@color/white" />-->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="22dp"
+        android:text="88"
+        android:id="@+id/numNewMessages"
+        android:gravity="center"
+        android:background="@drawable/notifications_alert"
+        android:textColor="@color/white"
+        android:textSize="12sp"
+        android:textIsSelectable="true"
+        android:minWidth="22dp"
+        android:textStyle="bold"
+        android:layout_marginRight="4dp" />
 
 
 </LinearLayout>

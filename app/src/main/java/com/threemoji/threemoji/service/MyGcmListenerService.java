@@ -26,7 +26,6 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -246,7 +245,6 @@ public class MyGcmListenerService extends GcmListenerService {
                 String gender = jsonPersonData.getString("gender");
                 String generatedName = jsonPersonData.getString("generated_name");
                 Double distance = jsonPersonData.getDouble("distance")/1000;
-                DecimalFormat df = new DecimalFormat("#.##");
 
                 ContentValues values = new ContentValues();
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_UID, uid);
@@ -255,7 +253,7 @@ public class MyGcmListenerService extends GcmListenerService {
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_EMOJI_3, emoji3);
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_GENDER, gender);
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_GENERATED_NAME, generatedName);
-                values.put(ChatContract.PeopleNearbyEntry.COLUMN_DISTANCE, df.format(distance));
+                values.put(ChatContract.PeopleNearbyEntry.COLUMN_DISTANCE, distance);
                 try {
                     Uri uri = getContentResolver().insert(
                             ChatContract.PeopleNearbyEntry.CONTENT_URI,

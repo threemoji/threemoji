@@ -31,9 +31,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.DecimalFormat;
+
 public class PeopleNearbyFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener{
 
     public static final String TAG = PeopleNearbyFragment.class.getSimpleName();
+    public static DecimalFormat mDecimalFormat = new DecimalFormat("#.##");
 
     private boolean mIsVisibleToUser;
 
@@ -51,6 +54,9 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
             ChatContract.PeopleNearbyEntry.COLUMN_GENERATED_NAME,
             ChatContract.PeopleNearbyEntry.COLUMN_DISTANCE
     };
+
+    private final String PEOPLE_NEARBY_ITEM_SORT_ORDER =
+            ChatContract.PeopleNearbyEntry.TABLE_NAME + "." + ChatContract.PeopleNearbyEntry.COLUMN_DISTANCE + " ASC";
 
     @Nullable
     @Override
@@ -96,7 +102,7 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
     private void setupRecyclerView(RecyclerView recyclerView) {
         Cursor cursor = getActivity().getContentResolver()
                                      .query(ChatContract.PeopleNearbyEntry.CONTENT_URI,
-                                            PEOPLE_NEARBY_ITEM_PROJECTION, null, null, null);
+                                            PEOPLE_NEARBY_ITEM_PROJECTION, null, null, PEOPLE_NEARBY_ITEM_SORT_ORDER);
 
         final LinearLayoutManager layoutManager = new LinearLayoutManager(recyclerView.getContext());
         recyclerView.setLayoutManager(layoutManager);
@@ -158,7 +164,7 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new CursorLoader(getActivity(), ChatContract.PeopleNearbyEntry.CONTENT_URI,
-                                PEOPLE_NEARBY_ITEM_PROJECTION, null, null, null);
+                                PEOPLE_NEARBY_ITEM_PROJECTION, null, null, PEOPLE_NEARBY_ITEM_SORT_ORDER);
     }
 
     @Override
@@ -246,9 +252,9 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
             final String emoji1 = mCursor.getString(1);
             final String emoji2 = mCursor.getString(2);
             final String emoji3 = mCursor.getString(3);
-            final String gender = mCursor.getString(4);
+            final String gender = mCursor.getString(4).charAt(0) + mCursor.getString(4).toLowerCase().substring(1);
             final String personName = mCursor.getString(5);
-            final String distance = mCursor.getString(6);
+            final String distance = mDecimalFormat.format(mCursor.getDouble(6));
 
             holder.emoji1.setImageResource(mContext.getResources()
                                                    .getIdentifier(emoji1, "drawable",
@@ -260,7 +266,8 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
                                                    .getIdentifier(emoji3, "drawable",
                                                                   mContext.getPackageName()));
             holder.personName.setText(personName);
-            holder.distance.setText(distance + "km");
+            holder.gender.setText(gender);
+            holder.distance.setText(distance + "km away");
 
             holder.view.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -290,6 +297,7 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
             public final ImageView emoji2;
             public final ImageView emoji3;
             public final TextView personName;
+            public final TextView gender;
             public final TextView distance;
 
             public ViewHolder(View view) {
@@ -299,6 +307,7 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
                 emoji2 = (ImageView) view.findViewById(R.id.emoji2);
                 emoji3 = (ImageView) view.findViewById(R.id.emoji3);
                 personName = (TextView) view.findViewById(R.id.personName);
+                gender = (TextView) view.findViewById(R.id.gender);
                 distance = (TextView) view.findViewById(R.id.distance);
             }
         }

@@ -256,7 +256,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         }
     }
 
-    public void showMessageTime(View view) {
+    public static void showMessageTime(View view) {
         final TextView messageTime = (TextView) view.findViewById(R.id.messageTime);
 
         AlphaAnimation fadeIn = new AlphaAnimation(0.0f, 1.0f);
@@ -394,6 +394,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             String message = mCursor.getString(2);
             holder.messageData.setText(message);
 
+            holder.messageTime.setVisibility(View.GONE);
             holder.messageTime.setText(DateUtils.getDate(mCursor.getLong(0)));
 
             FrameLayout wrapper = (FrameLayout) holder.messageData.getParent();
@@ -403,11 +404,13 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
 
             if (messageType.equals(ChatContract.MessageEntry.MessageType.SENT.name())) {
                 parent.setGravity(Gravity.RIGHT);
+                resetOnClickListener(parent);
                 wrapper.setBackgroundResource(R.drawable.chat_box_sent);
                 modifyParamsForMessages(holder, parent);
 
             } else if (messageType.equals(ChatContract.MessageEntry.MessageType.RECEIVED.name())) {
                 parent.setGravity(Gravity.LEFT);
+                resetOnClickListener(parent);
                 wrapper.setBackgroundResource(R.drawable.chat_box_received);
                 modifyParamsForMessages(holder, parent);
 
@@ -417,6 +420,15 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
                 wrapper.setBackgroundResource(R.drawable.chat_box_alert);
                 modifyParamsForAlerts(holder, parent);
             }
+        }
+
+        private void resetOnClickListener(LinearLayout parent) {
+            parent.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    showMessageTime(v);
+                }
+            });
         }
 
         private void modifyParamsForMessages(ViewHolder holder, LinearLayout parent) {

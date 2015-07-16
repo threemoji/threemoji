@@ -6,8 +6,7 @@
     android:paddingBottom="@dimen/chat_box_message_wrapper_padding_top_bottom"
     android:paddingLeft="@dimen/chat_box_message_wrapper_padding_left_right"
     android:paddingRight="@dimen/chat_box_message_wrapper_padding_left_right"
-    android:paddingTop="@dimen/chat_box_message_wrapper_padding_top_bottom"
-    android:onClick="showMessageTime">
+    android:paddingTop="@dimen/chat_box_message_wrapper_padding_top_bottom">
 
     <TextView
         android:layout_width="wrap_content"

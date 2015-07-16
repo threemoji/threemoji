@@ -43,9 +43,9 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Violetred Zebrafish"
+            android:text="Aaaaaaaaa Aaaaaaaaa"
             android:id="@+id/partnerName"
-            android:textSize="14sp"
+            android:textSize="15sp"
             android:textStyle="bold"
             android:maxLines="1" />
 

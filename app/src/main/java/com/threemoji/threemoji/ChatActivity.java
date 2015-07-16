@@ -181,9 +181,9 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private void setPartnerDetails(String emoji1, String emoji2, String emoji3, String gender,
                                    String generatedName) {
-        Drawable emoji1Drawable = SvgUtils.getSvgDrawable(emoji1, 24, getPackageName());
-        Drawable emoji2Drawable = SvgUtils.getSvgDrawable(emoji2, 24, getPackageName());
-        Drawable emoji3Drawable = SvgUtils.getSvgDrawable(emoji3, 24, getPackageName());
+        Drawable emoji1Drawable = SvgUtils.getSvgDrawable(emoji1, 28, getPackageName());
+        Drawable emoji2Drawable = SvgUtils.getSvgDrawable(emoji2, 28, getPackageName());
+        Drawable emoji3Drawable = SvgUtils.getSvgDrawable(emoji3, 28, getPackageName());
         ((ImageView) findViewById(R.id.title_emoji_1)).setImageDrawable(emoji1Drawable);
         ((ImageView) findViewById(R.id.title_emoji_2)).setImageDrawable(emoji2Drawable);
         ((ImageView) findViewById(R.id.title_emoji_3)).setImageDrawable(emoji3Drawable);

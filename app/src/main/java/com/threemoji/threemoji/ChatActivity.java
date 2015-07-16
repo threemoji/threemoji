@@ -176,10 +176,10 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
         getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME |
                                                 ActionBar.DISPLAY_HOME_AS_UP);
-        setPartnerDetails(mEmoji1, mEmoji2, mEmoji3, mGeneratedName);
+        setPartnerDetails(mEmoji1, mEmoji2, mEmoji3, mGender, mGeneratedName);
     }
 
-    private void setPartnerDetails(String emoji1, String emoji2, String emoji3,
+    private void setPartnerDetails(String emoji1, String emoji2, String emoji3, String gender,
                                    String generatedName) {
         Drawable emoji1Drawable = SvgUtils.getSvgDrawable(emoji1, 24, getPackageName());
         Drawable emoji2Drawable = SvgUtils.getSvgDrawable(emoji2, 24, getPackageName());
@@ -187,10 +187,12 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         ((ImageView) findViewById(R.id.title_emoji_1)).setImageDrawable(emoji1Drawable);
         ((ImageView) findViewById(R.id.title_emoji_2)).setImageDrawable(emoji2Drawable);
         ((ImageView) findViewById(R.id.title_emoji_3)).setImageDrawable(emoji3Drawable);
+        ((TextView) findViewById(R.id.gender)).setText(gender.charAt(0) + gender.toLowerCase().substring(1));
         ((TextView) findViewById(R.id.title_name)).setText(generatedName);
         mEmoji1 = emoji1;
         mEmoji2 = emoji2;
         mEmoji3 = emoji3;
+        mGender = gender;
         mGeneratedName = generatedName;
     }
 
@@ -313,7 +315,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
                     String newName = data.getString(4);
                     boolean isAlive = data.getInt(5) > 0;
 
-                    setPartnerDetails(newEmoji1, newEmoji2, newEmoji3, newName);
+                    setPartnerDetails(newEmoji1, newEmoji2, newEmoji3, mGender, newName);
 
                     if (!isAlive) {
                         mIsAlive = false;

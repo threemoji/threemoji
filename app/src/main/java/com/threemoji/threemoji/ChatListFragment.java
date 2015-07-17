@@ -3,10 +3,13 @@ package com.threemoji.threemoji;
 import com.threemoji.threemoji.data.ChatContract;
 import com.threemoji.threemoji.utility.DateUtils;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -31,14 +34,17 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
             ChatContract.PartnerEntry.COLUMN_EMOJI_1,
             ChatContract.PartnerEntry.COLUMN_EMOJI_2,
             ChatContract.PartnerEntry.COLUMN_EMOJI_3,
-            ChatContract.PartnerEntry.COLUMN_GENDER,
             ChatContract.PartnerEntry.COLUMN_GENERATED_NAME,
-            ChatContract.PartnerEntry.COLUMN_IS_ALIVE,
             ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY,
             ChatContract.PartnerEntry.COLUMN_NUM_NEW_MESSAGES
     };
-    public static final String CHAT_ITEM_SORT_ORDER =
-            ChatContract.PartnerEntry.TABLE_NAME + "." + ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY + " DESC";
+    public static final String CHAT_ITEM_SORT_ORDER = ChatContract.PartnerEntry.TABLE_NAME + "." +
+                                                      ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY +
+                                                      " DESC";
+
+    public static final String IS_ARCHIVE_SELECTION = ChatContract.PartnerEntry.TABLE_NAME + "." +
+                                                      ChatContract.PartnerEntry.COLUMN_IS_ARCHIVED +
+                                                      " = 0";
 
     private ChatsRecyclerViewAdapter mAdapter;
 
@@ -52,11 +58,35 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
                              Bundle savedInstanceState) {
         RecyclerView rv = (RecyclerView) inflater.inflate(
                 R.layout.fragment_chat_list, container, false);
+        archiveOldChats();
         setupRecyclerView(rv);
         if (mAdapter.getItemCount() == 0) {
             ((ViewPager) getActivity().findViewById(R.id.viewpager)).setCurrentItem(1);
         }
         return rv;
+    }
+
+    private void archiveOldChats() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(
+                getActivity());
+        int archiveDays = Integer.parseInt(
+                preferences.getString(getString(R.string.pref_chat_archive_duration_key),
+                                      getString(R.string.pref_chat_archive_duration_default)));
+        long archiveMillis = (long) archiveDays * 24 * 60 * 60 * 1000;
+        long currentTime = System.currentTimeMillis();
+        String selection = ChatContract.PartnerEntry.TABLE_NAME + "." +
+                           ChatContract.PartnerEntry.COLUMN_IS_ARCHIVED + " = ? AND (" +
+                           ChatContract.PartnerEntry.TABLE_NAME + "." +
+                           ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY + " < ? OR " +
+                           ChatContract.PartnerEntry.COLUMN_IS_ALIVE + " = ?)";
+        String[] selectionArgs = new String[]{"0", String.valueOf(currentTime - archiveMillis), "0"};
+
+        ContentValues values = new ContentValues();
+        values.put(ChatContract.PartnerEntry.COLUMN_IS_ARCHIVED, 1);
+        int rowsUpdated = getActivity().getContentResolver()
+                                       .update(ChatContract.PartnerEntry.CONTENT_URI,
+                                               values, selection, selectionArgs);
+        Log.i(TAG, rowsUpdated + " chats archived");
     }
 
     private void setupRecyclerView(RecyclerView recyclerView) {
@@ -78,7 +108,8 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
 
         Cursor cursor = getActivity().getContentResolver()
                                      .query(ChatContract.PartnerEntry.CONTENT_URI,
-                                            CHAT_ITEM_PROJECTION, null, null, CHAT_ITEM_SORT_ORDER);
+                                            CHAT_ITEM_PROJECTION, IS_ARCHIVE_SELECTION,
+                                            null, CHAT_ITEM_SORT_ORDER);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(recyclerView.getContext());
         recyclerView.setLayoutManager(layoutManager);
@@ -92,7 +123,8 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new CursorLoader(getActivity(), ChatContract.PartnerEntry.CONTENT_URI,
-                                CHAT_ITEM_PROJECTION, null, null, CHAT_ITEM_SORT_ORDER);
+                                CHAT_ITEM_PROJECTION, IS_ARCHIVE_SELECTION,
+                                null, CHAT_ITEM_SORT_ORDER);
     }
 
     @Override
@@ -137,11 +169,9 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
             final String emoji1 = mCursor.getString(1);
             final String emoji2 = mCursor.getString(2);
             final String emoji3 = mCursor.getString(3);
-            final String gender = mCursor.getString(4);
-            final String partnerName = mCursor.getString(5);
-            final boolean isAlive = mCursor.getInt(6) > 0;
-            final long lastActivity = mCursor.getLong(7);
-            final int numNewMessages = mCursor.getInt(8);
+            final String partnerName = mCursor.getString(4);
+            final long lastActivity = mCursor.getLong(5);
+            final int numNewMessages = mCursor.getInt(6);
 
             holder.emoji1.setImageResource(mContext.getResources()
                                                    .getIdentifier(emoji1, "drawable",

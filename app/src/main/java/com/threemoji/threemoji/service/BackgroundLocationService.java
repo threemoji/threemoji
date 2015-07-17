@@ -112,9 +112,9 @@ public class BackgroundLocationService extends Service implements
 
     private void lookupNearbyUsingLastLocation() {
         Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this)
+                                                           .edit();
         if (lastLocation != null) {
-            SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this)
-                                                               .edit();
             editor.putString(this.getString(R.string.profile_location_latitude),
                              String.valueOf(lastLocation.getLatitude()));
             editor.putString(this.getString(R.string.profile_location_longitude),
@@ -122,6 +122,8 @@ public class BackgroundLocationService extends Service implements
             editor.apply();
             Log.v(TAG, "Starting lookup nearby intent");
             startService(ChatIntentService.createIntent(this, ChatIntentService.Action.LOOKUP_ALL));
+        } else {
+            editor.putLong(getString(R.string.prefs_lookup_nearby_time), System.currentTimeMillis()).apply();
         }
     }
 }

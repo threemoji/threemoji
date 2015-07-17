@@ -3,11 +3,13 @@ package com.threemoji.threemoji;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
+import com.threemoji.threemoji.data.ChatContract;
 import com.threemoji.threemoji.service.BackgroundLocationService;
 import com.threemoji.threemoji.service.RegistrationIntentService;
 import com.threemoji.threemoji.utility.SvgUtils;
 
 import android.app.Dialog;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.TypedArray;
@@ -355,9 +357,26 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     }
 
     @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         if (key.equals(getString(R.string.prefs_lookup_nearby_time))) {
             mSwipeRefreshLayout.setRefreshing(false);
+        } else if (key.equals(getString(R.string.pref_chat_archive_duration_key))) {
+            // unarchive chats who should not be archived
+            int archiveDays = Integer.parseInt(
+                    prefs.getString(getString(R.string.pref_chat_archive_duration_key),
+                                    getString(R.string.pref_chat_archive_duration_default)));
+            long archiveMillis = (long) archiveDays * 24 * 60 * 60 * 1000;
+            long currentTime = System.currentTimeMillis();
+            String selection = ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY + " > ? AND " +
+                               ChatContract.PartnerEntry.COLUMN_IS_ALIVE + " = ?";
+            String[] selectionArgs = new String[]{String.valueOf(currentTime - archiveMillis), "1"};
+
+            ContentValues values = new ContentValues();
+            values.put(ChatContract.PartnerEntry.COLUMN_IS_ARCHIVED, 0);
+            int rowsUpdated = this.getContentResolver()
+                                  .update(ChatContract.PartnerEntry.CONTENT_URI,
+                                          values, selection, selectionArgs);
+            Log.i(TAG, rowsUpdated + " chats unarchived");
         }
     }
 

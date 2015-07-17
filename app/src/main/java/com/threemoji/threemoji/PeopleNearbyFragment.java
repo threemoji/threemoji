@@ -120,7 +120,7 @@ public class PeopleNearbyFragment extends Fragment implements LoaderManager.Load
             }
         });
 
-        getActivity().getSupportLoaderManager().initLoader(1, null, this);
+        getActivity().getSupportLoaderManager().initLoader(3, null, this);
     }
 
     private void getPeopleNearbyData() {

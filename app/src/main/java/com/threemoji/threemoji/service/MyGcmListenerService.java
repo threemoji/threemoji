@@ -161,11 +161,7 @@ public class MyGcmListenerService extends GcmListenerService {
                                 values);
                         Log.d(TAG, "Added partner: " + uri.toString());
 
-                        // update last activity
-                        values = new ContentValues();
-                        values.put(ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY, System.currentTimeMillis());
-                        getContentResolver().update(
-                                ChatContract.PartnerEntry.buildPartnerByUidUri(uid), values, null, null);
+                        updateLastActivity(uid, String.valueOf(System.currentTimeMillis()));
                     }
                 } catch (JSONException e) { // no such person exists on the server
                     if (json.getString(uid).equals("404")) {
@@ -283,11 +279,7 @@ public class MyGcmListenerService extends GcmListenerService {
                 ChatContract.MessageEntry.buildMessagesByUidUri(uid), values);
         Log.d(TAG, "Added message: " + uri.toString());
 
-        // update last activity
-        values = new ContentValues();
-        values.put(ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY, timestamp);
-        getContentResolver().update(
-                ChatContract.PartnerEntry.buildPartnerByUidUri(uid), values, null, null);
+        updateLastActivity(uid, timestamp);
     }
 
     private String findNameFromUid(String uid) {
@@ -300,6 +292,14 @@ public class MyGcmListenerService extends GcmListenerService {
         } catch (NullPointerException | CursorIndexOutOfBoundsException e) {
             return "";
         }
+    }
+
+    private void updateLastActivity(String uid, String timestamp) {
+        ContentValues values = new ContentValues();
+        values.put(ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY, timestamp);
+        values.put(ChatContract.PartnerEntry.COLUMN_IS_ARCHIVED, 0);
+        getContentResolver().update(
+                ChatContract.PartnerEntry.buildPartnerByUidUri(uid), values, null, null);
     }
 
     private void updateNumNewMessages(String fromUid) {

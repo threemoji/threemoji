@@ -32,7 +32,8 @@ public class ArchivedChatListActivity extends AppCompatActivity implements Loade
             ChatContract.PartnerEntry.COLUMN_EMOJI_2,
             ChatContract.PartnerEntry.COLUMN_EMOJI_3,
             ChatContract.PartnerEntry.COLUMN_GENERATED_NAME,
-            ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY
+            ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY,
+            ChatContract.PartnerEntry.COLUMN_IS_MUTED
     };
     public static final String CHAT_ITEM_SORT_ORDER = ChatContract.PartnerEntry.TABLE_NAME + "." +
                                                       ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY +
@@ -128,6 +129,7 @@ public class ArchivedChatListActivity extends AppCompatActivity implements Loade
             final String emoji3 = mCursor.getString(3);
             final String partnerName = mCursor.getString(4);
             final long lastActivity = mCursor.getLong(5);
+            final boolean isMuted = mCursor.getInt(6) > 0;
 
             holder.emoji1.setImageResource(mContext.getResources()
                                                    .getIdentifier(emoji1, "drawable",
@@ -140,6 +142,12 @@ public class ArchivedChatListActivity extends AppCompatActivity implements Loade
                                                                   mContext.getPackageName()));
             holder.partnerName.setText(partnerName);
             holder.lastActivity.setText(DateUtils.getTimeAgo(lastActivity));
+
+            if (isMuted) {
+                holder.muteIcon.setVisibility(View.VISIBLE);
+            } else {
+                holder.muteIcon.setVisibility(View.GONE);
+            }
 
             holder.view.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -165,6 +173,7 @@ public class ArchivedChatListActivity extends AppCompatActivity implements Loade
             public final ImageView emoji3;
             public final TextView partnerName;
             public final TextView lastActivity;
+            public final ImageView muteIcon;
             public final TextView numNewMessages;
 
             public ViewHolder(View view) {
@@ -175,6 +184,7 @@ public class ArchivedChatListActivity extends AppCompatActivity implements Loade
                 emoji3 = (ImageView) view.findViewById(R.id.emoji3);
                 partnerName = (TextView) view.findViewById(R.id.partnerName);
                 lastActivity = (TextView) view.findViewById(R.id.lastActivity);
+                muteIcon = (ImageView) view.findViewById(R.id.muteIcon);
                 numNewMessages = (TextView) view.findViewById(R.id.numNewMessages);
                 numNewMessages.setVisibility(View.GONE);
             }

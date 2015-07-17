@@ -36,7 +36,8 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
             ChatContract.PartnerEntry.COLUMN_EMOJI_3,
             ChatContract.PartnerEntry.COLUMN_GENERATED_NAME,
             ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY,
-            ChatContract.PartnerEntry.COLUMN_NUM_NEW_MESSAGES
+            ChatContract.PartnerEntry.COLUMN_NUM_NEW_MESSAGES,
+            ChatContract.PartnerEntry.COLUMN_IS_MUTED
     };
     public static final String CHAT_ITEM_SORT_ORDER = ChatContract.PartnerEntry.TABLE_NAME + "." +
                                                       ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY +
@@ -170,6 +171,7 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
             final String partnerName = mCursor.getString(4);
             final long lastActivity = mCursor.getLong(5);
             final int numNewMessages = mCursor.getInt(6);
+            final boolean isMuted = mCursor.getInt(7) > 0;
 
             holder.emoji1.setImageResource(mContext.getResources()
                                                    .getIdentifier(emoji1, "drawable",
@@ -182,6 +184,13 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
                                                                   mContext.getPackageName()));
             holder.partnerName.setText(partnerName);
             holder.lastActivity.setText(DateUtils.getTimeAgo(lastActivity));
+
+            if (isMuted) {
+                holder.muteIcon.setVisibility(View.VISIBLE);
+            } else {
+                holder.muteIcon.setVisibility(View.GONE);
+            }
+
             if (numNewMessages == 0) {
                 holder.numNewMessages.setVisibility(View.GONE);
             } else {
@@ -214,6 +223,7 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
             public final ImageView emoji3;
             public final TextView partnerName;
             public final TextView lastActivity;
+            public final ImageView muteIcon;
             public final TextView numNewMessages;
 
             public ViewHolder(View view) {
@@ -224,6 +234,7 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
                 emoji3 = (ImageView) view.findViewById(R.id.emoji3);
                 partnerName = (TextView) view.findViewById(R.id.partnerName);
                 lastActivity = (TextView) view.findViewById(R.id.lastActivity);
+                muteIcon = (ImageView) view.findViewById(R.id.muteIcon);
                 numNewMessages = (TextView) view.findViewById(R.id.numNewMessages);
             }
         }

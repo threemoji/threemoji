@@ -47,7 +47,7 @@
             android:id="@+id/partnerName"
             android:textSize="15sp"
             android:textStyle="bold"
-            android:maxLines="1" />
+            android:lineSpacingMultiplier="0.85" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -57,6 +57,14 @@
             android:textSize="12sp" />
 
     </LinearLayout>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/muteIcon"
+        android:src="@drawable/ic_volume_off_black_24dp"
+        android:tint="@color/dim_foreground_material_dark"
+        android:visibility="gone" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -70,7 +78,10 @@
         android:textIsSelectable="true"
         android:minWidth="22dp"
         android:textStyle="bold"
-        android:layout_marginRight="4dp" />
+        android:layout_marginRight="4dp"
+        android:layout_marginLeft="4dp"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp" />
 
 
 </LinearLayout>

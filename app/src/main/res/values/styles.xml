@@ -11,6 +11,10 @@
         <item name="android:itemTextAppearance">@style/MenuItemStyle</item>
     </style>
 
+    <style name="ThreemojiTheme.Launcher">
+        <item name="android:windowBackground">@drawable/launch_screen</item>
+    </style>
+
     <style name="MenuItemStyle" parent="@android:style/TextAppearance.Widget.IconMenu.Item">
         <item name="android:textColor">@color/black_87</item>
         <item name="android:textSize">14sp</item>

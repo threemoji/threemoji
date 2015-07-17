@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     // ================================================================
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme(R.style.ThreemojiTheme);
         super.onCreate(savedInstanceState);
 
         getPrefs().registerOnSharedPreferenceChangeListener(this);

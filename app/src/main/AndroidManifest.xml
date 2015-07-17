@@ -59,7 +59,8 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:configChanges="orientation|screenSize">
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/ThreemojiTheme.Launcher">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

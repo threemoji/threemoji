@@ -8,6 +8,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_delete_chat"
+        android:title="@string/chat_option_delete"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_mute_chat"
         android:title="@string/chat_option_mute"
         app:showAsAction="never" />

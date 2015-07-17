@@ -100,6 +100,7 @@
     <string name="chat_option_mute">Mute</string>
     <string name="chat_option_archive">Archive</string>
     <string name="chat_option_unarchive">Unarchive</string>
+    <string name="chat_option_delete">Delete</string>
     <string name="chat_option_block">Block</string>
 
     <string name="chat_intent_extra_action">action</string>

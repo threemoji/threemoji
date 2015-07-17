@@ -74,9 +74,7 @@ public class ChatListFragment extends Fragment implements LoaderManager.LoaderCa
                                       getString(R.string.pref_chat_archive_duration_default)));
         long archiveMillis = (long) archiveDays * 24 * 60 * 60 * 1000;
         long currentTime = System.currentTimeMillis();
-        String selection = ChatContract.PartnerEntry.TABLE_NAME + "." +
-                           ChatContract.PartnerEntry.COLUMN_IS_ARCHIVED + " = ? AND (" +
-                           ChatContract.PartnerEntry.TABLE_NAME + "." +
+        String selection = ChatContract.PartnerEntry.COLUMN_IS_ARCHIVED + " = ? AND (" +
                            ChatContract.PartnerEntry.COLUMN_LAST_ACTIVITY + " < ? OR " +
                            ChatContract.PartnerEntry.COLUMN_IS_ALIVE + " = ?)";
         String[] selectionArgs = new String[]{"0", String.valueOf(currentTime - archiveMillis), "0"};

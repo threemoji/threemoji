@@ -199,6 +199,11 @@ public class ChatProvider extends ContentProvider {
             case PARTNERS:
                 rowsDeleted = db.delete(PartnerEntry.TABLE_NAME, selection, selectionArgs);
                 break;
+            case PARTNER:
+                rowsDeleted = db.delete(PartnerEntry.TABLE_NAME,
+                                        PartnerEntry.COLUMN_UID + " = ? ",
+                                        new String[]{uri.getPathSegments().get(1)});
+                break;
             case PEOPLE_NEARBY:
                 rowsDeleted = db.delete(PeopleNearbyEntry.TABLE_NAME, selection, selectionArgs);
                 break;
@@ -229,8 +234,7 @@ public class ChatProvider extends ContentProvider {
             case PARTNER:
                 rowsUpdated = db.update(PartnerEntry.TABLE_NAME,
                                         values,
-                                        PartnerEntry.TABLE_NAME + "." + PartnerEntry.COLUMN_UID +
-                                        " = ? ",
+                                        PartnerEntry.COLUMN_UID + " = ? ",
                                         new String[]{uri.getPathSegments().get(1)});
                 break;
             case PEOPLE_NEARBY:

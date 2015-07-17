@@ -8,6 +8,7 @@ import com.threemoji.threemoji.utility.SvgUtils;
 import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -21,6 +22,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -40,6 +42,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -115,14 +118,13 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         switch (id) {
-            case R.id.action_mute_chat:
-                break;
             case R.id.action_archive_chat: {
                 ContentValues values = new ContentValues();
                 values.put(ChatContract.PartnerEntry.COLUMN_IS_ARCHIVED, 1);
                 int rowsUpdated = getContentResolver().update(
                         ChatContract.PartnerEntry.buildPartnerByUidUri(mPartnerUid), values, null,
                         null);
+                Toast.makeText(this, "Chat has been archived", Toast.LENGTH_SHORT).show();
                 break;
             }
             case R.id.action_unarchive_chat: {
@@ -131,8 +133,32 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
                 int rowsUpdated = getContentResolver().update(
                         ChatContract.PartnerEntry.buildPartnerByUidUri(mPartnerUid), values, null,
                         null);
+                Toast.makeText(this, "Chat has been unarchived", Toast.LENGTH_SHORT).show();
                 break;
             }
+            case R.id.action_delete_chat:
+                final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+                dialog.setTitle("Are you sure?")
+                      .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                          @Override
+                          public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                              int rowsDeleted = getContentResolver().delete(
+                                      ChatContract.PartnerEntry.buildPartnerByUidUri(mPartnerUid),
+                                      null,
+                                      null);
+                              Log.i(TAG, rowsDeleted + " chat deleted");
+                              Toast.makeText(ChatActivity.this, "Chat has been deleted",
+                                             Toast.LENGTH_SHORT).show();
+                          }
+                      })
+                      .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                          @Override
+                          public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                          }
+                      });
+                dialog.show();
+            case R.id.action_mute_chat:
+                break;
             case R.id.action_block_chat:
                 break;
         }

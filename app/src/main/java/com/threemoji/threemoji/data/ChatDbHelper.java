@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class ChatDbHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 10;
+    private static final int DATABASE_VERSION = 11;
 
     static final String DATABASE_NAME = "chat.db";
 
@@ -37,7 +37,8 @@ public class ChatDbHelper extends SQLiteOpenHelper {
                 PartnerEntry.COLUMN_IS_ALIVE + " INTEGER DEFAULT 1, " +
                 PartnerEntry.COLUMN_IS_ARCHIVED + " INTEGER DEFAULT 0, " +
                 PartnerEntry.COLUMN_LAST_ACTIVITY + " INTEGER DEFAULT 0, " +
-                PartnerEntry.COLUMN_NUM_NEW_MESSAGES + " INTEGER DEFAULT 0 " +
+                PartnerEntry.COLUMN_NUM_NEW_MESSAGES + " INTEGER DEFAULT 0, " +
+                PartnerEntry.COLUMN_IS_MUTED + " INTEGER DEFAULT 0 " +
                 " );";
         db.execSQL(SQL_CREATE_PARTNERS_TABLE);
     }
@@ -118,6 +119,10 @@ public class ChatDbHelper extends SQLiteOpenHelper {
         if (oldVersion < 10) {
             db.execSQL("ALTER TABLE " + PartnerEntry.TABLE_NAME + " ADD COLUMN " +
                        PartnerEntry.COLUMN_NUM_NEW_MESSAGES + " INTEGER DEFAULT 0");
+        }
+        if (oldVersion < 11) {
+            db.execSQL("ALTER TABLE " + PartnerEntry.TABLE_NAME + " ADD COLUMN " +
+                       PartnerEntry.COLUMN_IS_MUTED + " INTEGER DEFAULT 0");
         }
     }
 }

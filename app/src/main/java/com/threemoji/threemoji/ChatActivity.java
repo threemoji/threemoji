@@ -137,6 +137,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             case R.id.action_archive_chat:
                 setChatIsArchived(1);
                 Toast.makeText(this, "Chat has been archived", Toast.LENGTH_SHORT).show();
+                finish();
                 break;
 
             case R.id.action_unarchive_chat:
@@ -151,6 +152,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             case R.id.action_mute_chat:
                 setChatIsMuted(1);
                 Toast.makeText(this, "Chat muted", Toast.LENGTH_SHORT).show();
+                finish();
                 break;
 
             case R.id.action_unmute_chat:
@@ -186,13 +188,10 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
               .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                   @Override
                   public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-                      int rowsDeleted = getContentResolver().delete(
-                              ChatContract.PartnerEntry.buildPartnerByUidUri(mPartnerUid),
-                              null,
-                              null);
-                      Log.i(TAG, rowsDeleted + " chat deleted");
+                      deleteChatMessages();
                       Toast.makeText(ChatActivity.this, "Chat has been deleted",
                                      Toast.LENGTH_SHORT).show();
+                      finish();
                   }
               })
               .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -201,6 +200,15 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
                   }
               });
         dialog.show();
+    }
+
+    private void deleteChatMessages() {
+        int messagesDeleted = getContentResolver().delete(
+                ChatContract.MessageEntry.buildMessagesByUidUri(mPartnerUid), null, null);
+        Log.i(TAG, messagesDeleted + " messages deleted");
+        int partnersDeleted = getContentResolver().delete(
+                ChatContract.PartnerEntry.buildPartnerByUidUri(mPartnerUid), null, null);
+        Log.i(TAG, partnersDeleted + " chat deleted");
     }
 
 
@@ -406,22 +414,23 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         switch (loader.getId()) {
             case PARTNER_LOADER:
                 try {
-                    data.moveToNext();
-                    String newEmoji1 = data.getString(0);
-                    String newEmoji2 = data.getString(1);
-                    String newEmoji3 = data.getString(2);
-                    String newName = data.getString(4);
-                    boolean isAlive = data.getInt(5) > 0;
+                    if (data != null && data.getCount() > 0) {
+                        data.moveToNext();
+                        String newEmoji1 = data.getString(0);
+                        String newEmoji2 = data.getString(1);
+                        String newEmoji3 = data.getString(2);
+                        String newName = data.getString(4);
+                        boolean isAlive = data.getInt(5) > 0;
 
-                    setPartnerDetails(newEmoji1, newEmoji2, newEmoji3, mGender, newName);
+                        setPartnerDetails(newEmoji1, newEmoji2, newEmoji3, mGender, newName);
 
-                    if (!isAlive) {
-                        mIsAlive = false;
-                        disableBottomBar();
+                        if (!isAlive) {
+                            mIsAlive = false;
+                            disableBottomBar();
+                        }
                     }
-
-                } catch (NullPointerException | CursorIndexOutOfBoundsException e) {
-                    Log.e(TAG, e.getMessage());
+                } catch (CursorIndexOutOfBoundsException e) {
+                    Log.e(TAG, e.toString());
                 }
                 break;
             case MESSAGES_LOADER:

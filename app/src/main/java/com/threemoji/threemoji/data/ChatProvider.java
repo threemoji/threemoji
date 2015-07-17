@@ -194,7 +194,9 @@ public class ChatProvider extends ContentProvider {
         }
         switch (sUriMatcher.match(uri)) {
             case MESSAGES_WITH_PARTNER:
-                rowsDeleted = db.delete(MessageEntry.TABLE_NAME, selection, selectionArgs);
+                rowsDeleted = db.delete(MessageEntry.TABLE_NAME,
+                                        MessageEntry.COLUMN_PARTNER_KEY + " = ?",
+                                        new String[]{uri.getPathSegments().get(1)});
                 break;
             case PARTNERS:
                 rowsDeleted = db.delete(PartnerEntry.TABLE_NAME, selection, selectionArgs);

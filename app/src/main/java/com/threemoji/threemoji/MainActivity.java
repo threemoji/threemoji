@@ -238,6 +238,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     public void selectDrawerItem(MenuItem menuItem) {
         switch (menuItem.getItemId()) {
+            case R.id.nav_archived_chats:
+                Intent archivedChatsIntent = new Intent(this, ArchivedChatListActivity.class);
+                startActivity(archivedChatsIntent);
+                break;
+
             case R.id.nav_settings:
                 Intent settingsIntent = new Intent(this, SettingsActivity.class);
                 startActivity(settingsIntent);

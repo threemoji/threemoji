@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.threemoji.threemoji" >
+<manifest
+    package="com.threemoji.threemoji"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <permission
         android:name="com.threemoji.threemoji.permission.C2D_MESSAGE"
@@ -18,12 +19,13 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/ThreemojiTheme"
-        android:manageSpaceActivity=".ClearDataActivity">
+        android:manageSpaceActivity=".ClearDataActivity"
+        android:theme="@style/ThreemojiTheme">
+
         <receiver
             android:name="com.google.android.gms.gcm.GcmReceiver"
             android:exported="true"
-            android:permission="com.google.android.c2dm.permission.SEND" >
+            android:permission="com.google.android.c2dm.permission.SEND">
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
                 <!-- for Gingerbread GSF backward compat -->
@@ -34,17 +36,26 @@
         </receiver>
 
         <receiver android:name=".LocationReceiver" />
+
+
+        <provider
+            android:name=".data.ChatProvider"
+            android:authorities="@string/content_authority"
+            android:exported="false"
+            android:syncable="true" />
+
+
         <service android:name=".service.BackgroundLocationService" />
         <service
             android:name=".service.MyGcmListenerService"
-            android:exported="false" >
+            android:exported="false">
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
             </intent-filter>
         </service>
         <service
             android:name=".service.MyInstanceIDListenerService"
-            android:exported="false" >
+            android:exported="false">
             <intent-filter>
                 <action android:name="com.google.android.gms.iid.InstanceID" />
             </intent-filter>
@@ -56,28 +67,33 @@
             android:name=".service.ChatIntentService"
             android:exported="false" />
 
+
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name"
             android:configChanges="orientation|screenSize"
+            android:label="@string/app_name"
             android:theme="@style/ThreemojiTheme.Launcher">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName=".MainActivity">
+            <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.threemoji.threemoji.MainActivity" />
         </activity>
+
         <activity
             android:name=".StartPageActivity"
             android:label="@string/title_activity_start_page"
             android:screenOrientation="portrait" />
+
         <activity
             android:name=".ChatActivity"
             android:parentActivityName=".MainActivity"
@@ -87,15 +103,16 @@
                 android:value="com.threemoji.threemoji.MainActivity" />
         </activity>
 
-        <provider
-            android:name=".data.ChatProvider"
-            android:authorities="@string/content_authority"
-            android:exported="false"
-            android:syncable="true" />
-
         <activity
-            android:name=".ClearDataActivity">
+            android:name=".ArchivedChatListActivity"
+            android:label="@string/title_activity_archived_chats"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.threemoji.threemoji.MainActivity" />
         </activity>
+
+        <activity android:name=".ClearDataActivity" />
     </application>
 
 </manifest>

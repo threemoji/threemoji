@@ -42,6 +42,8 @@ public class MyGcmListenerService extends GcmListenerService {
             ChatContract.PartnerEntry.COLUMN_GENERATED_NAME};
     public static final String[] PARTNER_PROJECTION_NUM_NEW_MESSAGES = new String[]{
             ChatContract.PartnerEntry.COLUMN_NUM_NEW_MESSAGES};
+    public static final String[] PARTNER_PROJECTION_IS_MUTED = new String[]{
+            ChatContract.PartnerEntry.COLUMN_IS_MUTED};
 
     /**
      * Called when message is received.
@@ -82,11 +84,28 @@ public class MyGcmListenerService extends GcmListenerService {
             }
 
             storeMessage(fromUid, timestamp, message);
+            updateNumNewMessages(fromUid);
 
-            if (!isChatVisible(fromUid) && isNotificationsEnabled()) {
-                updateNumNewMessages(fromUid);
+            if (isNotificationsEnabled() && !isChatMuted(fromUid) && !isChatVisible(fromUid)) {
                 sendNotification(fromUid, fromName, message);
             }
+        }
+    }
+
+    private boolean isNotificationsEnabled() {
+        return PreferenceManager.getDefaultSharedPreferences(this)
+                                .getBoolean(getString(R.string.pref_chat_notifications_key), Boolean.parseBoolean(getString(R.string.pref_chat_notifications_default)));
+    }
+
+    private boolean isChatMuted(String fromUid) {
+        Cursor cursor = getPartnerCursor(fromUid, PARTNER_PROJECTION_IS_MUTED);
+        try {
+            cursor.moveToNext();
+            boolean isMuted = cursor.getInt(0) > 0;
+            cursor.close();
+            return isMuted;
+        } catch (NullPointerException | CursorIndexOutOfBoundsException e) {
+            return false;
         }
     }
 
@@ -96,11 +115,6 @@ public class MyGcmListenerService extends GcmListenerService {
                                                            new HashSet<String>());
 
         return !uidsOfOpenedChats.isEmpty() && uidsOfOpenedChats.contains(fromUid);
-    }
-
-    private boolean isNotificationsEnabled() {
-        return PreferenceManager.getDefaultSharedPreferences(this)
-                                .getBoolean(getString(R.string.pref_chat_notifications_key), Boolean.parseBoolean(getString(R.string.pref_chat_notifications_default)));
     }
 
     @Override

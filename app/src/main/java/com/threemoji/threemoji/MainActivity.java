@@ -348,14 +348,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
     }
 
-
-    // ================================================================
-    // Utility methods
-    // ================================================================
-    private SharedPreferences getPrefs() {
-        return PreferenceManager.getDefaultSharedPreferences(this);
-    }
-
     @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         if (key.equals(getString(R.string.prefs_lookup_nearby_time))) {
@@ -378,6 +370,13 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                                           values, selection, selectionArgs);
             Log.i(TAG, rowsUpdated + " chats unarchived");
         }
+    }
+
+    // ================================================================
+    // Utility methods
+    // ================================================================
+    private SharedPreferences getPrefs() {
+        return PreferenceManager.getDefaultSharedPreferences(this);
     }
 
 

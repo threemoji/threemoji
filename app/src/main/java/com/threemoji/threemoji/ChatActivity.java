@@ -67,7 +67,8 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             ChatContract.PartnerEntry.COLUMN_GENDER,
             ChatContract.PartnerEntry.COLUMN_GENERATED_NAME,
             ChatContract.PartnerEntry.COLUMN_IS_ALIVE,
-            ChatContract.PartnerEntry.COLUMN_IS_ARCHIVED
+            ChatContract.PartnerEntry.COLUMN_IS_ARCHIVED,
+            ChatContract.PartnerEntry.COLUMN_IS_MUTED
     };
     public static final int FADE_IN_DURATION_MILLIS = 300;
     public static final int FADE_OUT_DURATION_MILLIS = 300;
@@ -84,6 +85,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     private String mGeneratedName;
     private boolean mIsAlive;
     private boolean mIsArchived;
+    private boolean mIsMuted;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,6 +114,12 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
+        if (!mIsMuted) {
+            menu.findItem(R.id.action_unmute_chat).setVisible(false);
+        } else {
+            menu.findItem(R.id.action_mute_chat).setVisible(false);
+        }
+
         if (!mIsArchived) {
             menu.findItem(R.id.action_unarchive_chat).setVisible(false);
             menu.findItem(R.id.action_delete_chat).setVisible(false);
@@ -141,7 +149,15 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
                 break;
 
             case R.id.action_mute_chat:
+                setChatIsMuted(1);
+                Toast.makeText(this, "Chat muted", Toast.LENGTH_SHORT).show();
                 break;
+
+            case R.id.action_unmute_chat:
+                setChatIsMuted(0);
+                Toast.makeText(this, "Chat unmuted", Toast.LENGTH_SHORT).show();
+                break;
+
             case R.id.action_block_chat:
                 break;
         }
@@ -155,6 +171,15 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
                 ChatContract.PartnerEntry.buildPartnerByUidUri(mPartnerUid), values, null,
                 null);
     }
+
+    private void setChatIsMuted(int isMuted) {
+        ContentValues values = new ContentValues();
+        values.put(ChatContract.PartnerEntry.COLUMN_IS_MUTED, isMuted);
+        int rowsUpdated = getContentResolver().update(
+                ChatContract.PartnerEntry.buildPartnerByUidUri(mPartnerUid), values, null,
+                null);
+    }
+
     private void showDeleteConfirmation() {
         final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setTitle("Are you sure?")
@@ -196,6 +221,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             mGeneratedName = cursor.getString(4);
             mIsAlive = cursor.getInt(5) > 0;
             mIsArchived = cursor.getInt(6) > 0;
+            mIsMuted = cursor.getInt(7) > 0;
         } else {
             mEmoji1 = intent.getStringExtra("emoji_1");
             mEmoji2 = intent.getStringExtra("emoji_2");
@@ -204,6 +230,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             mGeneratedName = intent.getStringExtra("generated_name");
             mIsAlive = intent.getBooleanExtra("isAlive", true);
             mIsArchived = intent.getBooleanExtra("isArchived", false);
+            mIsMuted = intent.getBooleanExtra("isMuted", false);
         }
     }
 

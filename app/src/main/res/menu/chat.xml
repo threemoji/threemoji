@@ -23,6 +23,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_unmute_chat"
+        android:title="@string/chat_option_unmute"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_block_chat"
         android:title="@string/chat_option_block"
         app:showAsAction="never" />

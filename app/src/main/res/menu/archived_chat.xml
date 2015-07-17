@@ -3,8 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_archive_chat"
-        android:title="@string/chat_option_archive"
+        android:id="@+id/action_unarchive_chat"
+        android:title="@string/chat_option_unarchive"
         app:showAsAction="never" />
 
     <item

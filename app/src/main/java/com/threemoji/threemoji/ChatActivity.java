@@ -29,6 +29,8 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
@@ -61,7 +63,8 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             ChatContract.PartnerEntry.COLUMN_EMOJI_3,
             ChatContract.PartnerEntry.COLUMN_GENDER,
             ChatContract.PartnerEntry.COLUMN_GENERATED_NAME,
-            ChatContract.PartnerEntry.COLUMN_IS_ALIVE
+            ChatContract.PartnerEntry.COLUMN_IS_ALIVE,
+            ChatContract.PartnerEntry.COLUMN_IS_ARCHIVED
     };
     public static final int FADE_IN_DURATION_MILLIS = 300;
     public static final int FADE_OUT_DURATION_MILLIS = 300;
@@ -77,6 +80,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     private String mGender;
     private String mGeneratedName;
     private boolean mIsAlive;
+    private boolean mIsArchived;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,25 +101,43 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         initMessages();
     }
 
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        getMenuInflater().inflate(R.menu.chat, menu);
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        int id = item.getItemId();
-//        switch (id) {
-//            case R.id.action_mute_chat:
-//                break;
-//            case R.id.action_archive_chat:
-//                break;
-//            case R.id.action_block_chat:
-//                break;
-//        }
-//        return super.onOptionsItemSelected(item);
-//    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (!mIsArchived) {
+            getMenuInflater().inflate(R.menu.chat, menu);
+        } else {
+            getMenuInflater().inflate(R.menu.archived_chat, menu);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case R.id.action_mute_chat:
+                break;
+            case R.id.action_archive_chat: {
+                ContentValues values = new ContentValues();
+                values.put(ChatContract.PartnerEntry.COLUMN_IS_ARCHIVED, 1);
+                int rowsUpdated = getContentResolver().update(
+                        ChatContract.PartnerEntry.buildPartnerByUidUri(mPartnerUid), values, null,
+                        null);
+                break;
+            }
+            case R.id.action_unarchive_chat: {
+                ContentValues values = new ContentValues();
+                values.put(ChatContract.PartnerEntry.COLUMN_IS_ARCHIVED, 0);
+                int rowsUpdated = getContentResolver().update(
+                        ChatContract.PartnerEntry.buildPartnerByUidUri(mPartnerUid), values, null,
+                        null);
+                break;
+            }
+            case R.id.action_block_chat:
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
     private void initFields(Intent intent) {
         mPartnerUid = intent.getStringExtra("uid");
@@ -133,6 +155,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             mGender = cursor.getString(3);
             mGeneratedName = cursor.getString(4);
             mIsAlive = cursor.getInt(5) > 0;
+            mIsArchived = cursor.getInt(6) > 0;
         } else {
             mEmoji1 = intent.getStringExtra("emoji_1");
             mEmoji2 = intent.getStringExtra("emoji_2");
@@ -140,6 +163,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             mGender = intent.getStringExtra("gender");
             mGeneratedName = intent.getStringExtra("generated_name");
             mIsAlive = intent.getBooleanExtra("isAlive", true);
+            mIsArchived = intent.getBooleanExtra("isArchived", false);
         }
     }
 

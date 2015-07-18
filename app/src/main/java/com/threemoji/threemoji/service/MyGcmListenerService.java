@@ -84,10 +84,12 @@ public class MyGcmListenerService extends GcmListenerService {
             }
 
             storeMessage(fromUid, timestamp, message);
-            updateNumNewMessages(fromUid);
 
-            if (isNotificationsEnabled() && !isChatMuted(fromUid) && !isChatVisible(fromUid)) {
-                sendNotification(fromUid, fromName, message);
+            if (!isChatVisible(fromUid)) {
+                updateNumNewMessages(fromUid);
+                if (isNotificationsEnabled() && !isChatMuted(fromUid)) {
+                    sendNotification(fromUid, fromName, message);
+                }
             }
         }
     }
@@ -216,7 +218,7 @@ public class MyGcmListenerService extends GcmListenerService {
     }
 
     private void addDeletedProfileAlert(String partnerUid) {
-        addAlertMessage(partnerUid, "Partner has left the chat");
+        addAlertMessage(partnerUid, "Partner has left the chat. This chat will be archived.");
     }
 
     private void addAlertMessage(String partnerUid, String message) {

@@ -51,8 +51,13 @@ def message_callback(session, message):
     device_reg_id = msg["from"]
 
     if msg.has_key('message_type'):
-      logging.info('Received GCM ack: ' + msg_id)
-      message_id_cache[msg_id] = 1
+      msg_type = msg["message_type"]
+      if msg_type == "ack":
+        logging.info('Received GCM ack: ' + msg_id)
+        message_id_cache[msg_id] = 1
+      elif msg_type == "nack" and msg.get("error") == "DEVICE_UNREGISTERED":
+        del_user(None, msg.get("from"))
+
     else:
       logging.info('Received GCM message: ' + msg_id)
       # Acknowledge the incoming message immediately.
@@ -174,11 +179,26 @@ def add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, ge
 
   logging.info('Added user: ' + uid + ' (' + generated_name + ')')
 
-def del_user(uid):
+def del_user(uid, token=None):
+  if token is not None:
+    req = datastore.RunQueryRequest()
+    query = req.query
+    query.kind.add().name = 'User'
+    query.projection.add().property.name = '__key__'
+
+    token_filter = query.filter.property_filter
+    token_filter.property.name = 'token'
+    token_filter.operator = datastore.PropertyFilter.EQUAL
+    token_filter.value.string_value = token
+
+    results = datastore.run_query(req).batch.entity_result
+    uid = results[0].entity.key.path_element[0].name
+    logging.info("Deleting unregistered user: " + uid)
+
   user_key = datastore.Key()
   path = user_key.path_element.add()
-  path.name = uid
   path.kind = 'User'
+  path.name = uid
 
   req = datastore.CommitRequest()
   req.mode = datastore.CommitRequest.NON_TRANSACTIONAL

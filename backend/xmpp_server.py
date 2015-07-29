@@ -47,8 +47,8 @@ def message_callback(session, message):
   if gcm:
     gcm_json = gcm[0].getData()
     msg = json.loads(gcm_json)
-    msg_id = msg["message_id"]
-    device_reg_id = msg["from"]
+    msg_id = msg.get("message_id")
+    device_reg_id = msg.get("from")
 
     if msg.has_key('message_type'):
       msg_type = msg["message_type"]
@@ -57,6 +57,8 @@ def message_callback(session, message):
         message_id_cache[msg_id] = 1
       elif msg_type == "nack" and msg.get("error") == "DEVICE_UNREGISTERED":
         del_user(None, msg.get("from"))
+      elif msg_type == "control" and msg.get("control_type") == "CONNECTION_DRAINING":
+        logging.info('Received CONNECTION_DRAINING control message')
 
     else:
       logging.info('Received GCM message: ' + msg_id)
@@ -92,10 +94,10 @@ def message_callback(session, message):
                   send_message(uid, msg_id, data["to"], data["message"], get_timestamp())
 
                 elif data["action"] == "lookup_nearby":
-                  if data["radius"] == "123":
-                    old_lookup_nearby(uid, msg_id, user)
-                  else:
+                  if data.has_key("latitude") and data.has_key("longitude"):
                     lookup_nearby(uid, msg_id, user, data["latitude"], data["longitude"], data["radius"])
+                  else:
+                    old_lookup_nearby(uid, msg_id, user)
 
                 elif data["action"] == "lookup_profile":
                   lookup_profile(uid, msg_id, user, data["profile"])

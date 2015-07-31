@@ -1,12 +1,6 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <EditTextPreference
-        android:defaultValue=""
-        android:key="@string/pref_token_key"
-        android:selectAllOnFocus="true"
-        android:title="@string/pref_token_label" />
-
     <ListPreference
         android:defaultValue="@string/pref_filter_gender_default"
         android:entries="@array/pref_filter_gender_values"
@@ -30,6 +24,5 @@
         android:key="@string/pref_chat_notifications_key"
         android:summary="@string/pref_chat_notifications_summary"
         android:title="@string/pref_chat_notifications_label" />
-
 
 </PreferenceScreen>

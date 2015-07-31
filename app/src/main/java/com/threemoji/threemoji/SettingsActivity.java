@@ -106,7 +106,6 @@ public class SettingsActivity extends PreferenceActivity implements Preference.O
         // Bind the summaries of EditText/List/Dialog/Ringtone preferences to
         // their values. When their values change, their summaries are updated
         // to reflect the new value, per the Android Design guidelines.
-        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_token_key)));
         bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_filter_gender_key)));
         bindPreferenceSummaryToValue(
                 findPreference(getString(R.string.pref_chat_archive_duration_key)));

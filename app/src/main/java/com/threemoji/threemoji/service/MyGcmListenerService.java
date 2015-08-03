@@ -207,10 +207,10 @@ public class MyGcmListenerService extends GcmListenerService {
 
     private Cursor getPartnerCursor(String uid, String[] projection) {
         return getContentResolver().query(ChatContract.PartnerEntry.buildPartnerByUidUri(uid),
-                projection,
-                null,
-                null,
-                null);
+                                          projection,
+                                          null,
+                                          null,
+                                          null);
 
     }
 
@@ -402,7 +402,7 @@ public class MyGcmListenerService extends GcmListenerService {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         notificationManager.notify(getIntIDFromUid(fromUid) /* ID of notification */,
-                notificationBuilder.build());
+                                   notificationBuilder.build());
     }
 
     private int getIntIDFromUid(String uid) {

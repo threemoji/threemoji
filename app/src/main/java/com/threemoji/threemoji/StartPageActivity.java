@@ -78,7 +78,7 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
         SharedPreferences prefs = getPrefs();
 
         String emoji1ResourceName = prefs.getString(getString(R.string.profile_emoji_one_key),
-                null);
+                                                    null);
         String emoji2ResourceName = prefs.getString(getString(R.string.profile_emoji_two_key),
                                                     null);
         String emoji3ResourceName = prefs.getString(getString(R.string.profile_emoji_three_key),

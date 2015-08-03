@@ -4,6 +4,7 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import com.threemoji.threemoji.service.RegistrationIntentService;
 import com.threemoji.threemoji.utility.EmojiList;
+import com.threemoji.threemoji.utility.EmojiVector;
 import com.threemoji.threemoji.utility.NameGenerator;
 import com.threemoji.threemoji.utility.SvgUtils;
 
@@ -22,7 +23,11 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 
 
 public class StartPageActivity extends AppCompatActivity implements SelectEmojiDialogFragment.SelectEmojiDialogListener {
@@ -73,7 +78,7 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
         SharedPreferences prefs = getPrefs();
 
         String emoji1ResourceName = prefs.getString(getString(R.string.profile_emoji_one_key),
-                                                    null);
+                null);
         String emoji2ResourceName = prefs.getString(getString(R.string.profile_emoji_two_key),
                                                     null);
         String emoji3ResourceName = prefs.getString(getString(R.string.profile_emoji_three_key),
@@ -185,11 +190,26 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
     }
 
     private void setProfileEmoji(ImageButton emoji1, ImageButton emoji2, ImageButton emoji3) {
+        String emoji1s = emoji1.getTag().toString();
+        String emoji2s = emoji2.getTag().toString();
+        String emoji3s = emoji3.getTag().toString();
+        EmojiVector emojiVector = new EmojiVector(emoji1s, emoji2s, emoji3s);
+
         SharedPreferences.Editor editor = getPrefs().edit();
-        editor.putString(getString(R.string.profile_emoji_one_key), emoji1.getTag().toString());
-        editor.putString(getString(R.string.profile_emoji_two_key), emoji2.getTag().toString());
-        editor.putString(getString(R.string.profile_emoji_three_key), emoji3.getTag().toString());
+        editor.putString(getString(R.string.profile_emoji_one_key), emoji1s);
+        editor.putString(getString(R.string.profile_emoji_two_key), emoji2s);
+        editor.putString(getString(R.string.profile_emoji_three_key), emoji3s);
         editor.apply();
+
+        try {
+            File file = new File(getDir("data", MODE_PRIVATE), "emojiVectorMap");
+            ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
+            outputStream.writeObject(emojiVector.map);
+            outputStream.flush();
+            outputStream.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to write emoji vector map to file");
+        }
     }
 
     private void setProfileGeneratedName() {

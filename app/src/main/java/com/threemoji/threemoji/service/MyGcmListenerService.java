@@ -5,6 +5,7 @@ import com.google.android.gms.gcm.GcmListenerService;
 import com.threemoji.threemoji.ChatActivity;
 import com.threemoji.threemoji.R;
 import com.threemoji.threemoji.data.ChatContract;
+import com.threemoji.threemoji.utility.EmojiVector;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,6 +27,13 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -199,10 +207,10 @@ public class MyGcmListenerService extends GcmListenerService {
 
     private Cursor getPartnerCursor(String uid, String[] projection) {
         return getContentResolver().query(ChatContract.PartnerEntry.buildPartnerByUidUri(uid),
-                                          projection,
-                                          null,
-                                          null,
-                                          null);
+                projection,
+                null,
+                null,
+                null);
 
     }
 
@@ -249,6 +257,32 @@ public class MyGcmListenerService extends GcmListenerService {
             // clear all existing data
             getContentResolver().delete(ChatContract.PeopleNearbyEntry.CONTENT_URI, null, null);
 
+            EmojiVector emojiVector = null;
+            try {
+                File file = new File(getDir("data", MODE_PRIVATE), "emojiVectorMap");
+                ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file));
+                HashMap<String, Integer> emojiVectorMap = (HashMap<String, Integer>) inputStream.readObject();
+                inputStream.close();
+                emojiVector = new EmojiVector(emojiVectorMap);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to read emoji vector from file; attempting to write...");
+
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+                String emoji1s = prefs.getString(getString(R.string.profile_emoji_one_key), "");
+                String emoji2s = prefs.getString(getString(R.string.profile_emoji_two_key), "");
+                String emoji3s = prefs.getString(getString(R.string.profile_emoji_three_key), "");
+                emojiVector = new EmojiVector(emoji1s, emoji2s, emoji3s);
+                try {
+                    File file = new File(getDir("data", MODE_PRIVATE), "emojiVectorMap");
+                    ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
+                    outputStream.writeObject(emojiVector.map);
+                    outputStream.flush();
+                    outputStream.close();
+                } catch (IOException f) {
+                    Log.e(TAG, "Failed to write emoji vector to file" + f.toString());
+                }
+            }
+
             while (people.hasNext()) {
                 String uid = people.next();
 
@@ -260,6 +294,10 @@ public class MyGcmListenerService extends GcmListenerService {
                 String gender = jsonPersonData.getString("gender");
                 String generatedName = jsonPersonData.getString("generated_name");
                 Double distance = jsonPersonData.getDouble("distance")/1000;
+
+                EmojiVector vector = new EmojiVector(emoji1, emoji2, emoji3);
+                int matchValue = vector.getMatchValue(emojiVector);
+                Log.d(TAG, "Match value for " + generatedName + ": " + String.valueOf(matchValue));
 
                 ContentValues values = new ContentValues();
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_UID, uid);
@@ -364,7 +402,7 @@ public class MyGcmListenerService extends GcmListenerService {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         notificationManager.notify(getIntIDFromUid(fromUid) /* ID of notification */,
-                                   notificationBuilder.build());
+                notificationBuilder.build());
     }
 
     private int getIntIDFromUid(String uid) {

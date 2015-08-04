@@ -96,6 +96,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             // hasVersionChanged is always checked first to ensure shared preferences is updated
             if (hasVersionChanged() || !hasToken()) {
                 startService(RegistrationIntentService.createIntent(this,
+                                                                    RegistrationIntentService.Action.REFRESH_TOKEN));
+            } else {
+                startService(RegistrationIntentService.createIntent(this,
                                                                     RegistrationIntentService.Action.UPDATE_TOKEN));
             }
         }

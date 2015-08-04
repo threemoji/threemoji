@@ -17,7 +17,7 @@ public class MyInstanceIDListenerService extends InstanceIDListenerService {
     public void onTokenRefresh() {
         // Fetch updated Instance ID token and notify our app's server of any changes (if applicable).
         startService(RegistrationIntentService.createIntent(this,
-                                                            RegistrationIntentService.Action.UPDATE_TOKEN));
+                                                            RegistrationIntentService.Action.REFRESH_TOKEN));
     }
     // [END refresh_token]
 

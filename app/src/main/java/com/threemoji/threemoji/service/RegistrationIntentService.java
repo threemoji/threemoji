@@ -25,7 +25,7 @@ public class RegistrationIntentService extends IntentService {
     private InstanceID mInstanceID;
 
     public enum Action {
-        CREATE_PROFILE, UPDATE_PROFILE, CREATE_TOKEN, UPDATE_TOKEN, UPDATE_LOCATION
+        CREATE_PROFILE, UPDATE_PROFILE, CREATE_TOKEN, REFRESH_TOKEN, UPDATE_TOKEN, UPDATE_LOCATION
     }
 
     public RegistrationIntentService() {
@@ -63,8 +63,13 @@ public class RegistrationIntentService extends IntentService {
                     sendTokenToServer();
                     break;
 
-                case UPDATE_TOKEN:
+                case REFRESH_TOKEN:
                     unregisterTokenFromServer();
+                    getAndStoreGcmToken();
+                    updateTokenOnServer();
+                    break;
+
+                case UPDATE_TOKEN:
                     getAndStoreGcmToken();
                     updateTokenOnServer();
                     break;

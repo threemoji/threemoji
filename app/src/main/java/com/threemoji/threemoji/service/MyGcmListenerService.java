@@ -52,6 +52,7 @@ public class MyGcmListenerService extends GcmListenerService {
             ChatContract.PartnerEntry.COLUMN_NUM_NEW_MESSAGES};
     public static final String[] PARTNER_PROJECTION_IS_MUTED = new String[]{
             ChatContract.PartnerEntry.COLUMN_IS_MUTED};
+    public static final int MINIMUM_MATCH_VALUE = 10;
 
     /**
      * Called when message is received.
@@ -207,10 +208,10 @@ public class MyGcmListenerService extends GcmListenerService {
 
     private Cursor getPartnerCursor(String uid, String[] projection) {
         return getContentResolver().query(ChatContract.PartnerEntry.buildPartnerByUidUri(uid),
-                                          projection,
-                                          null,
-                                          null,
-                                          null);
+                projection,
+                null,
+                null,
+                null);
 
     }
 
@@ -257,31 +258,10 @@ public class MyGcmListenerService extends GcmListenerService {
             // clear all existing data
             getContentResolver().delete(ChatContract.PeopleNearbyEntry.CONTENT_URI, null, null);
 
-            EmojiVector emojiVector = null;
-            try {
-                File file = new File(getDir("data", MODE_PRIVATE), "emojiVectorMap");
-                ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file));
-                HashMap<String, Integer> emojiVectorMap = (HashMap<String, Integer>) inputStream.readObject();
-                inputStream.close();
-                emojiVector = new EmojiVector(emojiVectorMap);
-            } catch (Exception e) {
-                Log.e(TAG, "Failed to read emoji vector from file; attempting to write...");
-
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-                String emoji1s = prefs.getString(getString(R.string.profile_emoji_one_key), "");
-                String emoji2s = prefs.getString(getString(R.string.profile_emoji_two_key), "");
-                String emoji3s = prefs.getString(getString(R.string.profile_emoji_three_key), "");
-                emojiVector = new EmojiVector(emoji1s, emoji2s, emoji3s);
-                try {
-                    File file = new File(getDir("data", MODE_PRIVATE), "emojiVectorMap");
-                    ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
-                    outputStream.writeObject(emojiVector.map);
-                    outputStream.flush();
-                    outputStream.close();
-                } catch (IOException f) {
-                    Log.e(TAG, "Failed to write emoji vector to file" + f.toString());
-                }
-            }
+            EmojiVector emojiVector = getEmojiVector();
+            int bestMatchValue = -1;
+            String bestMatchUid = null, bestMatchGeneratedName = null;
+            JSONObject bestMatchJson = null;
 
             while (people.hasNext()) {
                 String uid = people.next();
@@ -295,9 +275,20 @@ public class MyGcmListenerService extends GcmListenerService {
                 String generatedName = jsonPersonData.getString("generated_name");
                 Double distance = jsonPersonData.getDouble("distance")/1000;
 
-                EmojiVector vector = new EmojiVector(emoji1, emoji2, emoji3);
-                int matchValue = vector.getMatchValue(emojiVector);
-                Log.d(TAG, "Match value for " + generatedName + ": " + String.valueOf(matchValue));
+                Cursor cursor = getPartnerCursor(uid, PARTNER_PROJECTION_GENERATED_NAME);
+                if (cursor.getCount() == 0) { // if not already a chat partner
+                    EmojiVector vector = new EmojiVector(emoji1, emoji2, emoji3);
+                    int matchValue = vector.getMatchValue(emojiVector);
+                    Log.d(TAG, "Match value for " + generatedName + ": " + String.valueOf(matchValue));
+                    if (matchValue > bestMatchValue) {
+                        bestMatchValue = matchValue;
+                        bestMatchUid = uid;
+                        bestMatchGeneratedName = generatedName;
+                        bestMatchJson = new JSONObject("{}");
+                        bestMatchJson.put(uid, jsonPersonData);
+                    }
+                }
+                cursor.close();
 
                 ContentValues values = new ContentValues();
                 values.put(ChatContract.PeopleNearbyEntry.COLUMN_UID, uid);
@@ -316,7 +307,10 @@ public class MyGcmListenerService extends GcmListenerService {
                     Log.e(TAG, "Failed to add new row to people nearby table");
                 }
             }
-
+            if (bestMatchValue > MINIMUM_MATCH_VALUE) {
+                addPartnerToDb(bestMatchJson.toString());
+                sendMatchNotification(bestMatchUid, bestMatchGeneratedName);
+            }
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());
         }
@@ -336,6 +330,34 @@ public class MyGcmListenerService extends GcmListenerService {
         updateLastActivity(uid, timestamp);
     }
 
+    private EmojiVector getEmojiVector() {
+        EmojiVector emojiVector = null;
+        try {
+            File file = new File(getDir("data", MODE_PRIVATE), "emojiVectorMap");
+            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file));
+            HashMap<String, Integer> emojiVectorMap = (HashMap<String, Integer>) inputStream.readObject();
+            inputStream.close();
+            emojiVector = new EmojiVector(emojiVectorMap);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to read emoji vector from file; attempting to write...");
+
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+            String emoji1s = prefs.getString(getString(R.string.profile_emoji_one_key), "");
+            String emoji2s = prefs.getString(getString(R.string.profile_emoji_two_key), "");
+            String emoji3s = prefs.getString(getString(R.string.profile_emoji_three_key), "");
+            emojiVector = new EmojiVector(emoji1s, emoji2s, emoji3s);
+            try {
+                File file = new File(getDir("data", MODE_PRIVATE), "emojiVectorMap");
+                ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
+                outputStream.writeObject(emojiVector.map);
+                outputStream.flush();
+                outputStream.close();
+            } catch (IOException f) {
+                Log.e(TAG, "Failed to write emoji vector to file" + f.toString());
+            }
+        }
+        return emojiVector;
+    }
     private String findNameFromUid(String uid) {
         Cursor cursor = getPartnerCursor(uid, PARTNER_PROJECTION_GENERATED_NAME);
         try {
@@ -402,7 +424,31 @@ public class MyGcmListenerService extends GcmListenerService {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         notificationManager.notify(getIntIDFromUid(fromUid) /* ID of notification */,
-                                   notificationBuilder.build());
+                notificationBuilder.build());
+    }
+
+    private void sendMatchNotification(String fromUid, String fromName) {
+        Intent intent = new Intent(this, ChatActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra("uid", fromUid);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
+                PendingIntent.FLAG_ONE_SHOT);
+        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.small_icon)
+                .setLargeIcon(
+                        BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
+                .setContentTitle("You have a new match!")
+                .setContentText("Start chatting with " + fromName)
+                .setAutoCancel(true)
+                .setSound(defaultSoundUri)
+                .setContentIntent(pendingIntent);
+
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        notificationManager.notify(getIntIDFromUid(fromUid) /* ID of notification */,
+                notificationBuilder.build());
     }
 
     private int getIntIDFromUid(String uid) {

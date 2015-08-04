@@ -333,7 +333,9 @@ public class MyGcmListenerService extends GcmListenerService {
             addPartnerToDb(body);
             addMatchAlert(uid, generatedName);
             updateNumNewMessages(uid);
-            sendMatchNotification(uid, generatedName);
+            if (isNotificationsEnabled()) {
+                sendMatchNotification(uid, generatedName);
+            }
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());
         }
@@ -428,7 +430,7 @@ public class MyGcmListenerService extends GcmListenerService {
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra("uid", fromUid);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
-                                                                PendingIntent.FLAG_ONE_SHOT);
+                PendingIntent.FLAG_ONE_SHOT);
         if (fromName.isEmpty()) {
             fromName = "Message from a new partner!";
         }

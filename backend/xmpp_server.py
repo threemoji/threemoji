@@ -93,6 +93,9 @@ def message_callback(session, message):
                 if data["action"] == "send_message":
                   send_message(uid, msg_id, data["to"], data["message"], get_timestamp())
 
+                elif data["action"] == "send_match_notification":
+                  send_match_notification(uid, msg_id, user, data["to"])
+
                 elif data["action"] == "lookup_nearby":
                   if data.has_key("latitude") and data.has_key("longitude"):
                     lookup_nearby(uid, msg_id, user, data["latitude"], data["longitude"], data["radius"])
@@ -378,6 +381,30 @@ def send_message(from_uid, message_id, to_uid, message, timestamp):
         }})
 
   logging.info('Message sent to user: ' + to_uid + ' message_id: ' + message_id)
+
+def send_match_notification(from_uid, message_id, from_user, to_uid):
+  to_user = auth_user(to_uid, "", "lookup")
+
+  if to_user == 404:
+    logging.error('Failed to send match notification to user: ' + to_uid)
+    return 404
+
+  user_dict = {}
+  data_dict = {}
+  for prop in from_user.property:
+    if prop.name in ['emoji_1', 'emoji_2', 'emoji_3', 'generated_name', 'gender']:
+      data_dict[prop.name] = prop.value.string_value
+  user_dict[from_uid] = data_dict
+
+  send({"to": get_token(to_user),
+        "message_id": message_id,
+        "data": {
+          "response_type": "match_notification",
+          "body": user_dict,
+          "timestamp": get_timestamp()
+        }})
+
+  logging.info('Match notification sent to user: ' + to_uid + ' message_id: ' + message_id)
 
 def get_token(user):
   for prop in user.property:

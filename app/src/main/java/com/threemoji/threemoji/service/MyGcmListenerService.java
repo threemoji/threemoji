@@ -67,14 +67,18 @@ public class MyGcmListenerService extends GcmListenerService {
         String responseType = data.getString("response_type");
 
         if (responseType != null) {
-            if (responseType.equals(getString(R.string.backend_action_lookup_profile_key))) {
+            if (responseType.equals(getString(R.string.backend_response_lookup_profile_key))) {
                 Log.d(TAG, "Profile lookup response: " + data.getString("body"));
                 addPartnerToDb(data.getString("body"));
 
-            } else if (responseType.equals(getString(R.string.backend_action_lookup_nearby_key))) {
+            } else if (responseType.equals(getString(R.string.backend_response_lookup_nearby_key))) {
                 Log.d(TAG, "Nearby lookup response: " + data.getString("body"));
                 updateLookupNearbyTimestamp();
                 storePeopleNearbyData(data.getString("body"));
+
+            } else if (responseType.equals(getString(R.string.backend_response_match_notification_key))) {
+                Log.d(TAG, "Match notification received: " + data.getString("body"));
+                matchWithPerson(data.getString("body"));
             }
         } else {
             String message = data.getString("body");
@@ -287,7 +291,6 @@ public class MyGcmListenerService extends GcmListenerService {
                     if (matchValue > bestMatchValue) {
                         bestMatchValue = matchValue;
                         bestMatchUid = uid;
-                        bestMatchGeneratedName = generatedName;
                         bestMatchJson = new JSONObject("{}");
                         bestMatchJson.put(uid, jsonPersonData);
                     }
@@ -312,19 +315,27 @@ public class MyGcmListenerService extends GcmListenerService {
                 }
             }
             if (bestMatchValue > MINIMUM_MATCH_VALUE) {
-                matchWithPerson(bestMatchUid, bestMatchGeneratedName, bestMatchJson);
+                matchWithPerson(bestMatchJson.toString());
+                Intent intent = ChatIntentService.createIntent(this, ChatIntentService.Action.SEND_MATCH_NOTIFICATION, bestMatchUid);
+                this.startService(intent);
             }
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());
         }
     }
 
-    private void matchWithPerson(String uid, String generatedName, JSONObject json) {
-        addPartnerToDb(json.toString());
-        addMatchAlert(uid, generatedName);
-        sendMatchNotification(uid, generatedName);
-        Intent intent = ChatIntentService.createIntent(this, ChatIntentService.Action.SEND_MATCH_NOTIFICATION, uid);
-        this.startService(intent);
+    private void matchWithPerson(String body) {
+        try {
+            JSONObject json = new JSONObject(body);
+            String uid = json.keys().next();
+            JSONObject jsonPersonData = json.getJSONObject(uid);
+            String generatedName = jsonPersonData.getString("generated_name");
+            addPartnerToDb(body);
+            addMatchAlert(uid, generatedName);
+            sendMatchNotification(uid, generatedName);
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage());
+        }
     }
 
     private void storeMessage(String uid, String timestamp, String message) {

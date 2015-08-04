@@ -31,7 +31,7 @@
     <string name="pref_max_distance_label">Distance radius (km)</string>
     <string name="pref_max_distance_key">maxRadius</string>
     <string name="pref_max_distance_default">10</string>
-    <string name="pref_max_distance_max">20000</string>
+    <string name="pref_max_distance_max">50</string>
     <string name="pref_max_distance_min">1</string>
 
     <string name="pref_chat_archive_duration_label">Chat archive duration</string>

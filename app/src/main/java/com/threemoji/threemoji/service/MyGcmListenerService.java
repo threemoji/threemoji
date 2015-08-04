@@ -332,6 +332,7 @@ public class MyGcmListenerService extends GcmListenerService {
             String generatedName = jsonPersonData.getString("generated_name");
             addPartnerToDb(body);
             addMatchAlert(uid, generatedName);
+            updateNumNewMessages(uid);
             sendMatchNotification(uid, generatedName);
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());

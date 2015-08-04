@@ -22,7 +22,7 @@ public class ChatIntentService extends IntentService {
     private GoogleCloudMessaging mGcm;
 
     public enum Action {
-        LOOKUP_ALL, LOOKUP_UID, SEND_MESSAGE
+        LOOKUP_ALL, LOOKUP_UID, SEND_MESSAGE, SEND_MATCH_NOTIFICATION
     }
 
     public ChatIntentService() {
@@ -66,6 +66,9 @@ public class ChatIntentService extends IntentService {
                 sendMessage(intent.getStringExtra("uid"), intent.getStringExtra("message"));
                 break;
 
+            case SEND_MATCH_NOTIFICATION:
+                sendMatchNotification(intent.getStringExtra("uid"));
+                break;
         }
     }
 
@@ -120,6 +123,23 @@ public class ChatIntentService extends IntentService {
             Log.d(TAG, "Message sent to user: " + toUid);
         } catch (IOException e) {
             Log.e(TAG, "IOException while sending message...", e);
+        }
+    }
+
+    private void sendMatchNotification(String toUid) {
+        try {
+            Bundle data = new Bundle();
+            data.putString(getString(R.string.backend_action_key), getString(R.string.backend_action_send_match_notification_key));
+            data.putString(getString(R.string.backend_uid_key), getPrefs().getString(getString(R.string.profile_uid_key), ""));
+            data.putString(getString(R.string.backend_password_key), getPrefs().getString(getString(R.string.profile_password_key), ""));
+
+            data.putString(getString(R.string.backend_to_key), toUid);
+
+            String msgId = getNextMsgId(getPrefs().getString(getString(R.string.pref_token_key), ""));
+            sendData(data, msgId);
+            Log.d(TAG, "Match notification sent to user: " + toUid);
+        } catch (IOException e) {
+            Log.e(TAG, "IOException while sending match notification...", e);
         }
     }
 

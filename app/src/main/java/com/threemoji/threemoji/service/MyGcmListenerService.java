@@ -230,6 +230,10 @@ public class MyGcmListenerService extends GcmListenerService {
         addAlertMessage(partnerUid, "Partner has left the chat. This chat will be archived.");
     }
 
+    private void addMatchAlert(String partnerUid, String partnerGeneratedName) {
+        addAlertMessage(partnerUid, "Say hello to your new match " + partnerGeneratedName + "!");
+    }
+
     private void addAlertMessage(String partnerUid, String message) {
         ContentValues values = new ContentValues();
         values.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, partnerUid);
@@ -308,12 +312,19 @@ public class MyGcmListenerService extends GcmListenerService {
                 }
             }
             if (bestMatchValue > MINIMUM_MATCH_VALUE) {
-                addPartnerToDb(bestMatchJson.toString());
-                sendMatchNotification(bestMatchUid, bestMatchGeneratedName);
+                matchWithPerson(bestMatchUid, bestMatchGeneratedName, bestMatchJson);
             }
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());
         }
+    }
+
+    private void matchWithPerson(String uid, String generatedName, JSONObject json) {
+        addPartnerToDb(json.toString());
+        addMatchAlert(uid, generatedName);
+        sendMatchNotification(uid, generatedName);
+        Intent intent = ChatIntentService.createIntent(this, ChatIntentService.Action.SEND_MATCH_NOTIFICATION, uid);
+        this.startService(intent);
     }
 
     private void storeMessage(String uid, String timestamp, String message) {

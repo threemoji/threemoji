@@ -206,7 +206,7 @@ public class MyGcmListenerService extends GcmListenerService {
                 }
             }
         } catch (JSONException e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, "Could not add partner to database: " + e.getMessage());
         }
     }
 
@@ -315,9 +315,10 @@ public class MyGcmListenerService extends GcmListenerService {
                 }
             }
             if (bestMatchValue > MINIMUM_MATCH_VALUE) {
-                matchWithPerson(bestMatchJson.toString());
-                Intent intent = ChatIntentService.createIntent(this, ChatIntentService.Action.SEND_MATCH_NOTIFICATION, bestMatchUid);
+                Intent intent = ChatIntentService.createIntent(this,
+                        ChatIntentService.Action.SEND_MATCH_NOTIFICATION, bestMatchUid);
                 this.startService(intent);
+                matchWithPerson(bestMatchJson.toString());
             }
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());
@@ -337,7 +338,7 @@ public class MyGcmListenerService extends GcmListenerService {
                 sendMatchNotification(uid, generatedName);
             }
         } catch (JSONException e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, "Error matching with person: " + e.getMessage());
         }
     }
 
@@ -383,6 +384,7 @@ public class MyGcmListenerService extends GcmListenerService {
         }
         return emojiVector;
     }
+
     private String findNameFromUid(String uid) {
         Cursor cursor = getPartnerCursor(uid, PARTNER_PROJECTION_GENERATED_NAME);
         try {

@@ -120,6 +120,8 @@ public class RegistrationIntentService extends IntentService {
                                            ""));
             data.putString(getString(R.string.backend_gender_key),
                            prefs.getString(getString(R.string.profile_gender_key), ""));
+            data.putString(getString(R.string.backend_gender_pref_key),
+                    prefs.getString(getString(R.string.pref_filter_gender_key), getString(R.string.pref_filter_gender_default)));
             data.putString(getString(R.string.backend_radius_key),
                            prefs.getString(getString(R.string.pref_max_distance_key),
                                            getString(R.string.pref_max_distance_default)));

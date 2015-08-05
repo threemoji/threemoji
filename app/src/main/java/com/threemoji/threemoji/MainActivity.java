@@ -96,10 +96,10 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             // hasVersionChanged is always checked first to ensure shared preferences is updated
             if (hasVersionChanged() || !hasToken()) {
                 startService(RegistrationIntentService.createIntent(this,
-                                                                    RegistrationIntentService.Action.REFRESH_TOKEN));
+                        RegistrationIntentService.Action.REFRESH_TOKEN));
             } else {
                 startService(RegistrationIntentService.createIntent(this,
-                                                                    RegistrationIntentService.Action.UPDATE_TOKEN));
+                        RegistrationIntentService.Action.UPDATE_TOKEN));
             }
         }
     }
@@ -281,7 +281,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         styledAttributes.recycle();
 
         FrameLayout frameLayout = (FrameLayout) findViewById(R.id.swipeWrapper);
-        frameLayout.setPadding(0, actionBarSize*2 ,0,0);
+        frameLayout.setPadding(0, actionBarSize * 2, 0, 0);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
@@ -372,6 +372,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                                   .update(ChatContract.PartnerEntry.CONTENT_URI,
                                           values, selection, selectionArgs);
             Log.i(TAG, rowsUpdated + " chats unarchived");
+        } else if (key.equals(getString(R.string.pref_filter_gender_key))) {
+            startService(RegistrationIntentService.createIntent(this,
+                    RegistrationIntentService.Action.UPDATE_PROFILE));
         }
     }
 

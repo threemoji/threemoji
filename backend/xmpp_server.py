@@ -79,7 +79,7 @@ def message_callback(session, message):
 
             if data["action"] == "upload_profile":
               add_user(uid, password, data["token"], data["emoji_1"], data["emoji_2"], data["emoji_3"],
-                       data["generated_name"], data["gender"], data["radius"])
+                       data["generated_name"], data["gender"], data.get("gender_pref", "All"), data["radius"])
 
             else:
               user = auth_user(uid, password, data["action"])
@@ -87,7 +87,7 @@ def message_callback(session, message):
               if user == 404:
                 if data["action"] == "update_profile":
                   add_user(uid, password, data["token"], data["emoji_1"], data["emoji_2"], data["emoji_3"],
-                           data["generated_name"], data["gender"], data["radius"])
+                           data["generated_name"], data["gender"], data.get("gender_pref", "All"), data["radius"])
 
               elif user != 403:
                 if data["action"] == "send_message":
@@ -111,7 +111,7 @@ def message_callback(session, message):
                 elif data["action"] == "update_profile":
                   data_dict = {}
                   for param in data:
-                    if param in ['token', 'emoji_1', 'emoji_2', 'emoji_3', 'generated_name', 'gender', 'radius']:
+                    if param in ['token', 'emoji_1', 'emoji_2', 'emoji_3', 'generated_name', 'gender', 'gender_pref', 'radius']:
                       data_dict[param] = data[param]
                   update_user(uid, user, data_dict, data["action"])
 
@@ -140,7 +140,7 @@ def message_callback(session, message):
             pg_conn.rollback()
             logging.exception('Error doing PostGIS database operation for action: ' + data["action"])
 
-def add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, gender, radius):
+def add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, gender, gender_pref, radius):
   req = datastore.CommitRequest()
   req.mode = datastore.CommitRequest.NON_TRANSACTIONAL
 
@@ -156,6 +156,7 @@ def add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, ge
   token_property = user.property.add()
   token_property.name = 'token'
   token_property.value.string_value = token
+
   emoji_1_property = user.property.add()
   emoji_1_property.name = 'emoji_1'
   emoji_1_property.value.string_value = emoji_1
@@ -171,6 +172,10 @@ def add_user(uid, password, token, emoji_1, emoji_2, emoji_3, generated_name, ge
   gender_property = user.property.add()
   gender_property.name = 'gender'
   gender_property.value.string_value = gender
+  gender_pref_property = user.property.add()
+  gender_pref_property.name = 'gender_pref'
+  gender_pref_property.value.string_value = gender_pref
+
   date_created_property = user.property.add()
   date_created_property.name = 'date_created'
   date_created_property.value.timestamp_microseconds_value = current_time
@@ -265,33 +270,6 @@ def lookup_profile(uid, message_id, user, target_uid):
 
   logging.info('Profile lookup response sent to user: ' + uid + ' message_id: ' + message_id)
 
-def old_lookup_nearby(uid, message_id, user):
-  req = datastore.RunQueryRequest()
-  query = req.query
-  query.kind.add().name = 'User'
-  resp = datastore.run_query(req)
-  user_dict = {}
-
-  for entity_result in resp.batch.entity_result:
-    found_user = entity_result.entity
-    if found_user.key.path_element[0].name == uid:
-      continue
-    data_dict = {}
-    for prop in found_user.property:
-      if prop.name in ['emoji_1', 'emoji_2', 'emoji_3', 'generated_name', 'gender']:
-        data_dict[prop.name] = prop.value.string_value
-    user_dict[found_user.key.path_element[0].name] = data_dict
-
-  send({"to": get_token(user),
-        "message_id": message_id,
-        "data": {
-          "response_type": "lookup_nearby",
-          "body": user_dict,
-          "timestamp": get_timestamp()
-        }})
-
-  logging.info('Old nearby lookup response sent to user: ' + uid + ' message_id: ' + message_id)
-
 def lookup_nearby(uid, message_id, user, lat, lon, radius):
   pg_curs.execute('SELECT uid, ST_Distance(location, ST_SetSRID(ST_MakePoint(%s, %s),4326)::GEOGRAPHY)' +
                   ' FROM ' + PG_TABLE +
@@ -322,7 +300,7 @@ def lookup_nearby(uid, message_id, user, lat, lon, radius):
     found_user_uid = found_user.key.path_element[0].name
     data_dict = {}
     for prop in found_user.property:
-      if prop.name in ['emoji_1', 'emoji_2', 'emoji_3', 'generated_name', 'gender']:
+      if prop.name in ['emoji_1', 'emoji_2', 'emoji_3', 'generated_name', 'gender', 'gender_pref']:
         data_dict[prop.name] = prop.value.string_value
     data_dict['distance'] = dist_dict[found_user_uid]
     user_dict[found_user.key.path_element[0].name] = data_dict

@@ -69,7 +69,7 @@ public class MyGcmListenerService extends GcmListenerService {
         if (responseType != null) {
             if (responseType.equals(getString(R.string.backend_response_lookup_profile_key))) {
                 Log.d(TAG, "Profile lookup response: " + data.getString("body"));
-                addPartnerToDb(data.getString("body"));
+                addPartnerToDb(data.getString("body"), false);
 
             } else if (responseType.equals(getString(R.string.backend_response_lookup_nearby_key))) {
                 Log.d(TAG, "Nearby lookup response: " + data.getString("body"));
@@ -91,14 +91,14 @@ public class MyGcmListenerService extends GcmListenerService {
             Log.d(TAG, "From name: " + fromName);
             Log.d(TAG, "Message: " + message);
 
-            if (fromName.isEmpty()) {
-                Intent intent = ChatIntentService.createIntent(this, ChatIntentService.Action.LOOKUP_UID, fromUid);
-                this.startService(intent);
-            }
-
             storeMessage(fromUid, timestamp, message);
 
-            if (!isChatVisible(fromUid)) {
+            if (fromName.isEmpty()) {
+                Intent intent = ChatIntentService.createIntent(this,
+                                                               ChatIntentService.Action.LOOKUP_UID,
+                                                               fromUid);
+                this.startService(intent);
+            } else if (!isChatVisible(fromUid)) {
                 updateNumNewMessages(fromUid);
                 if (isNotificationsEnabled() && !isChatMuted(fromUid)) {
                     sendNotification(fromUid, fromName, message);
@@ -122,7 +122,7 @@ public class MyGcmListenerService extends GcmListenerService {
 //        sendNotification("Upstream message send error. Id=" + msgId + ", error" + error);
     }
 
-    private void addPartnerToDb(String body) {
+    private void addPartnerToDb(String body, boolean isNewMatch) {
         try {
             JSONObject json = new JSONObject(body);
 
@@ -159,6 +159,9 @@ public class MyGcmListenerService extends GcmListenerService {
 
                             addChangedProfileAlert(uid, cursor.getString(4), generatedName);
                         }
+                        if (isNewMatch) {
+                            addMatchAlert(uid, generatedName);
+                        }
                     } else { // new partner
                         Uri uri = getContentResolver().insert(
                                 ChatContract.PartnerEntry.CONTENT_URI,
@@ -166,6 +169,19 @@ public class MyGcmListenerService extends GcmListenerService {
                         Log.d(TAG, "Added partner: " + uri.toString());
 
                         updateLastActivity(uid, String.valueOf(System.currentTimeMillis()));
+                        updateNumNewMessagesForNewPartner(uid);
+
+                        if (isNewMatch) {
+                            addMatchAlert(uid, generatedName);
+                        }
+
+                        if (isNotificationsEnabled()) {
+                            if (isNewMatch) {
+                                sendMatchNotification(uid, generatedName);
+                            } else {
+                                sendNotification(uid, "", "");
+                            }
+                        }
                     }
                 } catch (JSONException e) { // no such person exists on the server
                     if (json.getString(uid).equals("404")) {
@@ -187,11 +203,10 @@ public class MyGcmListenerService extends GcmListenerService {
 
     private Cursor getPartnerCursor(String uid, String[] projection) {
         return getContentResolver().query(ChatContract.PartnerEntry.buildPartnerByUidUri(uid),
-                projection,
-                null,
-                null,
-                null);
-
+                                          projection,
+                                          null,
+                                          null,
+                                          null);
     }
 
     private int updatePartnerEntry(String uid, ContentValues values) {
@@ -302,20 +317,7 @@ public class MyGcmListenerService extends GcmListenerService {
     }
 
     private void matchWithPerson(String body) {
-        addPartnerToDb(body);
-        try {
-            JSONObject json = new JSONObject(body);
-            String uid = json.keys().next();
-            JSONObject jsonPersonData = json.getJSONObject(uid);
-            String generatedName = jsonPersonData.getString("generated_name");
-            addMatchAlert(uid, generatedName);
-            updateNumNewMessages(uid);
-            if (isNotificationsEnabled()) {
-                sendMatchNotification(uid, generatedName);
-            }
-        } catch (JSONException e) {
-            Log.e(TAG, "Error matching with person: " + e.getMessage());
-        }
+        addPartnerToDb(body, true);
     }
 
     private void storeMessage(String uid, String timestamp, String message) {
@@ -352,6 +354,23 @@ public class MyGcmListenerService extends GcmListenerService {
                 ChatContract.PartnerEntry.buildPartnerByUidUri(uid), values, null, null);
     }
 
+    private void updateNumNewMessagesForNewPartner(String fromUid) {
+        ContentValues values = new ContentValues();
+        values.put(ChatContract.PartnerEntry.COLUMN_NUM_NEW_MESSAGES, getNumMessages(fromUid));
+        getContentResolver().update(
+                ChatContract.PartnerEntry.buildPartnerByUidUri(fromUid), values, null, null);
+    }
+
+    private int getNumMessages(String fromUid) {
+        Cursor cursor = getContentResolver().query(
+                ChatContract.MessageEntry.buildMessagesByUidUri(fromUid),
+                new String[]{ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE},
+                ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE + " = ?",
+                new String[]{ChatContract.MessageEntry.MessageType.RECEIVED.name()},
+                null);
+        return cursor.getCount();
+    }
+
     private void updateNumNewMessages(String fromUid) {
         Cursor cursor = getPartnerCursor(fromUid, PARTNER_PROJECTION_NUM_NEW_MESSAGES);
         int newMessages = 0;
@@ -376,7 +395,7 @@ public class MyGcmListenerService extends GcmListenerService {
      */
     private void sendNotification(String fromUid, String fromName, String message) {
         Intent intent = new Intent(this, ChatActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.putExtra("uid", fromUid);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                 PendingIntent.FLAG_ONE_SHOT);
@@ -404,7 +423,7 @@ public class MyGcmListenerService extends GcmListenerService {
 
     private void sendMatchNotification(String fromUid, String fromName) {
         Intent intent = new Intent(this, ChatActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.putExtra("uid", fromUid);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                 PendingIntent.FLAG_ONE_SHOT);

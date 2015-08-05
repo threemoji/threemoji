@@ -4,6 +4,7 @@ import googledatastore as datastore
 import psycopg2
 from collections import OrderedDict
 from itertools import islice
+import random
 
 SERVER = 'gcm.googleapis.com'
 PORT = 5236 # change to 5235 for production
@@ -280,17 +281,16 @@ def lookup_nearby(uid, message_id, user, lat, lon, radius):
   pg_curs.execute('SELECT uid, ST_Distance(location, ST_SetSRID(ST_MakePoint(%s, %s),4326)::GEOGRAPHY)' +
                   ' FROM ' + PG_TABLE +
                   ' WHERE ST_DWithin(ST_SetSRID(ST_MakePoint(%s, %s),4326)::GEOGRAPHY, ' \
-                                    'location, LEAST(radius * 1000, %s));',
-                  (lon, lat, lon, lat, int(radius)*1e3))
+                                    'location, LEAST(radius * 1000, %s)) AND uid != %s;',
+                  (lon, lat, lon, lat, int(radius)*1e3, uid))
   results = pg_curs.fetchall()
+  results = random.sample(results, min(len(results), 10))
 
   req = datastore.LookupRequest()
   dist_dict = {}
   for result in results:
     result_uid = result[0]
     result_dist = result[1]
-    if result_uid == uid:
-      continue
     dist_dict[result_uid] = result_dist
     user_key = datastore.Key()
     path = user_key.path_element.add()

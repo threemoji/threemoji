@@ -122,7 +122,6 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
 
         if (!mIsArchived) {
             menu.findItem(R.id.action_unarchive_chat).setVisible(false);
-            menu.findItem(R.id.action_delete_chat).setVisible(false);
         } else {
             menu.findItem(R.id.action_archive_chat).setVisible(false);
         }

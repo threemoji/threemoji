@@ -169,16 +169,22 @@ public class MyGcmListenerService extends GcmListenerService {
                         Log.d(TAG, "Added partner: " + uri.toString());
 
                         updateLastActivity(uid, String.valueOf(System.currentTimeMillis()));
-                        updateNumNewMessagesForNewPartner(uid);
+
+                        int numNewMessages = getNumMessages(uid);
+
+                        if (numNewMessages > 0) {
+                            updateNumNewMessages(uid, numNewMessages);
+                        }
 
                         if (isNewMatch) {
                             addMatchAlert(uid, generatedName);
+                            updateNumNewMessages(uid);
                         }
 
                         if (isNotificationsEnabled()) {
                             if (isNewMatch) {
                                 sendMatchNotification(uid, generatedName);
-                            } else {
+                            } else if (numNewMessages > 0) {
                                 sendNotification(uid, "", "");
                             }
                         }
@@ -354,9 +360,9 @@ public class MyGcmListenerService extends GcmListenerService {
                 ChatContract.PartnerEntry.buildPartnerByUidUri(uid), values, null, null);
     }
 
-    private void updateNumNewMessagesForNewPartner(String fromUid) {
+    private void updateNumNewMessages(String fromUid, int numMessages) {
         ContentValues values = new ContentValues();
-        values.put(ChatContract.PartnerEntry.COLUMN_NUM_NEW_MESSAGES, getNumMessages(fromUid));
+        values.put(ChatContract.PartnerEntry.COLUMN_NUM_NEW_MESSAGES, numMessages);
         getContentResolver().update(
                 ChatContract.PartnerEntry.buildPartnerByUidUri(fromUid), values, null, null);
     }

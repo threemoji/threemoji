@@ -406,8 +406,10 @@ public class MyGcmListenerService extends GcmListenerService {
         intent.putExtra("uid", fromUid);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                 PendingIntent.FLAG_ONE_SHOT);
+        String tickerText = fromName + ": " + message;
         if (fromName.isEmpty()) {
             fromName = "Message from a new partner!";
+            tickerText = fromName;
         }
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
@@ -416,10 +418,10 @@ public class MyGcmListenerService extends GcmListenerService {
                         BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
                 .setContentTitle(fromName)
                 .setContentText(message)
+                .setTicker(tickerText)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
-                .setContentIntent(pendingIntent)
-                .setTicker(message);
+                .setContentIntent(pendingIntent);
 
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -441,10 +443,10 @@ public class MyGcmListenerService extends GcmListenerService {
                         BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
                 .setContentTitle("You have a new match!")
                 .setContentText("Start chatting with " + fromName)
+                .setTicker("You have a new match: " + fromName + "!")
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
-                .setContentIntent(pendingIntent)
-                .setTicker("You have a new match!");
+                .setContentIntent(pendingIntent);
 
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);

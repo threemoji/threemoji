@@ -1,10 +1,8 @@
 #/usr/bin/python
-import sys, json, xmpp, os, logging, time
+import sys, json, xmpp, os, logging, time, random
 import googledatastore as datastore
 import psycopg2
 from collections import OrderedDict
-from itertools import islice
-import random
 
 SERVER = 'gcm.googleapis.com'
 PORT = 5236 # change to 5235 for production
@@ -35,11 +33,6 @@ class LimitedSizeDict(OrderedDict):
     if self.size_limit is not None:
       while len(self) > self.size_limit:
         self.popitem(last=False)
-
-def chunks(data, SIZE=10):
-    it = iter(data)
-    for i in xrange(0, len(data), SIZE):
-        yield {k:data[k] for k in islice(it, SIZE)}
 
 message_id_cache = LimitedSizeDict(size_limit=1000)
 
@@ -379,18 +372,6 @@ def send_match_notification(from_uid, message_id, from_user, to_uid):
     if prop.name in ['emoji_1', 'emoji_2', 'emoji_3', 'generated_name', 'gender']:
       data_dict[prop.name] = prop.value.string_value
   user_dict[from_uid] = data_dict
-
-  # timestamp = get_timestamp()
-  # i = 0
-  # for chunk in chunks(user_dict):
-  #   send({"to": get_token(to_user),
-  #         "message_id": message_id + str(i),
-  #         "data": {
-  #           "response_type": "match_notification",
-  #           "body": user_dict,
-  #           "timestamp": timestamp
-  #         }})
-  #   i += 1
 
   send({"to": get_token(to_user),
         "message_id": message_id,

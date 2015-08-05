@@ -107,31 +107,6 @@ public class MyGcmListenerService extends GcmListenerService {
         }
     }
 
-    private boolean isNotificationsEnabled() {
-        return PreferenceManager.getDefaultSharedPreferences(this)
-                                .getBoolean(getString(R.string.pref_chat_notifications_key), Boolean.parseBoolean(getString(R.string.pref_chat_notifications_default)));
-    }
-
-    private boolean isChatMuted(String fromUid) {
-        Cursor cursor = getPartnerCursor(fromUid, PARTNER_PROJECTION_IS_MUTED);
-        try {
-            cursor.moveToNext();
-            boolean isMuted = cursor.getInt(0) > 0;
-            cursor.close();
-            return isMuted;
-        } catch (NullPointerException | CursorIndexOutOfBoundsException e) {
-            return false;
-        }
-    }
-
-    private boolean isChatVisible(String fromUid) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        Set<String> uidsOfOpenedChats = prefs.getStringSet(getString(R.string.uids_of_opened_chats),
-                                                           new HashSet<String>());
-
-        return !uidsOfOpenedChats.isEmpty() && uidsOfOpenedChats.contains(fromUid);
-    }
-
     @Override
     public void onDeletedMessages() {
 //        sendNotification("Deleted messages on server");
@@ -253,7 +228,7 @@ public class MyGcmListenerService extends GcmListenerService {
 
     private void updateLookupNearbyTimestamp() {
         long time = System.currentTimeMillis();
-        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+        SharedPreferences.Editor editor = getPrefs().edit();
         editor.putLong(getString(R.string.prefs_lookup_nearby_time), time);
         editor.apply();
     }
@@ -280,11 +255,12 @@ public class MyGcmListenerService extends GcmListenerService {
                 String emoji2 = jsonPersonData.getString("emoji_2");
                 String emoji3 = jsonPersonData.getString("emoji_3");
                 String gender = jsonPersonData.getString("gender");
+                String genderPref = jsonPersonData.getString("gender_pref");
                 String generatedName = jsonPersonData.getString("generated_name");
                 Double distance = jsonPersonData.getDouble("distance")/1000;
 
                 Cursor cursor = getPartnerCursor(uid, PARTNER_PROJECTION_GENERATED_NAME);
-                if (cursor.getCount() == 0) { // if not already a chat partner
+                if (cursor.getCount() == 0 && gendersCompatible(getGenderPref(), getGender(), genderPref, gender)) {
                     EmojiVector vector = new EmojiVector(emoji1, emoji2, emoji3);
                     int matchValue = vector.getMatchValue(emojiVector);
                     Log.d(TAG, "Match value for " + generatedName + ": " + String.valueOf(matchValue));
@@ -326,12 +302,12 @@ public class MyGcmListenerService extends GcmListenerService {
     }
 
     private void matchWithPerson(String body) {
+        addPartnerToDb(body);
         try {
             JSONObject json = new JSONObject(body);
             String uid = json.keys().next();
             JSONObject jsonPersonData = json.getJSONObject(uid);
             String generatedName = jsonPersonData.getString("generated_name");
-            addPartnerToDb(body);
             addMatchAlert(uid, generatedName);
             updateNumNewMessages(uid);
             if (isNotificationsEnabled()) {
@@ -354,35 +330,6 @@ public class MyGcmListenerService extends GcmListenerService {
         Log.d(TAG, "Added message: " + uri.toString());
 
         updateLastActivity(uid, timestamp);
-    }
-
-    private EmojiVector getEmojiVector() {
-        EmojiVector emojiVector = null;
-        try {
-            File file = new File(getDir("data", MODE_PRIVATE), "emojiVectorMap");
-            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file));
-            HashMap<String, Integer> emojiVectorMap = (HashMap<String, Integer>) inputStream.readObject();
-            inputStream.close();
-            emojiVector = new EmojiVector(emojiVectorMap);
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to read emoji vector from file; attempting to write...");
-
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-            String emoji1s = prefs.getString(getString(R.string.profile_emoji_one_key), "");
-            String emoji2s = prefs.getString(getString(R.string.profile_emoji_two_key), "");
-            String emoji3s = prefs.getString(getString(R.string.profile_emoji_three_key), "");
-            emojiVector = new EmojiVector(emoji1s, emoji2s, emoji3s);
-            try {
-                File file = new File(getDir("data", MODE_PRIVATE), "emojiVectorMap");
-                ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
-                outputStream.writeObject(emojiVector.map);
-                outputStream.flush();
-                outputStream.close();
-            } catch (IOException f) {
-                Log.e(TAG, "Failed to write emoji vector to file" + f.toString());
-            }
-        }
-        return emojiVector;
     }
 
     private String findNameFromUid(String uid) {
@@ -489,5 +436,85 @@ public class MyGcmListenerService extends GcmListenerService {
             }
         }
         return result;
+    }
+
+    // ================================================================
+    // Utility methods
+    // ================================================================
+
+    private boolean isNotificationsEnabled() {
+        return getPrefs().getBoolean(getString(R.string.pref_chat_notifications_key), Boolean.parseBoolean(getString(R.string.pref_chat_notifications_default)));
+    }
+
+    private boolean isChatMuted(String fromUid) {
+        Cursor cursor = getPartnerCursor(fromUid, PARTNER_PROJECTION_IS_MUTED);
+        try {
+            cursor.moveToNext();
+            boolean isMuted = cursor.getInt(0) > 0;
+            cursor.close();
+            return isMuted;
+        } catch (NullPointerException | CursorIndexOutOfBoundsException e) {
+            return false;
+        }
+    }
+
+    private boolean isChatVisible(String fromUid) {
+        Set<String> uidsOfOpenedChats = getPrefs().getStringSet(getString(R.string.uids_of_opened_chats),
+                new HashSet<String>());
+
+        return !uidsOfOpenedChats.isEmpty() && uidsOfOpenedChats.contains(fromUid);
+    }
+
+    private EmojiVector getEmojiVector() {
+        EmojiVector emojiVector = null;
+        try {
+            File file = new File(getDir("data", MODE_PRIVATE), "emojiVectorMap");
+            ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file));
+            HashMap<String, Integer> emojiVectorMap = (HashMap<String, Integer>) inputStream.readObject();
+            inputStream.close();
+            emojiVector = new EmojiVector(emojiVectorMap);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to read emoji vector from file; attempting to write...");
+
+            SharedPreferences prefs = getPrefs();
+            String emoji1s = prefs.getString(getString(R.string.profile_emoji_one_key), "");
+            String emoji2s = prefs.getString(getString(R.string.profile_emoji_two_key), "");
+            String emoji3s = prefs.getString(getString(R.string.profile_emoji_three_key), "");
+            emojiVector = new EmojiVector(emoji1s, emoji2s, emoji3s);
+            try {
+                File file = new File(getDir("data", MODE_PRIVATE), "emojiVectorMap");
+                ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
+                outputStream.writeObject(emojiVector.map);
+                outputStream.flush();
+                outputStream.close();
+            } catch (IOException f) {
+                Log.e(TAG, "Failed to write emoji vector to file" + f.toString());
+            }
+        }
+        return emojiVector;
+    }
+
+    private String getGenderPref() {
+        return getPrefs().getString(getString(R.string.pref_filter_gender_key), getString(R.string.pref_filter_gender_default));
+    }
+
+    private String getGender() {
+        return getPrefs().getString(getString(R.string.profile_gender_key), "");
+    }
+
+    private boolean genderCompatible(String myPref, String theirGender) {
+        if (myPref.equals("All")) {
+            return true;
+        } else {
+            return myPref.toUpperCase().equals(theirGender);
+        }
+    }
+
+    private boolean gendersCompatible(String myPref, String myGender, String theirPref, String theirGender) {
+        return genderCompatible(myPref, theirGender) && genderCompatible(theirPref, myGender);
+    }
+
+    private SharedPreferences getPrefs() {
+        return PreferenceManager.getDefaultSharedPreferences(this);
     }
 }

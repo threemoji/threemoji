@@ -75,7 +75,6 @@
         android:background="@drawable/notifications_alert"
         android:textColor="@color/white"
         android:textSize="12sp"
-        android:textIsSelectable="true"
         android:minWidth="22dp"
         android:textStyle="bold"
         android:layout_marginRight="4dp"

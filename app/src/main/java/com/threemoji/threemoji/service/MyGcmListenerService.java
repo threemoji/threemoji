@@ -161,6 +161,7 @@ public class MyGcmListenerService extends GcmListenerService {
                         }
                         if (isNewMatch) {
                             addMatchAlert(uid, generatedName);
+                            updateNumNewMessages(uid);
                         }
                     } else { // new partner
                         Uri uri = getContentResolver().insert(

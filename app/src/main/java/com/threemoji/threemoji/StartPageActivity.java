@@ -2,15 +2,19 @@ package com.threemoji.threemoji;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
+import com.threemoji.threemoji.data.ChatContract;
 import com.threemoji.threemoji.service.RegistrationIntentService;
 import com.threemoji.threemoji.utility.EmojiList;
 import com.threemoji.threemoji.utility.EmojiVector;
 import com.threemoji.threemoji.utility.NameGenerator;
 import com.threemoji.threemoji.utility.SvgUtils;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
@@ -35,6 +39,8 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
     private enum Gender {FEMALE, MALE}
 
     private static final String TAG = StartPageActivity.class.getSimpleName();
+    public static final String[] PARTNER_PROJECTION_UID = new String[]{
+            ChatContract.PartnerEntry.COLUMN_UID};
 
     private ImageButton mCurrentEmojiButton;
     private int mSizeOfEmojiIcon = 72;
@@ -142,6 +148,15 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
             if (getPrefs().getBoolean(getString(R.string.pref_has_seen_start_page_key), false)) {
                 startService(RegistrationIntentService.createIntent(this,
                                                                     RegistrationIntentService.Action.UPDATE_PROFILE));
+                Cursor cursor = getContentResolver().query(ChatContract.PartnerEntry.CONTENT_URI, PARTNER_PROJECTION_UID, null, null, null);
+                cursor.moveToFirst();
+                while (!cursor.isAfterLast()) {
+                    Log.d(TAG, cursor.getString(0));
+                    String partnerUid = cursor.getString(0);
+                    addChangedProfileAlert(partnerUid, getPrefs().getString(getString(R.string.profile_generated_name_key), ""));
+                    cursor.moveToNext();
+                }
+                cursor.close();
             } else {
                 startService(RegistrationIntentService.createIntent(this,
                                                                     RegistrationIntentService.Action.CREATE_PROFILE));
@@ -245,4 +260,22 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
     private SharedPreferences getPrefs() {
         return PreferenceManager.getDefaultSharedPreferences(this);
     }
+
+    private void addChangedProfileAlert(String partnerUid, String newName) {
+        addAlertMessage(partnerUid, "You are now " + newName);
+    }
+
+    private void addAlertMessage(String partnerUid, String message) {
+        ContentValues values = new ContentValues();
+        values.put(ChatContract.MessageEntry.COLUMN_PARTNER_KEY, partnerUid);
+        values.put(ChatContract.MessageEntry.COLUMN_DATETIME, System.currentTimeMillis());
+        values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_TYPE,
+                ChatContract.MessageEntry.MessageType.ALERT.name());
+        values.put(ChatContract.MessageEntry.COLUMN_MESSAGE_DATA, message);
+
+        Uri uri = getContentResolver().insert(
+                ChatContract.MessageEntry.buildMessagesByUidUri(partnerUid), values);
+        Log.d(TAG, "Added alert message: " + message + ", " + uri.toString());
+    }
+
 }

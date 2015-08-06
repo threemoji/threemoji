@@ -35,6 +35,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -362,6 +363,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         if (key.equals(getString(R.string.prefs_lookup_nearby_time))) {
             mSwipeRefreshLayout.setRefreshing(false);
+            noMatchFoundToastIfNeeded();
         } else if (key.equals(getString(R.string.pref_chat_archive_duration_key))) {
             // unarchive chats who should not be archived
             int archiveDays = Integer.parseInt(
@@ -382,6 +384,12 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         } else if (key.equals(getString(R.string.pref_filter_gender_key))) {
             startService(RegistrationIntentService.createIntent(this,
                     RegistrationIntentService.Action.UPDATE_PROFILE));
+        }
+    }
+
+    private void noMatchFoundToastIfNeeded() {
+        if (!getPrefs().getBoolean(getString(R.string.prefs_match_status), false)) {
+            Toast.makeText(this, "No suitable match found :(", Toast.LENGTH_SHORT).show();
         }
     }
 

@@ -55,6 +55,7 @@
     <string name="pref_chat_notifications_summary">Includes notifications for new matches and new messages</string>
 
     <string name="prefs_lookup_nearby_time">lastLookupNearbyTime</string>
+    <string name="prefs_match_status">matchFound</string>
 
     <string name="title_activity_start_page">Start Page</string>
 

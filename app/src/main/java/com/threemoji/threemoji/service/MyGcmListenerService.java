@@ -3,6 +3,7 @@ package com.threemoji.threemoji.service;
 import com.google.android.gms.gcm.GcmListenerService;
 
 import com.threemoji.threemoji.ChatActivity;
+import com.threemoji.threemoji.PeopleNearbyFragment;
 import com.threemoji.threemoji.R;
 import com.threemoji.threemoji.data.ChatContract;
 import com.threemoji.threemoji.utility.EmojiVector;
@@ -26,6 +27,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -73,8 +75,8 @@ public class MyGcmListenerService extends GcmListenerService {
 
             } else if (responseType.equals(getString(R.string.backend_response_lookup_nearby_key))) {
                 Log.d(TAG, "Nearby lookup response: " + data.getString("body"));
-                updateLookupNearbyTimestamp();
                 storePeopleNearbyData(data.getString("body"));
+                updateLookupNearbyTimestamp();
 
             } else if (responseType.equals(getString(R.string.backend_response_match_notification_key))) {
                 Log.d(TAG, "Match notification received: " + data.getString("body"));
@@ -210,10 +212,10 @@ public class MyGcmListenerService extends GcmListenerService {
 
     private Cursor getPartnerCursor(String uid, String[] projection) {
         return getContentResolver().query(ChatContract.PartnerEntry.buildPartnerByUidUri(uid),
-                                          projection,
-                                          null,
-                                          null,
-                                          null);
+                projection,
+                null,
+                null,
+                null);
     }
 
     private int updatePartnerEntry(String uid, ContentValues values) {
@@ -255,6 +257,12 @@ public class MyGcmListenerService extends GcmListenerService {
         editor.apply();
     }
 
+    private void updateMatchStatus(boolean matchFound) {
+        SharedPreferences.Editor editor = getPrefs().edit();
+        editor.putBoolean(getString(R.string.prefs_match_status), matchFound);
+        editor.apply();
+    }
+
     private void storePeopleNearbyData(String body) {
         try {
             JSONObject json = new JSONObject(body);
@@ -291,6 +299,7 @@ public class MyGcmListenerService extends GcmListenerService {
                         bestMatchUid = uid;
                         bestMatchJson = new JSONObject("{}");
                         bestMatchJson.put(uid, jsonPersonData);
+                    } else {
                     }
                 }
                 cursor.close();
@@ -317,6 +326,9 @@ public class MyGcmListenerService extends GcmListenerService {
                         ChatIntentService.Action.SEND_MATCH_NOTIFICATION, bestMatchUid);
                 this.startService(intent);
                 matchWithPerson(bestMatchJson.toString());
+                updateMatchStatus(true);
+            } else {
+                updateMatchStatus(false);
             }
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());

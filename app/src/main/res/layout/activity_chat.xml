@@ -40,7 +40,8 @@
                 android:hint="Send message"
                 android:inputType="textMultiLine|textCapSentences"
                 android:maxHeight="150dp"
-                android:layout_marginLeft="8dp" />
+                android:layout_marginLeft="8dp"
+                android:maxLength="3000" />
 
             <ImageButton
                 android:id="@+id/submit_button"

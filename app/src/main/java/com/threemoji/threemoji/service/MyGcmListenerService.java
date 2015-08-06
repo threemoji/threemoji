@@ -272,6 +272,7 @@ public class MyGcmListenerService extends GcmListenerService {
         try {
             JSONObject json = new JSONObject(body);
             Iterator<String> people = json.keys();
+            boolean emptyResults = !people.hasNext();
 
             // clear all existing data
             getContentResolver().delete(ChatContract.PeopleNearbyEntry.CONTENT_URI, null, null);
@@ -331,6 +332,8 @@ public class MyGcmListenerService extends GcmListenerService {
                         ChatIntentService.Action.SEND_MATCH_NOTIFICATION, bestMatchUid);
                 this.startService(intent);
                 matchWithPerson(bestMatchJson.toString());
+                updateMatchStatus(true);
+            } else if (emptyResults) {
                 updateMatchStatus(true);
             } else {
                 updateMatchStatus(false);

@@ -88,6 +88,9 @@ def message_callback(session, message):
                 if data["action"] == "update_profile":
                   add_user(uid, password, data["token"], data["emoji_1"], data["emoji_2"], data["emoji_3"],
                            data["generated_name"], data["gender"], data.get("gender_pref", "All"), data["radius"])
+                else:
+                  logging.error('User not found! Sending reupload profile request')
+                  send_reupload_request(msg["from"], msg_id)
 
               elif user != 403:
                 if data["action"] == "send_message":
@@ -382,6 +385,15 @@ def send_match_notification(from_uid, message_id, from_user, to_uid):
         }})
 
   logging.info('Match notification sent to user: ' + to_uid + ' message_id: ' + message_id)
+
+def send_reupload_request(token, message_id):
+  send({"to": token,
+        "message_id": message_id,
+        "data": {
+          "response_type": "reupload_request"
+        }})
+
+  logging.info('Profile reupload request sent to: ' + token + ' message_id: ' + message_id)
 
 def get_token(user):
   for prop in user.property:

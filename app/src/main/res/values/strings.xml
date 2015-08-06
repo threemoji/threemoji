@@ -83,6 +83,7 @@
     <string name="backend_response_lookup_profile_key">lookup_profile</string>
     <string name="backend_response_lookup_nearby_key">lookup_nearby</string>
     <string name="backend_response_match_notification_key">match_notification</string>
+    <string name="backend_response_reupload_request_key">reupload_request</string>
 
     <string name="backend_uid_key">uid</string>
     <string name="backend_password_key">password</string>

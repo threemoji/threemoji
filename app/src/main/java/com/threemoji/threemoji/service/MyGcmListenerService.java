@@ -81,6 +81,11 @@ public class MyGcmListenerService extends GcmListenerService {
             } else if (responseType.equals(getString(R.string.backend_response_match_notification_key))) {
                 Log.d(TAG, "Match notification received: " + data.getString("body"));
                 matchWithPerson(data.getString("body"));
+
+            } else if (responseType.equals(getString(R.string.backend_response_reupload_request_key))) {
+                Log.d(TAG, "Reupload request received");
+                startService(RegistrationIntentService.createIntent(this,
+                        RegistrationIntentService.Action.UPDATE_PROFILE));
             }
         } else {
             String message = data.getString("body");

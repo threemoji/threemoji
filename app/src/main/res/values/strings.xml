@@ -1,6 +1,7 @@
 <resources>
     <string name="gcm_project_num">347398514227</string>
     <string name="app_name">Threemoji</string>
+    <string name="threemoji_url">http://threemoji.github.io</string>
     <string name="content_authority">com.threemoji.threemoji</string>
 
     <string name="drawer_open">Open</string>

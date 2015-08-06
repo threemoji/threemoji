@@ -7,4 +7,5 @@
     android:horizontalSpacing="4dp"
     android:numColumns="auto_fit"
     android:padding="12dp"
-    android:verticalSpacing="8dp" />
+    android:verticalSpacing="8dp"
+    android:background="@color/white" />

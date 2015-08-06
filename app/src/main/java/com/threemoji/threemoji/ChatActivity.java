@@ -116,6 +116,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
+        menu.findItem(R.id.action_block_chat).setVisible(false);
         if (!mIsMuted) {
             menu.findItem(R.id.action_unmute_chat).setVisible(false);
         } else {

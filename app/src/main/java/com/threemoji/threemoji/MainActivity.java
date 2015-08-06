@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
@@ -255,6 +256,12 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
             case R.id.nav_people_nearby:
                 mViewPager.setCurrentItem(1);
+                break;
+
+            case R.id.nav_about:
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse(getString(R.string.threemoji_url)));
+                startActivity(intent);
                 break;
 
             case R.id.nav_chats:

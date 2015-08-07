@@ -1,8 +1,7 @@
 #/usr/bin/python
-import sys, json, xmpp, os, logging, time, random
+import sys, json, xmpp, os, logging, time, random, memcache
 import googledatastore as datastore
 import psycopg2
-from collections import OrderedDict
 
 SERVER = 'gcm.googleapis.com'
 PORT = 5236 # change to 5235 for production
@@ -19,22 +18,9 @@ PG_TABLE = os.environ.get('POSTGIS_TABLE')
 pg_conn = psycopg2.connect(host=PG_SERVER, user=PG_USER, password=PG_KEY, dbname=PG_DB)
 pg_curs = pg_conn.cursor()
 
+memc = memcache.Client(['127.0.0.1:11211'])
+
 logging.basicConfig(format='%(asctime)-15s %(levelname)s: %(message)s', level=logging.INFO)
-
-class LimitedSizeDict(OrderedDict):
-  def __init__(self, *args, **kwds):
-    self.size_limit = kwds.pop("size_limit", None)
-    OrderedDict.__init__(self, *args, **kwds)
-    self._check_size_limit()
-  def __setitem__(self, key, value):
-    OrderedDict.__setitem__(self, key, value)
-    self._check_size_limit()
-  def _check_size_limit(self):
-    if self.size_limit is not None:
-      while len(self) > self.size_limit:
-        self.popitem(last=False)
-
-message_id_cache = LimitedSizeDict(size_limit=1000)
 
 def send(json_dict):
   template = ("<message><gcm xmlns=\"google:mobile:data\">{0}</gcm></message>")
@@ -54,7 +40,7 @@ def message_callback(session, message):
       msg_type = msg["message_type"]
       if msg_type == "ack":
         logging.info('Received GCM ack: ' + msg_id)
-        message_id_cache[msg_id] = 1
+        memc.set(msg_id, 1)
       elif msg_type == "nack" and msg.get("error") == "DEVICE_UNREGISTERED":
         logging.info('Received DEVICE_UNREGISTERED nack')
         del_user(None, msg.get("from"))
@@ -69,7 +55,7 @@ def message_callback(session, message):
             "message_type": "ack"})
       logging.info('Acknowledged GCM message: ' + msg_id)
 
-      if (msg.has_key('data') and msg_id not in message_id_cache):
+      if msg.has_key('data') and memc.get(msg_id) is None:
         # Handle action
         data = msg["data"]
         if data.has_key('action'):

@@ -56,6 +56,7 @@ def message_callback(session, message):
         logging.info('Received GCM ack: ' + msg_id)
         message_id_cache[msg_id] = 1
       elif msg_type == "nack" and msg.get("error") == "DEVICE_UNREGISTERED":
+        logging.info('Received DEVICE_UNREGISTERED nack')
         del_user(None, msg.get("from"))
       elif msg_type == "control" and msg.get("control_type") == "CONNECTION_DRAINING":
         logging.info('Received CONNECTION_DRAINING control message')
@@ -205,6 +206,9 @@ def del_user(uid, token=None):
     token_filter.value.string_value = token
 
     results = datastore.run_query(req).batch.entity_result
+    if len(results) == 0:
+      logging.info("Unregistered user token not in database")
+      return
     uid = results[0].entity.key.path_element[0].name
     logging.info("Deleting unregistered user: " + uid)
 

@@ -138,13 +138,13 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         int id = item.getItemId();
         switch (id) {
             case R.id.action_archive_chat:
-                setChatIsArchived(1);
+                setChatIsArchived(true);
                 Toast.makeText(this, "Chat has been archived", Toast.LENGTH_SHORT).show();
                 finish();
                 break;
 
             case R.id.action_unarchive_chat:
-                setChatIsArchived(0);
+                setChatIsArchived(false);
                 Toast.makeText(this, "Chat has been unarchived", Toast.LENGTH_SHORT).show();
                 break;
 
@@ -153,13 +153,13 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
                 break;
 
             case R.id.action_mute_chat:
-                setChatIsMuted(1);
+                setChatIsMuted(true);
                 Toast.makeText(this, "Chat muted", Toast.LENGTH_SHORT).show();
                 finish();
                 break;
 
             case R.id.action_unmute_chat:
-                setChatIsMuted(0);
+                setChatIsMuted(false);
                 Toast.makeText(this, "Chat unmuted", Toast.LENGTH_SHORT).show();
                 break;
 
@@ -169,17 +169,21 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         return super.onOptionsItemSelected(item);
     }
 
-    private void setChatIsArchived(int isArchived) {
+    private void setChatIsArchived(boolean isArchived) {
+        mIsArchived = isArchived;
+        invalidateOptionsMenu();
         ContentValues values = new ContentValues();
-        values.put(ChatContract.PartnerEntry.COLUMN_IS_ARCHIVED, isArchived);
+        values.put(ChatContract.PartnerEntry.COLUMN_IS_ARCHIVED, isArchived ? 1 : 0);
         int rowsUpdated = getContentResolver().update(
                 ChatContract.PartnerEntry.buildPartnerByUidUri(mPartnerUid), values, null,
                 null);
     }
 
-    private void setChatIsMuted(int isMuted) {
+    private void setChatIsMuted(boolean isMuted) {
+        mIsMuted = isMuted;
+        invalidateOptionsMenu();
         ContentValues values = new ContentValues();
-        values.put(ChatContract.PartnerEntry.COLUMN_IS_MUTED, isMuted);
+        values.put(ChatContract.PartnerEntry.COLUMN_IS_MUTED, isMuted ? 1 :0);
         int rowsUpdated = getContentResolver().update(
                 ChatContract.PartnerEntry.buildPartnerByUidUri(mPartnerUid), values, null,
                 null);

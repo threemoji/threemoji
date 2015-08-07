@@ -92,6 +92,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     private static final int PAGE_SIZE = 100;
     private int mCurrentLimit = PAGE_SIZE;
     private boolean mLoadingNextPage;
+    private Cursor mInitCursor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,13 +101,15 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
 
         initFields(getIntent());
 
-        if (mIsAlive) {
+        if (mIsAlive && savedInstanceState == null) {
+        // A null savedInstanceState means that this activity is newly created
+        // and a profile lookup is required.
             cancelNotifications();
             resetNumNewMessages();
             if (!mIsArchived) {
                 updatePartnerIfNeeded();
             }
-        } else {
+        } else if (!mIsAlive) {
             disableBottomBar();
         }
 
@@ -189,7 +192,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         mIsMuted = isMuted;
         invalidateOptionsMenu();
         ContentValues values = new ContentValues();
-        values.put(ChatContract.PartnerEntry.COLUMN_IS_MUTED, isMuted ? 1 :0);
+        values.put(ChatContract.PartnerEntry.COLUMN_IS_MUTED, isMuted ? 1 : 0);
         int rowsUpdated = getContentResolver().update(
                 ChatContract.PartnerEntry.buildPartnerByUidUri(mPartnerUid), values, null,
                 null);
@@ -253,6 +256,8 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             mIsArchived = intent.getBooleanExtra("isArchived", false);
             mIsMuted = intent.getBooleanExtra("isMuted", false);
         }
+
+        cursor.close();
     }
 
     private void cancelNotifications() {
@@ -326,16 +331,16 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void setupRecyclerView(RecyclerView messagesView) {
-        Cursor cursor = getContentResolver().query(mMessagesUri, MESSAGES_PROJECTION, null, null,
-                                                   MESSAGES_SORT_ORDER +
-                                                   String.format(MESSAGES_LIMIT, mCurrentLimit));
+        mInitCursor = getContentResolver().query(mMessagesUri, MESSAGES_PROJECTION, null, null,
+                                                 MESSAGES_SORT_ORDER +
+                                                 String.format(MESSAGES_LIMIT, mCurrentLimit));
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(messagesView.getContext());
         layoutManager.setReverseLayout(true);
         layoutManager.scrollToPosition(0);
         messagesView.setLayoutManager(layoutManager);
 
-        mMessagesAdapter = new MessagesRecyclerViewAdapter(this, cursor);
+        mMessagesAdapter = new MessagesRecyclerViewAdapter(this, mInitCursor);
         messagesView.setAdapter(mMessagesAdapter);
         messagesView.addOnScrollListener(new EndlessScrollListener(layoutManager) {
             @Override
@@ -471,6 +476,10 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
                         mLoadingNextPage = false;
                     } else {
                         mMessagesAdapter.moveToEnd();
+                    }
+
+                    if (!mInitCursor.isClosed()) {
+                        mInitCursor.close(); // close the cursor that was used before the loader was initiated
                     }
                 }
                 break;

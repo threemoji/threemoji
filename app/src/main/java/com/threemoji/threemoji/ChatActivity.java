@@ -58,7 +58,9 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
             ChatContract.MessageEntry.COLUMN_MESSAGE_DATA
     };
     public static final String MESSAGES_SORT_ORDER =
-            ChatContract.MessageEntry.TABLE_NAME + "." + ChatContract.MessageEntry._ID + " DESC";
+            ChatContract.MessageEntry.TABLE_NAME + "." + ChatContract.MessageEntry._ID + " DESC ";
+
+    public static final String MESSAGES_LIMIT = "LIMIT %s";
 
     public static final String[] PARTNER_PROJECTION = new String[]{
             ChatContract.PartnerEntry.COLUMN_EMOJI_1,
@@ -86,6 +88,10 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     private boolean mIsAlive;
     private boolean mIsArchived;
     private boolean mIsMuted;
+
+    private static final int PAGE_SIZE = 100;
+    private int mCurrentLimit = PAGE_SIZE;
+    private boolean mLoadingNextPage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -274,7 +280,8 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void updatePartnerIfNeeded() {
-        Intent intent = ChatIntentService.createIntent(this, ChatIntentService.Action.LOOKUP_UID, mPartnerUid);
+        Intent intent = ChatIntentService.createIntent(this, ChatIntentService.Action.LOOKUP_UID,
+                                                       mPartnerUid);
         startService(intent);
     }
 
@@ -300,7 +307,8 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         ((ImageView) findViewById(R.id.title_emoji_1)).setImageDrawable(emoji1Drawable);
         ((ImageView) findViewById(R.id.title_emoji_2)).setImageDrawable(emoji2Drawable);
         ((ImageView) findViewById(R.id.title_emoji_3)).setImageDrawable(emoji3Drawable);
-        ((TextView) findViewById(R.id.gender)).setText(gender.charAt(0) + gender.toLowerCase().substring(1));
+        ((TextView) findViewById(R.id.gender)).setText(
+                gender.charAt(0) + gender.toLowerCase().substring(1));
         ((TextView) findViewById(R.id.title_name)).setText(generatedName);
         mEmoji1 = emoji1;
         mEmoji2 = emoji2;
@@ -319,7 +327,8 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private void setupRecyclerView(RecyclerView messagesView) {
         Cursor cursor = getContentResolver().query(mMessagesUri, MESSAGES_PROJECTION, null, null,
-                                                   MESSAGES_SORT_ORDER);
+                                                   MESSAGES_SORT_ORDER +
+                                                   String.format(MESSAGES_LIMIT, mCurrentLimit));
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(messagesView.getContext());
         layoutManager.setReverseLayout(true);
@@ -328,6 +337,18 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
 
         mMessagesAdapter = new MessagesRecyclerViewAdapter(this, cursor);
         messagesView.setAdapter(mMessagesAdapter);
+        messagesView.addOnScrollListener(new EndlessScrollListener(layoutManager) {
+            @Override
+            public void onLoadMore(int currentPage) {
+                loadNextPageOfChats(currentPage);
+            }
+        });
+    }
+
+    private void loadNextPageOfChats(int currentPage) {
+        mLoadingNextPage = true;
+        mCurrentLimit = currentPage * PAGE_SIZE;
+        getSupportLoaderManager().restartLoader(MESSAGES_LOADER, null, this);
     }
 
     public void sendMessage(View view) {
@@ -337,7 +358,9 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         editText.setText("");
 
         if (userMessage.trim().length() > 0) {
-            Intent intent = ChatIntentService.createIntent(this, ChatIntentService.Action.SEND_MESSAGE, mPartnerUid, userMessage.trim());
+            Intent intent = ChatIntentService.createIntent(this,
+                                                           ChatIntentService.Action.SEND_MESSAGE,
+                                                           mPartnerUid, userMessage.trim());
             startService(intent);
 
             long currentTime = System.currentTimeMillis();
@@ -410,7 +433,8 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
                         mPartnerUid), PARTNER_PROJECTION, null, null, null);
             case MESSAGES_LOADER:
                 return new CursorLoader(this, mMessagesUri, MESSAGES_PROJECTION, null, null,
-                                        MESSAGES_SORT_ORDER);
+                                        MESSAGES_SORT_ORDER +
+                                        String.format(MESSAGES_LIMIT, mCurrentLimit));
             default:
                 return null;
         }
@@ -421,8 +445,8 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         switch (loader.getId()) {
             case PARTNER_LOADER:
                 try {
-                    if (data != null && data.getCount() > 0) {
-                        data.moveToNext();
+                    if (data != null && !data.isClosed() && data.getCount() > 0) {
+                        data.moveToFirst();
                         String newEmoji1 = data.getString(0);
                         String newEmoji2 = data.getString(1);
                         String newEmoji3 = data.getString(2);
@@ -441,14 +465,21 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
                 }
                 break;
             case MESSAGES_LOADER:
-                mMessagesAdapter.changeCursor(data);
-                mMessagesAdapter.moveToEnd();
+                if (!data.isClosed()) {
+                    mMessagesAdapter.changeCursor(data);
+                    if (mLoadingNextPage) {
+                        mLoadingNextPage = false;
+                    } else {
+                        mMessagesAdapter.moveToEnd();
+                    }
+                }
                 break;
         }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+        mMessagesAdapter.changeCursor(null);
     }
 
     @Override
@@ -458,7 +489,9 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         Set<String> uidsOfOpenedChats = prefs.getStringSet(getString(R.string.uids_of_opened_chats),
                                                            new HashSet<String>());
         uidsOfOpenedChats.remove(mPartnerUid);
-        prefs.edit().putStringSet(getString(R.string.uids_of_opened_chats), uidsOfOpenedChats).apply();
+        prefs.edit()
+             .putStringSet(getString(R.string.uids_of_opened_chats), uidsOfOpenedChats)
+             .apply();
 
         super.onPause();
     }
@@ -472,7 +505,9 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         Set<String> uidsOfOpenedChats = prefs.getStringSet(getString(R.string.uids_of_opened_chats),
                                                            new HashSet<String>());
         uidsOfOpenedChats.add(mPartnerUid);
-        prefs.edit().putStringSet(getString(R.string.uids_of_opened_chats), uidsOfOpenedChats).apply();
+        prefs.edit()
+             .putStringSet(getString(R.string.uids_of_opened_chats), uidsOfOpenedChats)
+             .apply();
     }
 
 

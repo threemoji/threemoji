@@ -1,8 +1,7 @@
 package com.threemoji.threemoji;
 
-import com.google.android.gms.gcm.GoogleCloudMessaging;
-
 import com.threemoji.threemoji.data.ChatContract;
+import com.threemoji.threemoji.service.BackgroundLocationService;
 import com.threemoji.threemoji.service.RegistrationIntentService;
 import com.threemoji.threemoji.utility.EmojiList;
 import com.threemoji.threemoji.utility.EmojiVector;
@@ -28,7 +27,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -168,6 +166,13 @@ public class StartPageActivity extends AppCompatActivity implements SelectEmojiD
             Intent intent = new Intent(this, MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
+
+            Toast.makeText(this, "Finding people nearby...",
+                           Toast.LENGTH_SHORT).show();
+            intent = new Intent(this, BackgroundLocationService.class);
+            intent.putExtra(getString(R.string.location_service_lookup_nearby), true);
+            startService(intent);
+
             finish();
         } else {
             Toast.makeText(this, "Please select 3 emoji", Toast.LENGTH_SHORT).show();

@@ -2,6 +2,7 @@ package com.threemoji.threemoji.service;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
@@ -21,7 +22,8 @@ import android.util.Log;
 
 public class BackgroundLocationService extends Service implements
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener,
+        LocationListener {
 
     public static final String TAG = BackgroundLocationService.class.getSimpleName();
 
@@ -42,7 +44,10 @@ public class BackgroundLocationService extends Service implements
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent != null && intent.getBooleanExtra(getString(R.string.location_service_lookup_nearby), false) && mGoogleApiClient.isConnected()) {
+        if (intent != null &&
+            intent.getBooleanExtra(getString(R.string.location_service_lookup_nearby), false) &&
+            mGoogleApiClient.isConnected()) {
+            Log.d(TAG, "Restarting location updates");
             stopLocationUpdates();
             startLocationUpdates();
             lookupNearbyUsingLastLocation();
@@ -97,6 +102,12 @@ public class BackgroundLocationService extends Service implements
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
     }
 
+    private void createGpsLocationRequest(int numUpdates) {
+        createLocationRequest();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setNumUpdates(numUpdates);
+    }
+
     private void startLocationUpdates() {
         Log.v(TAG, "Starting location updates");
         Intent intent = new Intent(this, LocationReceiver.class);
@@ -111,19 +122,23 @@ public class BackgroundLocationService extends Service implements
     }
 
     private void lookupNearbyUsingLastLocation() {
-        Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        createGpsLocationRequest(1);
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest,
+                                                                 this);
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        // Special callback for the lookup nearby request which uses a GPS location update.
+        // Other location updates are received by LocationReceiver.
         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this)
                                                            .edit();
-        if (lastLocation != null) {
-            editor.putString(this.getString(R.string.profile_location_latitude),
-                             String.valueOf(lastLocation.getLatitude()));
-            editor.putString(this.getString(R.string.profile_location_longitude),
-                             String.valueOf(lastLocation.getLongitude()));
-            editor.apply();
-            Log.v(TAG, "Starting lookup nearby intent");
-            startService(ChatIntentService.createIntent(this, ChatIntentService.Action.LOOKUP_ALL));
-        } else {
-            editor.putLong(getString(R.string.prefs_lookup_nearby_time), System.currentTimeMillis()).apply();
-        }
+        editor.putString(this.getString(R.string.profile_location_latitude),
+                         String.valueOf(location.getLatitude()));
+        editor.putString(this.getString(R.string.profile_location_longitude),
+                         String.valueOf(location.getLongitude()));
+        editor.apply();
+        Log.v(TAG, "Starting lookup nearby intent");
+        startService(ChatIntentService.createIntent(this, ChatIntentService.Action.LOOKUP_ALL));
     }
 }

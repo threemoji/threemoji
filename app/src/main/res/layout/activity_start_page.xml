@@ -5,21 +5,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/threemoji_green"
-    android:gravity="top|center_horizontal"
+    android:gravity="center_vertical|center_horizontal"
     android:orientation="vertical"
     android:padding="36dp"
     tools:context="com.threemoji.threemoji.StartPageActivity">
 
     <ImageView
         android:layout_width="wrap_content"
-        android:layout_height="fill_parent"
-        android:layout_weight="7"
-        android:src="@drawable/logo" />
+        android:layout_height="wrap_content"
+        android:src="@drawable/logo"
+        android:layout_marginBottom="32dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="3"
+        android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical">
 

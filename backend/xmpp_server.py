@@ -4,7 +4,7 @@ import googledatastore as datastore
 import psycopg2
 
 SERVER = 'gcm.googleapis.com'
-PORT = 5236 # change to 5235 for production
+PORT = 5235
 USERNAME = os.environ.get('PROJECT_NUM')
 PASSWORD = os.environ.get('GCM_API_KEY')
 

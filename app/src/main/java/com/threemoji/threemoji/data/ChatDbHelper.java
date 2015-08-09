@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class ChatDbHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 11;
+    private static final int DATABASE_VERSION = 1;
 
     static final String DATABASE_NAME = "chat.db";
 
@@ -80,49 +80,5 @@ public class ChatDbHelper extends SQLiteOpenHelper {
 //        db.execSQL("DROP TABLE IF EXISTS " + MessageEntry.TABLE_NAME);
 //        db.execSQL("DROP TABLE IF EXISTS " + PeopleNearbyEntry.TABLE_NAME);
 //        onCreate(db);
-
-        if (oldVersion == 3) {
-            createPeopleNearbyTable(db);
-        }
-        if (oldVersion < 5) {
-            db.execSQL("ALTER TABLE " + PartnerEntry.TABLE_NAME + " ADD COLUMN " +
-                       PartnerEntry.COLUMN_IS_ALIVE + " INTEGER DEFAULT 1");
-        }
-        if (oldVersion < 6) {
-            db.execSQL("ALTER TABLE " + PartnerEntry.TABLE_NAME + " ADD COLUMN " +
-                       PartnerEntry.COLUMN_IS_ARCHIVED + " INTEGER DEFAULT 0");
-        }
-        if (oldVersion < 7) {
-            db.execSQL("ALTER TABLE " + PartnerEntry.TABLE_NAME + " ADD COLUMN " +
-                       PartnerEntry.COLUMN_LAST_ACTIVITY + " INTEGER DEFAULT 0;");
-        }
-        if (oldVersion <= 8) {
-            db.execSQL("ALTER TABLE " + MessageEntry.TABLE_NAME + " RENAME TO " + MessageEntry.TABLE_NAME + "_copy;");
-            createMessagesTable(db);
-            db.execSQL("INSERT INTO " + MessageEntry.TABLE_NAME + " (" +
-                       MessageEntry.COLUMN_PARTNER_KEY + ", " +
-                       MessageEntry.COLUMN_DATETIME + ", " +
-                       MessageEntry.COLUMN_MESSAGE_TYPE + ", " +
-                       MessageEntry.COLUMN_MESSAGE_DATA + ") " +
-                       " SELECT " +
-                       MessageEntry.COLUMN_PARTNER_KEY + ", " +
-                       MessageEntry.COLUMN_DATETIME + ", " +
-                       MessageEntry.COLUMN_MESSAGE_TYPE + ", " +
-                       MessageEntry.COLUMN_MESSAGE_DATA +
-                       " FROM " + MessageEntry.TABLE_NAME + "_copy;");
-            db.execSQL("DROP TABLE " + MessageEntry.TABLE_NAME + "_copy;");
-        }
-        if (oldVersion < 9) {
-            db.execSQL("DROP TABLE IF EXISTS " + PeopleNearbyEntry.TABLE_NAME);
-            createPeopleNearbyTable(db);
-        }
-        if (oldVersion < 10) {
-            db.execSQL("ALTER TABLE " + PartnerEntry.TABLE_NAME + " ADD COLUMN " +
-                       PartnerEntry.COLUMN_NUM_NEW_MESSAGES + " INTEGER DEFAULT 0");
-        }
-        if (oldVersion < 11) {
-            db.execSQL("ALTER TABLE " + PartnerEntry.TABLE_NAME + " ADD COLUMN " +
-                       PartnerEntry.COLUMN_IS_MUTED + " INTEGER DEFAULT 0");
-        }
     }
 }

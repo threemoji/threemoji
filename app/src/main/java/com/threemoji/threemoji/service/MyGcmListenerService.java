@@ -3,7 +3,6 @@ package com.threemoji.threemoji.service;
 import com.google.android.gms.gcm.GcmListenerService;
 
 import com.threemoji.threemoji.ChatActivity;
-import com.threemoji.threemoji.PeopleNearbyFragment;
 import com.threemoji.threemoji.R;
 import com.threemoji.threemoji.data.ChatContract;
 import com.threemoji.threemoji.utility.EmojiVector;
@@ -26,8 +25,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -422,10 +421,15 @@ public class MyGcmListenerService extends GcmListenerService {
      */
     private void sendNotification(String fromUid, String fromName, String message) {
         Intent intent = new Intent(this, ChatActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.putExtra("uid", fromUid);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
-                PendingIntent.FLAG_ONE_SHOT);
+
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        stackBuilder.addParentStack(ChatActivity.class);
+        stackBuilder.addNextIntent(intent);
+
+        PendingIntent pendingIntent = stackBuilder.getPendingIntent(0,
+                                                                    PendingIntent.FLAG_UPDATE_CURRENT);
+
         String tickerText = fromName + ": " + message;
         if (fromName.isEmpty()) {
             fromName = "Message from a new partner!";
@@ -452,10 +456,15 @@ public class MyGcmListenerService extends GcmListenerService {
 
     private void sendMatchNotification(String fromUid, String fromName) {
         Intent intent = new Intent(this, ChatActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.putExtra("uid", fromUid);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
-                PendingIntent.FLAG_ONE_SHOT);
+
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        stackBuilder.addParentStack(ChatActivity.class);
+        stackBuilder.addNextIntent(intent);
+
+        PendingIntent pendingIntent = stackBuilder.getPendingIntent(0,
+                                                                    PendingIntent.FLAG_UPDATE_CURRENT);
+
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.small_icon)
